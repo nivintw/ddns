@@ -210,41 +210,41 @@ def show_log():
     log_file.close()
 
 
-# Commandline arguments
-conn = connect_database(constants.database_path)
-updatedb()
+def run():
+    # Commandline arguments
+    updatedb()
 
-parser = setup_argparse()
+    parser = setup_argparse()
 
-args = vars(parser.parse_args())
+    args = vars(parser.parse_args())
 
-if args["list"]:
-    sd.list_sub_domains(args["list"][0][0])
-elif args["domains"]:
-    show_all_top_domains()
-elif args["serverdomains"]:
-    sd.list_do_sub_domains(args["serverdomains"][0][0])
-elif args["current"]:
-    domaininfo(args["current"][0][0])
-elif args["top"]:
-    add_domain(args["top"][0][0])
-elif args["sub"]:
-    sd.add_subdomain(args["sub"][0][0])
-elif args["version"]:
-    show_current_info()
-elif args["force"]:
-    updateip(True)
-elif args["log"]:
-    show_log()
-elif args["ipserver"]:
-    ip_server(args["ipserver"][0][0], args["ipserver"][0][1])
-elif args["api"]:
-    api(args["api"][0][0])
-elif args["remove"]:
-    sd.remove_subdomain(args["remove"][0][0])
-elif args["edit"]:
-    sd.edit_subdomain(args["edit"][0][0])
-elif args["local"]:
-    sd.local_add_subdomain(args["local"][0][0], args["local"][0][1])
-else:
-    updateip(None)
+    if args["list"]:
+        sd.list_sub_domains(args["list"][0][0])
+    elif args["domains"]:
+        show_all_top_domains()
+    elif args["serverdomains"]:
+        sd.list_do_sub_domains(args["serverdomains"][0][0])
+    elif args["current"]:
+        domaininfo(args["current"][0][0])
+    elif args["top"]:
+        add_domain(args["top"][0][0])
+    elif args["sub"]:
+        sd.add_subdomain(args["sub"][0][0])
+    elif args["version"]:
+        show_current_info()
+    elif args["force"]:
+        updateip(True)
+    elif args["log"]:
+        show_log()
+    elif args["ipserver"]:
+        ip_server(args["ipserver"][0][0], args["ipserver"][0][1])
+    elif args["api"]:
+        api(args["api"][0][0])
+    elif args["remove"]:
+        sd.remove_subdomain(args["remove"][0][0])
+    elif args["edit"]:
+        sd.edit_subdomain(args["edit"][0][0])
+    elif args["local"]:
+        sd.local_add_subdomain(args["local"][0][0], args["local"][0][1])
+    else:
+        updateip(None)
