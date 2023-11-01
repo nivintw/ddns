@@ -3,23 +3,14 @@ import argparse
 
 def setup_argparse():
     parser = argparse.ArgumentParser(
-        prog="ddns",
+        prog="do_ddns",
         description="Application to use domains from DigitalOcean account as dynamic "
         "DNS domain(s).\nThe app only supports IP4. IPv6 is planned for a later release!"
-        "\nYou'll always find the latest version on https://gitlab.pm/rune/ddns\n\n"
-        "For bugs, suggestions, pull requests visit https://gitlab.pm/rune/ddns/issues",
+        "\nYou'll always find the latest version on https://github.com/nivintw/ddns\n\n"
+        "For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues\n\n"
+        "Forked with appreciation from https://gitlab.pm/rune/ddns\n\n",
         formatter_class=argparse.RawTextHelpFormatter,
         epilog="Making Selfhosting easier...",
-    )
-
-    parser.add_argument(
-        "-a",
-        "--api",
-        help="Add/Change API key.\n\n",
-        nargs=1,
-        metavar=("APIkey"),
-        required=False,
-        action="append",
     )
 
     parser.add_argument(
@@ -120,16 +111,6 @@ def setup_argparse():
     )
 
     parser.add_argument(
-        "-p",
-        "--ipserver",
-        help="Sets or updates IP server lookup to use. Indicate 4 or 6 for IP type.\n\n",
-        required=False,
-        nargs=2,
-        metavar=("ip4.iurl.no", "4"),
-        action="append",
-    )
-
-    parser.add_argument(
         "-e",
         "--edit",
         help="Changes domain from active to inactive or the other way around...",
@@ -138,5 +119,34 @@ def setup_argparse():
         metavar=("test.example.com"),
         action="append",
     )
+
+    subparsers = parser.add_subparsers()
+
+    parser_ip_server = subparsers.add_parser(
+        name="update_ip_lookup",
+        aliases=["ip_lookup"],
+        help=("Update the service/server used to lookup your public IP address."),
+    )
+    parser_ip_server.add_argument(
+        "--ip-lookup-url",
+        default="https://www.ipify.org",
+        help=(
+            "The URL if the server to use for obtaining your current IP address. "
+            "Default: %(default)s"
+        ),
+    )
+    parser_ip_server.add_argument(
+        "--ip-mode",
+        choices=["4", "6"],
+        default="4",
+        help=("IPv4 or IPv6. Which IP address to update. Default: %(default)s"),
+    )
+
+    parser_api_key = subparsers.add_parser(
+        name="api_key",
+        aliases=["set_api_key"],
+        help="Add/Change the Digital Ocean API Key.",
+    )
+    parser_api_key.add_argument("api_key", help="The API key value", type=str)
 
     return parser

@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "ddns_digital_ocean"
-version = "0.2.1"
+version = "0.3.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 do_ddns = 'ddns_digital_ocean.ddns:run'
@@ -15,6 +19,5 @@ rich = "^13.6.0"
 requests = "^2.31.0"
 
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff]
+line-length = 100

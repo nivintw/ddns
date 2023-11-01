@@ -236,10 +236,10 @@ def run():
         updateip(True)
     elif args["log"]:
         show_log()
-    elif args["ipserver"]:
-        ip_server(args["ipserver"][0][0], args["ipserver"][0][1])
-    elif args["api"]:
-        api(args["api"][0][0])
+    elif "ip_lookup_url" in args:
+        ip_server(args["ip_lookup_url"], args["ip_mode"])
+    elif "api_key" in args:
+        api(args["api_key"])
     elif args["remove"]:
         sd.remove_subdomain(args["remove"][0][0])
     elif args["edit"]:
