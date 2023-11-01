@@ -31,7 +31,7 @@ def add_domain(domain):
     if count != 0:
         print("[red]Error:[/red] Domain name (%s) already in database!" % (domain))
     else:
-        if apikey != None:
+        if apikey is not None:
             headers = {
                 "Authorization": "Bearer " + apikey,
                 "Content-Type": "application/json",
@@ -90,7 +90,6 @@ def show_all_top_domains():
 
 
 def domaininfo(domain):
-    apikey = get_api()
     local_ip = get_ip()
     cursor = conn.cursor()
     if set(domain).difference(ascii_letters + "." + digits + "@" + "-"):
@@ -101,9 +100,7 @@ def domaininfo(domain):
         parts = domain.split(".")
         if len(parts) > 3:
             top = parts[1] + "." + parts[2] + "." + parts[3]
-            sub = parts[0]
         else:
-            sub = parts[0]
             top = parts[1] + "." + parts[2]
         cursor.execute("SELECT id FROM domains WHERE name like ?", (top,))
         domainid = cursor.fetchone()[0]
@@ -120,13 +117,12 @@ def domaininfo(domain):
 
 
 def show_current_info():
-    ipserver = None
     API = get_api()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
     count = cursor.fetchone()[0]
     if count == 0:
-        ipserver = "[red]Error:[/red] No IP resolvers in DB"
+        pass
     else:
         cursor.execute("SELECT * FROM ipservers")
         ipservers = cursor.fetchall()

@@ -72,7 +72,6 @@ def updateip(force):
                 remote = current.read().decode("utf-8")
                 remoteData = json.loads(remote)
                 remoteIP4 = remoteData["domain_record"]["data"]
-                domainname = str(remoteData["domain_record"]["name"])
                 if remoteIP4 != current_ip or force is True and domain_status == 1:
                     updated = True
                     data = {"type": "A", "data": current_ip}

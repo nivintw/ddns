@@ -141,7 +141,7 @@ def edit_subdomain(domain):
                 )
             else:
                 apikey = get_api()
-                if apikey == None:
+                if apikey is None:
                     print("[red]Error:[/red] Missing APIkey. Please add one!")
                 else:
                     cursor.execute(
@@ -185,11 +185,11 @@ def add_subdomain(domain):
             sub = parts[0]
             top = parts[1] + "." + parts[2]
         apikey = get_api()
-        if apikey == None:
+        if apikey is None:
             print("[red]Error:[/red] Missing APIkey. Please add one!")
         else:
             ip = get_ip()
-            if ip == None or "urlopen error" in ip:
+            if ip is None or "urlopen error" in ip:
                 print(
                     "[red]Error:[/red] Failed to get public IP. Do you have a typo in your URI? [red]Error %s.[/red]"
                     % (ip)
@@ -209,7 +209,6 @@ def add_subdomain(domain):
                     )
                     topdomain = cursor.fetchone()
                     topdomain_id = topdomain[0]
-                    topdomain_name = topdomain[1]
                     cursor.execute(
                         "SELECT count(*) FROM subdomains WHERE main_id LIKE ? AND name like ?",
                         (
@@ -309,7 +308,7 @@ def remove_subdomain(domain):
                 )
             else:
                 apikey = get_api()
-                if apikey == None:
+                if apikey is None:
                     print("[red]Error:[/red] Missing APIkey. Please add one!")
                 else:
                     cursor.execute(
@@ -364,11 +363,11 @@ def local_add_subdomain(domain, domainid):
             top = parts[1] + "." + parts[2]
         apikey = get_api()
         longtop = sub + "." + top
-        if apikey == None:
+        if apikey is None:
             print("[red]Error:[/red] Missing APIkey. Please add one!")
         else:
             ip = get_ip()
-            if ip == None or "urlopen error" in ip:
+            if ip is None or "urlopen error" in ip:
                 print(
                     "[red]Error:[/red] Failed to get public IP. Do you have a typo in your URI? [red]Error %s.[/red]"
                     % (ip)
