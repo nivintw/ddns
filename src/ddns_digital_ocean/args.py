@@ -1,22 +1,28 @@
 import argparse
+import textwrap
 
 
 def setup_argparse():
     parser = argparse.ArgumentParser(
         prog="do_ddns",
-        description="Application to use domains from DigitalOcean account as dynamic "
-        "DNS domain(s).\nThe app only supports IP4. IPv6 is planned for a later release!"
-        "\nYou'll always find the latest version on https://github.com/nivintw/ddns\n\n"
-        "For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues\n\n"
-        "Forked with appreciation from https://gitlab.pm/rune/ddns\n\n",
-        formatter_class=argparse.RawTextHelpFormatter,
-        epilog="Making Selfhosting easier...",
+        description=textwrap.dedent(
+            """
+        Application to use domains from DigitalOcean account as dynamic DNS domain(s).
+        The app only supports IP4. IPv6 is planned for a later release!
+
+        You'll always find the latest version on https://github.com/nivintw/ddns
+        For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues
+        
+        Forked with appreciation from https://gitlab.pm/rune/ddns
+        """
+        ).strip(),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     parser.add_argument(
         "-f",
         "--force",
-        help="Force update of IP address for all domains.\n\n",
+        help="Force update of IP address for all domains.",
         required=False,
         action="store_true",
     )
@@ -24,7 +30,7 @@ def setup_argparse():
     parser.add_argument(
         "-l",
         "--list",
-        help="List subdomains for supplied domain.\n\n",
+        help="List subdomains for supplied domain.",
         nargs=1,
         metavar=("domain"),
         required=False,
@@ -34,7 +40,7 @@ def setup_argparse():
     parser.add_argument(
         "-o",
         "--serverdomains",
-        help="List subdomains for supplied domain not in ddns DB.\n\n",
+        help="List subdomains for supplied domain not in ddns DB.",
         nargs=1,
         metavar=("domain"),
         required=False,
@@ -44,7 +50,7 @@ def setup_argparse():
     parser.add_argument(
         "-d",
         "--domains",
-        help="List top domains in your DigitalOcean account.\n\n",
+        help="List top domains in your DigitalOcean account.",
         required=False,
         action="store_true",
     )
@@ -52,7 +58,7 @@ def setup_argparse():
     parser.add_argument(
         "-c",
         "--current",
-        help="List the current IP address for the sub-domain given\n\n",
+        help="List the current IP address for the sub-domain given",
         required=False,
         nargs=1,
         action="append",
@@ -61,27 +67,33 @@ def setup_argparse():
     parser.add_argument(
         "-t",
         "--top",
-        help="Add a new domain from your DigitalOcean account to use as a dynamic DNS domain\n\n",
+        help=(
+            "Add new domain(s) from your DigitalOcean account "
+            "to use as a dynamic DNS domain."
+        ),
         required=False,
-        nargs=1,
         metavar=("domain"),
-        action="append",
+        nargs="+",
     )
 
     parser.add_argument(
         "-s",
         "--sub",
-        help="Add a new subdomain to your DigitalOcean account and use as dynamic DNS.\n\n\n",
+        help=(
+            "Add new subdomain(s) to your DigitalOcean account and use as dynamic DNS."
+        ),
         required=False,
-        nargs=1,
+        nargs="+",
         metavar=("domain"),
-        action="append",
     )
 
     parser.add_argument(
         "-k",
         "--local",
-        help="Add an existing DigitalOcean subdomain to your ddns DB and use as dynamic DNS.\n\n",
+        help=(
+            "Add an existing DigitalOcean subdomain to your ddns DB "
+            "and use as dynamic DNS."
+        ),
         required=False,
         nargs=2,
         metavar=("domain", "domainid"),
@@ -91,17 +103,16 @@ def setup_argparse():
     parser.add_argument(
         "-r",
         "--remove",
-        help="Remove a subdomain from your DigitalOcean account and ddns.\n\n",
+        help="Remove a subdomain from your DigitalOcean account and ddns.",
         required=False,
-        nargs=1,
+        nargs="+",
         metavar=("domain"),
-        action="append",
     )
 
     parser.add_argument(
         "-v",
         "--version",
-        help="Show current version and config info\n\n",
+        help="Show current version and config info",
         required=False,
         action="store_true",
     )
