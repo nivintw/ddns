@@ -42,4 +42,6 @@ select = [
     "I",
     # Unused noqa comments
     "RUF100",
+    # Flake8-bandit
+    "S"
 ]
