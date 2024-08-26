@@ -2,6 +2,7 @@ import json
 import logging
 import time
 import urllib.request
+from argparse import Namespace
 from datetime import datetime
 
 import requests
@@ -16,6 +17,29 @@ conn = connect_database(constants.database_path)
 
 class NoIPResolverServerError(Exception):
     """Raised when there are no IP Resolver servers configured."""
+
+
+def view_or_update_ip_server(args: Namespace):
+    """UX function: View or update IP server settings."""
+    ipserver = args.url
+    ip_type = args.ip_mode
+    if ipserver is not None:
+        ip_server(ipserver, ip_type)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
+    count = cursor.fetchone()[0]
+    if count == 0:
+        ip4server = "[red]None Configured[/red]"
+        ip6server = "[red]None Configured[/red]"
+    else:
+        cursor.execute("SELECT * FROM ipservers")
+        ipservers = cursor.fetchall()
+        ip4server = ipservers[0][1]
+        ip6server = ipservers[0][2]
+    print("==== Upstream IP Address Resolver Servers ====")
+    print(f"IP v4 resolver 	: [b]{ip4server}[/b]")
+    print(f"IP v6 resolver 	: [b]{ip6server}[/b]")
 
 
 def ip_server(ipserver, ip_type):
@@ -90,7 +114,9 @@ def get_ip():
         raise
 
 
-def updateip(force):
+def updateip(args: Namespace):
+    force: bool = args.force
+
     apikey = get_api()
     current_ip = get_ip()
     cursor = conn.cursor()
@@ -118,7 +144,7 @@ def updateip(force):
         domain_name = str(domain_info[0])
         domain_status = i[1]
         subdomain_id = str(i[0])
-        # Chek if an update is required
+        # Check if an update is required
         if domain_status == 1:
             req = urllib.request.Request(
                 "https://api.digitalocean.com/v2/domains/"

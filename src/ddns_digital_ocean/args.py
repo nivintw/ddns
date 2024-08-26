@@ -1,6 +1,8 @@
 import argparse
 import textwrap
 
+from ddns_digital_ocean import api_key_helpers, ip
+
 
 def setup_argparse():
     parser = argparse.ArgumentParser(
@@ -18,13 +20,19 @@ def setup_argparse():
         ).strip(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    subparsers = parser.add_subparsers(dest="subparser_name")
+    parser_update_ips = subparsers.add_parser(
+        name="update_ips",
+        help=("Update the IP addresses for the subdomains that are configured."),
+    )
+    parser_update_ips.set_defaults(func=ip.updateip)
 
-    parser.add_argument(
+    parser_update_ips.add_argument(
         "-f",
         "--force",
         help="Force update of IP address for all domains.",
-        required=False,
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        default=False,
     )
 
     parser.add_argument(
@@ -33,7 +41,6 @@ def setup_argparse():
         help="List subdomains for supplied domain.",
         nargs=1,
         metavar=("domain"),
-        required=False,
         action="append",
     )
 
@@ -43,7 +50,6 @@ def setup_argparse():
         help="List subdomains for supplied domain not in ddns DB.",
         nargs=1,
         metavar=("domain"),
-        required=False,
         action="append",
     )
 
@@ -51,7 +57,6 @@ def setup_argparse():
         "-d",
         "--domains",
         help="List top domains in your DigitalOcean account.",
-        required=False,
         action="store_true",
     )
 
@@ -59,7 +64,6 @@ def setup_argparse():
         "-c",
         "--current",
         help="List the current IP address for the sub-domain given",
-        required=False,
         nargs=1,
         action="append",
     )
@@ -77,7 +81,6 @@ def setup_argparse():
         "-s",
         "--sub",
         help=("Add new subdomain(s) to your DigitalOcean account and use as dynamic DNS."),
-        required=False,
         nargs="+",
         metavar=("domain"),
     )
@@ -86,7 +89,6 @@ def setup_argparse():
         "-k",
         "--local",
         help=("Add an existing DigitalOcean subdomain to your ddns DB and use as dynamic DNS."),
-        required=False,
         nargs=2,
         metavar=("domain", "domainid"),
         action="append",
@@ -96,7 +98,6 @@ def setup_argparse():
         "-r",
         "--remove",
         help="Remove a subdomain from your DigitalOcean account and ddns.",
-        required=False,
         nargs="+",
         metavar=("domain"),
     )
@@ -105,7 +106,6 @@ def setup_argparse():
         "-v",
         "--version",
         help="Show current version and config info",
-        required=False,
         action="store_true",
     )
 
@@ -115,26 +115,22 @@ def setup_argparse():
         "-e",
         "--edit",
         help="Changes domain from active to inactive or the other way around...",
-        required=False,
         nargs=1,
         metavar=("test.example.com"),
         action="append",
     )
 
-    subparsers = parser.add_subparsers()
-
     parser_ip_server = subparsers.add_parser(
-        name="update_ip_lookup",
-        aliases=["ip_lookup"],
+        name="ip_lookup_config",
         help=("Update the service/server used to lookup your public IP address."),
     )
+    parser_ip_server.set_defaults(func=ip.view_or_update_ip_server)
     parser_ip_server.add_argument(
-        "--ip-lookup-url",
-        default="https://api.ipify.org",
+        "--url",
         help=(
             "The URL of the server to use for obtaining your current IP address. "
             "NOTE: Expects the servers response to a GET request to have a .text response. "
-            "Default: %(default)s"
+            "Example: https://api.ipify.org"
         ),
     )
     parser_ip_server.add_argument(
@@ -146,9 +142,14 @@ def setup_argparse():
 
     parser_api_key = subparsers.add_parser(
         name="api_key",
-        aliases=["set_api_key"],
         help="Add/Change the Digital Ocean API Key.",
     )
-    parser_api_key.add_argument("api_key", help="The API key value", type=str)
+    parser_api_key.set_defaults(func=api_key_helpers.view_or_update)
+    parser_api_key.add_argument(
+        "-k",
+        "--api-key-value",
+        help="The API key value",
+        type=str,
+    )
 
     return parser

@@ -9,10 +9,10 @@ from rich import print
 
 from . import __version__, constants
 from . import subdomains as sd
-from .api_key_helpers import NoAPIKeyError, get_api, set_api_key
+from .api_key_helpers import NoAPIKeyError, get_api
 from .args import setup_argparse
 from .database import connect_database, updatedb
-from .ip import get_ip, ip_server, updateip
+from .ip import get_ip
 
 logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
 
@@ -188,7 +188,8 @@ def run():
 
     parser = setup_argparse()
 
-    args = vars(parser.parse_args())
+    args_raw = parser.parse_args()
+    args = vars(args_raw)
 
     # TODO: update args to support multiple domains at the same time.
     # Right now, argparse has been updated to support multiple values but we haven't updated
@@ -209,22 +210,22 @@ def run():
         sd.add_subdomain(args["sub"][0][0])
     elif args["version"]:
         show_current_info()
-    elif args["force"]:
-        updateip(True)
     elif args["log"]:
         show_log()
-    elif "ip_lookup_url" in args:
-        ip_server(args["ip_lookup_url"], args["ip_mode"])
-    elif "api_key" in args:
-        set_api_key(args["api_key"])
+    elif args_raw.subparser_name in [
+        "ip_lookup_config",
+        "api_key",
+        "update_ips",
+    ]:
+        # NOTE: these subparsers have been configured.
+        # eventually, all options will be handled similarly.
+        args_raw.func(args_raw)
     elif args["remove"]:
         sd.remove_subdomain(args["remove"][0][0])
     elif args["edit"]:
         sd.edit_subdomain(args["edit"][0][0])
     elif args["local"]:
         sd.local_add_subdomain(args["local"][0][0], args["local"][0][1])
-    else:
-        updateip(None)
 
 
 if __name__ == "__main__":
