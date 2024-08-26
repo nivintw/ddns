@@ -32,9 +32,7 @@ def list_sub_domains(domain):
         else:
             print(f"\n\nCurrent sub domains for [b]{domain}[/b]\n\n")
             print("Domain\t\t\t\tCreated\t\t\tUpdated\t\t\tChecked\t\t\tActive")
-            print(
-                "=================================================================================================================="
-            )
+            print("=" * 114)
             cursor.execute("SELECT id FROM domains WHERE name LIKE ?", (domain,))
             topdomain_id = cursor.fetchone()[0]
             cursor.execute("SELECT COUNT(*) FROM subdomains WHERE main_id LIKE ?", (topdomain_id,))
