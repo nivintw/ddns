@@ -28,36 +28,36 @@ def add_domain(domain):
     count = cursor.fetchone()[0]
     if count != 0:
         print(f"[red]Error:[/red] Domain name ({domain}) already in database!")
-    else:
-        if apikey is not None:
-            headers = {
-                "Authorization": "Bearer " + apikey,
-                "Content-Type": "application/json",
-            }
-            response = requests.get(
-                "https://api.digitalocean.com/v2/domains/" + domain,
-                headers=headers,
-                timeout=45,
-            )
-            response_data = response.json()
+        return
 
-            if "id" in response_data:
-                print(
-                    "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\n"
-                    "Please add the domain from your control panel "
-                    "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
-                )
-            else:
-                cursor.execute(
-                    "INSERT INTO domains values(?,?)",
-                    (
-                        None,
-                        domain,
-                    ),
-                )
-                print(f"The domain [b]{domain}[/b] has been added to the DB")
-                logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
-                conn.commit()
+    headers = {
+        "Authorization": "Bearer " + apikey,
+        "Content-Type": "application/json",
+    }
+    response = requests.get(
+        "https://api.digitalocean.com/v2/domains/" + domain,
+        headers=headers,
+        timeout=45,
+    )
+    response_data = response.json()
+
+    if "id" in response_data:
+        print(
+            "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\n"
+            "Please add the domain from your control panel "
+            "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO domains values(?,?)",
+            (
+                None,
+                domain,
+            ),
+        )
+        print(f"The domain [b]{domain}[/b] has been added to the DB")
+        logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
+        conn.commit()
 
 
 def show_all_top_domains():
