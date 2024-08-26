@@ -9,17 +9,21 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
+class NoAPIKeyError(Exception):
+    """Raised when the user tries to do anything without first configuring an API key."""
+
+
 def get_api() -> str:
     cursor = conn.cursor()
 
     cursor.execute("SELECT api FROM apikey")
-    try:
-        row = cursor.fetchone()
-    except Exception:
+    row = cursor.fetchone()
+
+    if row is None:
         print("[red]Error:[/red] Missing APIkey. Please add one!")
-        raise
-    else:
-        return row[0]
+        raise NoAPIKeyError("Missing API key. Please add one!")
+
+    return row[0]
 
 
 def api(api_value):
