@@ -146,7 +146,8 @@ def show_current_info():
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
     count = cursor.fetchone()[0]
     if count == 0:
-        pass
+        ip4server = "[red]None Configured[/red]"
+        ip6server = "[red]None Configured[/red]"
     else:
         cursor.execute("SELECT * FROM ipservers")
         ipservers = cursor.fetchall()
