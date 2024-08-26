@@ -45,6 +45,12 @@ def setup_argparse():
         help="Show information about do_ddns, including current configuration and version.",
     )
     parser_show_info.set_defaults(func=info.show_current_info)
+    parser_show_info.add_argument(
+        "--show-api-key",
+        help="Display the unmasked API key in output.",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
 
     parser.add_argument(
         "-l",

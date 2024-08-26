@@ -16,6 +16,8 @@ def show_current_info(args: Namespace):
         API = get_api()
     except NoAPIKeyError:
         API = "[red]Error:[/red] API key not stored in DB"
+    if args.show_api_key is not True:
+        API = "*" * len(API)
 
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
