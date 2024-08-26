@@ -116,22 +116,23 @@ def domaininfo(domain):
             "[red]Error:[/red]. Give the domain name in simple form "
             "e.g. [bold]test.domain.com[/bold]"
         )
-    else:
-        parts = domain.split(".")
-        if len(parts) > 3:
-            top = parts[1] + "." + parts[2] + "." + parts[3]
-        else:
-            top = parts[1] + "." + parts[2]
-        cursor.execute("SELECT id FROM domains WHERE name like ?", (top,))
-        domain_id = cursor.fetchone()[0]
-        cursor.execute("SELECT * FROM subdomains WHERE main_id like ?", (domain_id,))
-        domains = cursor.fetchall()
-        local_ip = f"[red]{local_ip}[/red]" if local_ip != domains[0][3] else local_ip
+        return
 
-        print(
-            f"The domain [bold]{domain}[/bold] has the IP [bold]{domains[0][3]}[/bold]. "
-            f"Your public IP is [bold]{local_ip}[/bold]."
-        )
+    parts = domain.split(".")
+    if len(parts) > 3:
+        top = parts[1] + "." + parts[2] + "." + parts[3]
+    else:
+        top = parts[1] + "." + parts[2]
+    cursor.execute("SELECT id FROM domains WHERE name like ?", (top,))
+    domain_id = cursor.fetchone()[0]
+    cursor.execute("SELECT * FROM subdomains WHERE main_id like ?", (domain_id,))
+    domains = cursor.fetchall()
+    local_ip = f"[red]{local_ip}[/red]" if local_ip != domains[0][3] else local_ip
+
+    print(
+        f"The domain [bold]{domain}[/bold] has the IP [bold]{domains[0][3]}[/bold]. "
+        f"Your public IP is [bold]{local_ip}[/bold]."
+    )
 
 
 def show_current_info():

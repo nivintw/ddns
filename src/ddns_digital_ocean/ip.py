@@ -14,6 +14,10 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
+class NoIPResolverServerError(Exception):
+    """Raised when there are no IP Resolver servers configured."""
+
+
 def ip_server(ipserver, ip_type):
     """Configure the server to use to retrieve our IP address.
 
@@ -63,13 +67,19 @@ def ip_server(ipserver, ip_type):
 
 
 def get_ip():
+    """Retrieve the hosts public IP address.
+
+    Requires that an IP Resolver server has been configured.
+
+    Raises:
+        NoIPResolverServerError: No upstream IP Resolver server configured. Add one.
+        Exception: Any exception raised while trying to resolve the public IP address of the host.
+    """
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
     count = cursor.fetchone()[0]
     if count == 0:
-        # NOTE: no ip servers configured.
-        # TODO: check where this function is called; should we report an error to the user?
-        return None
+        raise NoIPResolverServerError("Please configure an IP resolver server.")
     cursor.execute("SELECT ip4_server from ipservers")
     server = cursor.fetchone()[0]
     try:
