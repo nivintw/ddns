@@ -47,17 +47,17 @@ def add_domain(domain):
             "Please add the domain from your control panel "
             "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
         )
-    else:
-        cursor.execute(
-            "INSERT INTO domains values(?,?)",
-            (
-                None,
-                domain,
-            ),
-        )
-        print(f"The domain [b]{domain}[/b] has been added to the DB")
-        logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
-        conn.commit()
+        return
+    cursor.execute(
+        "INSERT INTO domains values(?,?)",
+        (
+            None,
+            domain,
+        ),
+    )
+    print(f"The domain [b]{domain}[/b] has been added to the DB")
+    logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
+    conn.commit()
 
 
 def show_all_top_domains():
