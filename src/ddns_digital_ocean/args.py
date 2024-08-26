@@ -1,7 +1,7 @@
 import argparse
 import textwrap
 
-from ddns_digital_ocean import api_key_helpers, ip
+from ddns_digital_ocean import api_key_helpers, ip, logs
 
 
 def setup_argparse():
@@ -34,6 +34,12 @@ def setup_argparse():
         action=argparse.BooleanOptionalAction,
         default=False,
     )
+
+    parser_logs = subparsers.add_parser(
+        name="logs",
+        help=("Print the logs."),
+    )
+    parser_logs.set_defaults(func=logs.show_log)
 
     parser.add_argument(
         "-l",
@@ -108,8 +114,6 @@ def setup_argparse():
         help="Show current version and config info",
         action="store_true",
     )
-
-    parser.add_argument("-q", "--log", help=argparse.SUPPRESS, required=False, action="store_true")
 
     parser.add_argument(
         "-e",

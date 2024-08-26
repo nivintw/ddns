@@ -174,14 +174,6 @@ def show_current_info():
     print("[i]IPv6 is not supported and not listed here.[/i]")
 
 
-def show_log():
-    # TODO: refactor this...
-    # this logic seems ... odd?
-    with open(constants.logfile) as log_file:
-        content = log_file.read()
-        print(content)
-
-
 def run():
     # Commandline arguments
     updatedb()
@@ -210,12 +202,11 @@ def run():
         sd.add_subdomain(args["sub"][0][0])
     elif args["version"]:
         show_current_info()
-    elif args["log"]:
-        show_log()
     elif args_raw.subparser_name in [
         "ip_lookup_config",
         "api_key",
         "update_ips",
+        "logs",
     ]:
         # NOTE: these subparsers have been configured.
         # eventually, all options will be handled similarly.
