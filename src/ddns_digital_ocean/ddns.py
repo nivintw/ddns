@@ -167,7 +167,7 @@ def show_current_info():
     print(f"Top domains 	: [b]{topdomains}[/b]")
     print(f"sub domains 	: [b]{subdomains}[/b]")
     print("")
-    print(f"App version 	: [b]{app_version}[/b] (https://gitlab.pm/rune/ddns)")
+    print(f"App version 	: [b]{app_version}[/b] (https://github.com/nivintw/ddns)")
     print("")
     print("[i]IPv6 is not supported and not listed here.[/i]")
 
