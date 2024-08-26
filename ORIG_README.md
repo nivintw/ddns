@@ -8,7 +8,7 @@ Download the latest relase from https://gitlab.pm/rune/ddns/releases. Unzip and 
 
 ## Usage
 
-For instructions run 
+For instructions run
 
 ```bash
 ddns -h

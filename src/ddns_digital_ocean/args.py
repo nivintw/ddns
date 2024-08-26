@@ -12,7 +12,7 @@ def setup_argparse():
 
         You'll always find the latest version on https://github.com/nivintw/ddns
         For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues
-        
+
         Forked with appreciation from https://gitlab.pm/rune/ddns
         """
         ).strip(),

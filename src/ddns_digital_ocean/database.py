@@ -71,7 +71,9 @@ def updatedb():
     new_column = "created"
     info = conn.execute("PRAGMA table_info('subdomains')").fetchall()
     if not any(new_column in word for word in info):
-        add_column = "ALTER TABLE subdomains ADD COLUMN created text default '[b]Unknown     Info[/b]'"
+        add_column = (
+            "ALTER TABLE subdomains ADD COLUMN created text default '[b]Unknown     Info[/b]'"
+        )
         conn.execute(add_column)
         conn.commit()
         logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : Database updated")
