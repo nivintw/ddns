@@ -130,9 +130,10 @@ def setup_argparse():
     )
     parser_ip_server.add_argument(
         "--ip-lookup-url",
-        default="https://www.ipify.org",
+        default="https://api.ipify.org",
         help=(
-            "The URL if the server to use for obtaining your current IP address. "
+            "The URL of the server to use for obtaining your current IP address. "
+            "NOTE: Expects the servers response to a GET request to have a .text response. "
             "Default: %(default)s"
         ),
     )
