@@ -66,19 +66,18 @@ def get_ip():
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
     count = cursor.fetchone()[0]
-    if count != 0:
-        cursor.execute("SELECT ip4_server from ipservers")
-        server = cursor.fetchone()
-        server = server[0]
-        try:
-            current_ip = urllib.request.urlopen(server).read().decode("utf-8")  # noqa: S310
-            return current_ip
-        except Exception as e:
-            error = str(e)
-            logging.error(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
-            return error
-    else:
+    if count == 0:
+        # NOTE: no ip servers configured.
+        # TODO: check where this function is called; should we report an error to the user?
         return None
+    cursor.execute("SELECT ip4_server from ipservers")
+    server = cursor.fetchone()[0]
+    try:
+        response = requests.get(server, timeout=60)
+        return response.text
+    except Exception as e:
+        logging.error(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
+        raise
 
 
 def updateip(force):
