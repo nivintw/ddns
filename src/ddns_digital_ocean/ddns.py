@@ -9,7 +9,7 @@ from rich import print
 
 from . import __version__, constants
 from . import subdomains as sd
-from .api_key_helpers import NoAPIKeyError, api, get_api
+from .api_key_helpers import NoAPIKeyError, get_api, set_api_key
 from .args import setup_argparse
 from .database import connect_database, updatedb
 from .ip import get_ip, ip_server, updateip
@@ -216,7 +216,7 @@ def run():
     elif "ip_lookup_url" in args:
         ip_server(args["ip_lookup_url"], args["ip_mode"])
     elif "api_key" in args:
-        api(args["api_key"])
+        set_api_key(args["api_key"])
     elif args["remove"]:
         sd.remove_subdomain(args["remove"][0][0])
     elif args["edit"]:

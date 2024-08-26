@@ -26,7 +26,7 @@ def get_api() -> str:
     return row[0]
 
 
-def api(api_value):
+def set_api_key(api_value):
     with conn:
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM apikey")

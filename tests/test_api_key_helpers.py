@@ -32,7 +32,7 @@ class TestApiKeyStorage:
         EXPECTED_API_KEY = "fake-value-for-testing"  # pragma: allowlist secret
 
         # Arrange/Test: add an API key so we can test the lookup.
-        api_key_helpers.api(EXPECTED_API_KEY)
+        api_key_helpers.set_api_key(EXPECTED_API_KEY)
 
         # Test: Lookup the API key we just inserted.
         found_api_key = api_key_helpers.get_api()
@@ -47,7 +47,7 @@ class TestApiKeyStorage:
 
         with check:
             # Arrange: Store the original API key.
-            api_key_helpers.api(ORIGINAL_API_KEY)
+            api_key_helpers.set_api_key(ORIGINAL_API_KEY)
             # Arrange/validate: the initial key store functioned as expected.
             # NOTE: this is really just to guard against silent failures
             # and prove we are _changing_ the key; not just storing.
@@ -55,6 +55,6 @@ class TestApiKeyStorage:
             assert pre_update_key == ORIGINAL_API_KEY
 
             # Test Store new API key.
-            api_key_helpers.api(EXPECTED_API_KEY)
+            api_key_helpers.set_api_key(EXPECTED_API_KEY)
             found_update_key = api_key_helpers.get_api()
             assert found_update_key == EXPECTED_API_KEY

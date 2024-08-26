@@ -33,7 +33,7 @@ def preload_api_key(mock_db_for_test: Connection):
     This fixture provides a sentinel / not-real API key for us to use.
     """
     SENTINEL_API_KEY = "sentinel-api-key"  # pragma: allowlist secret
-    api_key_helpers.api(SENTINEL_API_KEY)
+    api_key_helpers.set_api_key(SENTINEL_API_KEY)
     return SENTINEL_API_KEY
 
 
