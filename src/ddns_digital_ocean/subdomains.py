@@ -26,46 +26,34 @@ def list_sub_domains(domain):
         count = cursor.fetchone()[0]
         if count == 0:
             print(
-                "[red]Error: [/red]No such domain. Check spelling or use ddns -d to show all top domains."
+                "[red]Error: [/red]No such domain. "
+                "Check spelling or use ddns -d to show all top domains."
             )
         else:
-            print("\n\nCurrent sub domains for [b]%s[/b]\n\n" % (domain))
+            print(f"\n\nCurrent sub domains for [b]{domain}[/b]\n\n")
             print("Domain\t\t\t\tCreated\t\t\tUpdated\t\t\tChecked\t\t\tActive")
             print(
                 "=================================================================================================================="
             )
             cursor.execute("SELECT id FROM domains WHERE name LIKE ?", (domain,))
             topdomain_id = cursor.fetchone()[0]
-            cursor.execute(
-                "SELECT COUNT(*) FROM subdomains WHERE main_id LIKE ?", (topdomain_id,)
-            )
+            cursor.execute("SELECT COUNT(*) FROM subdomains WHERE main_id LIKE ?", (topdomain_id,))
             count = cursor.fetchone()[0]
             if count == 0:
-                print("[red]Error:[/red] No sub domains for [b]%s[/b]" % (domain))
+                print(f"[red]Error:[/red] No sub domains for [b]{domain}[/b]")
             else:
                 cursor.execute(
-                    "SELECT name,last_updated,last_checked,created,active FROM subdomains WHERE main_id LIKE ?",
+                    "SELECT name,last_updated,last_checked,created,active "
+                    "FROM subdomains "
+                    "WHERE main_id LIKE ?",
                     (topdomain_id,),
                 )
                 subdomains = cursor.fetchall()
                 for i in subdomains:
-                    if i[4] == 1:
-                        active = "True"
-                    else:
-                        active = "False"
+                    active = "True" if i[4] == 1 else "False"
                     topdomain = i[0] + "." + domain
-                    topdomain = "{:<25}".format(topdomain)
-                    print(
-                        topdomain
-                        + "\t"
-                        + i[3]
-                        + "\t"
-                        + i[1]
-                        + "\t"
-                        + i[2]
-                        + "\t"
-                        + active
-                    )
+                    topdomain = f"{topdomain:<25}"
+                    print(topdomain + "\t" + i[3] + "\t" + i[1] + "\t" + i[2] + "\t" + active)
             print("\n")
 
 
@@ -76,25 +64,18 @@ def list_do_sub_domains(domain):
         print("[red]Error:[/red] Missing APIkey. Please add one!")
     else:
         req = urllib.request.Request(
-            "https://api.digitalocean.com/v2/domains/"
-            + domain
-            + '/records?type="A"/?per_page=200'
+            "https://api.digitalocean.com/v2/domains/" + domain + '/records?type="A"/?per_page=200'
         )
         req.add_header("Content-Type", "application/json")
         req.add_header("Authorization", "Bearer " + apikey)
-        current = urllib.request.urlopen(req)
+        current = urllib.request.urlopen(req)  # noqa: S310
         remote = current.read().decode("utf-8")
         remoteData = json.loads(remote)
-        print(
-            "Domains in your DigitalOcean account not in ddns DB for [b]%s[/b]"
-            % (domain)
-        )
+        print(f"Domains in your DigitalOcean account not in ddns DB for [b]{domain}[/b]")
         print("===================================================================")
         for k in remoteData["domain_records"]:
             if k["type"] == "A":
-                cursor.execute(
-                    "SELECT COUNT(*) FROM subdomains WHERE id like ?", (str(k["id"]),)
-                )
+                cursor.execute("SELECT COUNT(*) FROM subdomains WHERE id like ?", (str(k["id"]),))
                 count = cursor.fetchone()[0]
                 if count == 0:
                     print(k["name"] + "." + domain + "\t\tID : " + str(k["id"]))
@@ -102,9 +83,7 @@ def list_do_sub_domains(domain):
 
 def edit_subdomain(domain):
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
-        print(
-            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
-        )
+        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
     else:
         parts = domain.split(".")
         if len(parts) > 3:
@@ -125,19 +104,22 @@ def edit_subdomain(domain):
         count = cursor.fetchone()[0]
         if count == 0:
             print(
-                "[red]Error:[/red] Top domain [bold]%s[/bold] does not exist in the DB. So I'm giving up!."
-                % (top)
+                f"[red]Error:[/red] Top domain [bold]{top}[/bold] does not exist in the DB. "
+                "So I'm giving up!"
             )
         else:
             cursor.execute(
-                "SELECT COUNT(*) FROM subdomains WHERE name like ? and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
+                "SELECT COUNT(*) "
+                "FROM subdomains "
+                "WHERE name like ? "
+                "  and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
                 (sub, top, longtop),
             )
             count = cursor.fetchone()[0]
             if count == 0:
                 print(
-                    "[red]Error:[/red] Domain [bold]%s[/bold] does not exist in the DB. So I'm giving up!."
-                    % (domain)
+                    f"[red]Error:[/red] Domain [bold]{domain}[/bold] does not exist in the DB."
+                    " So I'm giving up!"
                 )
             else:
                 apikey = get_api()
@@ -145,16 +127,17 @@ def edit_subdomain(domain):
                     print("[red]Error:[/red] Missing APIkey. Please add one!")
                 else:
                     cursor.execute(
-                        "SELECT id,active FROM subdomains WHERE name like ? and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
+                        "SELECT id,active "
+                        "FROM subdomains "
+                        "WHERE name like ? "
+                        "  and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
                         (sub, top, longtop),
                     )
                     domain_info = cursor.fetchone()
                     subdomain_id = str(domain_info[0])
                     status = domain_info[1]
-                    if status == 1:
-                        status = 0
-                    else:
-                        status = 1
+                    status = 0 if status == 1 else 1
+
                     cursor.execute(
                         "UPDATE subdomains SET active = ? WHERE id = ?",
                         (
@@ -164,18 +147,16 @@ def edit_subdomain(domain):
                     )
                     logging.info(
                         time.strftime("%Y-%m-%d %H:%M")
-                        + " - Info : Status for domain %s changed" % (domain)
+                        + f" - Info : Status for domain {domain} changed"
                     )
-                    print("Status for domain %s changed" % (domain))
+                    print(f"Status for domain {domain} changed")
                     conn.commit()
 
 
 def add_subdomain(domain):
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
-        print(
-            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
-        )
+        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
     else:
         parts = domain.split(".")
         if len(parts) > 3:
@@ -191,8 +172,8 @@ def add_subdomain(domain):
             ip = get_ip()
             if ip is None or "urlopen error" in ip:
                 print(
-                    "[red]Error:[/red] Failed to get public IP. Do you have a typo in your URI? [red]Error %s.[/red]"
-                    % (ip)
+                    "[red]Error:[/red] Failed to get public IP. "
+                    f"Do you have a typo in your URI? [red]Error {ip}.[/red]"
                 )
             else:
                 cursor = conn.cursor()
@@ -200,13 +181,11 @@ def add_subdomain(domain):
                 count = cursor.fetchone()[0]
                 if count == 0:
                     print(
-                        "[red]Error:[/red] Top domain [bold]%s[/bold] does not exist in the DB. Please add it with [i]ddns -t %s[/i]."
-                        % (top, top)
+                        f"[red]Error:[/red] Top domain [bold]{top}[/bold] does not exist in the DB."
+                        f" Please add it with [i]ddns -t {top}[/i]."
                     )
                 else:
-                    cursor.execute(
-                        "SELECT id,name FROM domains WHERE name LIKE ?", (top,)
-                    )
+                    cursor.execute("SELECT id,name FROM domains WHERE name LIKE ?", (top,))
                     topdomain = cursor.fetchone()
                     topdomain_id = topdomain[0]
                     cursor.execute(
@@ -218,10 +197,7 @@ def add_subdomain(domain):
                     )
                     count = cursor.fetchone()[0]
                     if count != 0:
-                        print(
-                            "[red]Error:[/red] [bold]%s[/bold] already exists."
-                            % (domain)
-                        )
+                        print(f"[red]Error:[/red] [bold]{domain}[/bold] already exists.")
                     else:
                         data = {"name": sub, "data": ip, "type": "A", "ttl": 3600}
                         headers = {
@@ -229,11 +205,10 @@ def add_subdomain(domain):
                             "Content-Type": "application/json",
                         }
                         response = requests.post(
-                            "https://api.digitalocean.com/v2/domains/"
-                            + top
-                            + "/records",
+                            "https://api.digitalocean.com/v2/domains/" + top + "/records",
                             data=json.dumps(data),
                             headers=headers,
+                            timeout=60,
                         )
                         if str(response) == "<Response [201]>":
                             if response != "Fail":
@@ -254,20 +229,18 @@ def add_subdomain(domain):
                                     ),
                                 )
                                 conn.commit()
-                                print("The domain %s has been added." % (domain))
+                                print(f"The domain {domain} has been added.")
                                 logging.info(
                                     time.strftime("%Y-%m-%d %H:%M")
-                                    + " - Info : subdomain %s added" % (domain)
+                                    + f" - Info : subdomain {domain} added"
                                 )
                         else:
-                            return "[red]Error: %s [/red]" % (str(response))
+                            return f"[red]Error: {str(response)} [/red]"
 
 
 def remove_subdomain(domain):
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
-        print(
-            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
-        )
+        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
     else:
         parts = domain.split(".")
         if len(parts) > 3:
@@ -288,12 +261,15 @@ def remove_subdomain(domain):
         count = cursor.fetchone()[0]
         if count == 0:
             print(
-                "[red]Error:[/red] Top domain [bold]%s[/bold] does not exist in the DB. So I'm giving up!."
-                % (top)
+                f"[red]Error:[/red] Top domain [bold]{top}[/bold] does not exist in the DB. "
+                "So I'm giving up!"
             )
         else:
             cursor.execute(
-                "SELECT COUNT(*) FROM subdomains WHERE name like ? and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
+                "SELECT COUNT(*) "
+                "FROM subdomains "
+                "WHERE name like ? "
+                "  and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
                 (
                     sub,
                     top,
@@ -303,8 +279,8 @@ def remove_subdomain(domain):
             count = cursor.fetchone()[0]
             if count == 0:
                 print(
-                    "[red]Error:[/red] Domain [bold]%s[/bold] does not exist in the DB. So I'm giving up!."
-                    % (domain)
+                    f"[red]Error:[/red] Domain [bold]{domain}[/bold] does not exist in the DB. "
+                    "So I'm giving up!"
                 )
             else:
                 apikey = get_api()
@@ -312,7 +288,12 @@ def remove_subdomain(domain):
                     print("[red]Error:[/red] Missing APIkey. Please add one!")
                 else:
                     cursor.execute(
-                        "SELECT id FROM subdomains WHERE name like ? and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
+                        "SELECT id "
+                        "FROM subdomains "
+                        "WHERE name like ? "
+                        "  and main_id=("
+                        "    SELECT id from domains WHERE name like ? or name like ?"
+                        "  )",
                         (
                             sub,
                             top,
@@ -330,28 +311,23 @@ def remove_subdomain(domain):
                         + "/records/"
                         + subdomain_id,
                         headers=headers,
+                        timeout=60 * 2,
                     )
                     if str(response) == "<Response [204]>":
-                        cursor.execute(
-                            "DELETE from subdomains where id=?", (subdomain_id,)
-                        )
+                        cursor.execute("DELETE from subdomains where id=?", (subdomain_id,))
                         logging.info(
                             time.strftime("%Y-%m-%d %H:%M")
-                            + " - Info : Subdomain %s removed" % (domain)
+                            + f" - Info : Subdomain {domain} removed"
                         )
                         conn.commit()
                     else:
-                        print(
-                            "[red]Error: [/red]An error occurred! Please try again later!"
-                        )
+                        print("[red]Error: [/red]An error occurred! Please try again later!")
 
 
 def local_add_subdomain(domain, domainid):
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
-        print(
-            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
-        )
+        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
     else:
         parts = domain.split(".")
         if len(parts) > 3:
@@ -369,8 +345,8 @@ def local_add_subdomain(domain, domainid):
             ip = get_ip()
             if ip is None or "urlopen error" in ip:
                 print(
-                    "[red]Error:[/red] Failed to get public IP. Do you have a typo in your URI? [red]Error %s.[/red]"
-                    % (ip)
+                    "[red]Error:[/red] Failed to get public IP. "
+                    f"Do you have a typo in your URI? [red]Error {ip}.[/red]"
                 )
             else:
                 cursor = conn.cursor()
@@ -384,8 +360,8 @@ def local_add_subdomain(domain, domainid):
                 count = cursor.fetchone()[0]
                 if count == 0:
                     print(
-                        "[red]Error:[/red] Top domain [bold]%s[/bold] does not exist in the DB. Please add it with [i]ddns -t %s[/i]."
-                        % (top, top)
+                        f"[red]Error:[/red] Top domain [bold]{top}[/bold] does not exist in the DB."
+                        f" Please add it with [i]ddns -t {top}[/i]."
                     )
                 else:
                     cursor.execute(
@@ -406,10 +382,7 @@ def local_add_subdomain(domain, domainid):
                     )
                     count = cursor.fetchone()[0]
                     if count != 0:
-                        print(
-                            "[red]Error:[/red] [bold]%s[/bold] already exists."
-                            % (domain)
-                        )
+                        print(f"[red]Error:[/red] [bold]{domain}[/bold] already exists.")
                     else:
                         cursor.execute(
                             "INSERT INTO subdomains values(?,?,?,?,?,?,?,?,?)",
@@ -426,4 +399,4 @@ def local_add_subdomain(domain, domainid):
                             ),
                         )
                         conn.commit()
-                        print("The domain %s has been added." % (domain))
+                        print(f"The domain {domain} has been added.")
