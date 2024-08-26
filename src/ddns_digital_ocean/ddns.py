@@ -41,13 +41,40 @@ def add_domain(domain):
     )
     response_data = response.json()
 
-    if "id" in response_data:
+    if response.status_code == 401:
+        print(
+            "[red]Error: [/red]"
+            "The api key that is configured resulted in an unauthorized response.\n"
+            "Please configure a valid Digital Ocean API key to use."
+            f"Response: {response_data}"
+        )
+        return
+    elif response.status_code == 404:
         print(
             "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\n"
             "Please add the domain from your control panel "
             "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
         )
         return
+    elif response.status_code == 429:
+        print("[red]Error: [/red]API Rate limit exceeded. Please try again later.")
+        return
+    elif response.status_code == 500:
+        print(
+            "[red]Error: [/red]"
+            "Unexpected Internal Server Error Response from DigitalOcean. "
+            "Please try again later."
+        )
+        return
+    elif response.status_code != requests.codes.ok:
+        print(
+            "[red]Error: [/red]"
+            "Completely unexpected error response from Digital Ocean."
+            "This is neat. If you see this more than once, open a ticket."
+            f"Response: {response_data}"
+        )
+        return
+
     cursor.execute(
         "INSERT INTO domains values(?,?)",
         (
