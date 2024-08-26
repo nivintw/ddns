@@ -23,7 +23,8 @@ ruff = "^0.6.2"
 
 [tool.ruff]
 # Uncomment to over-ride the line-length used by ruff.
-# line-length = 100
+# Allowing line-length 100 for now due to prior code.
+line-length = 100
 
 [tool.ruff.lint]
 # Configure which ruff rules to enable.

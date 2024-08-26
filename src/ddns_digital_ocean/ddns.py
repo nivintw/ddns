@@ -14,9 +14,7 @@ from .args import setup_argparse
 from .database import connect_database, updatedb
 from .ip import get_ip, updateip
 
-logging.basicConfig(
-    filename=constants.logfile, level=logging.INFO, format="%(message)s"
-)
+logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
 
 app_version = __version__
 
@@ -29,7 +27,7 @@ def add_domain(domain):
     cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (domain,))
     count = cursor.fetchone()[0]
     if count != 0:
-        print("[red]Error:[/red] Domain name (%s) already in database!" % (domain))
+        print(f"[red]Error:[/red] Domain name ({domain}) already in database!")
     else:
         if apikey is not None:
             headers = {
@@ -37,13 +35,17 @@ def add_domain(domain):
                 "Content-Type": "application/json",
             }
             response = requests.get(
-                "https://api.digitalocean.com/v2/domains/" + domain, headers=headers
+                "https://api.digitalocean.com/v2/domains/" + domain,
+                headers=headers,
+                timeout=45,
             )
             response_data = response.json()
 
             if "id" in response_data:
                 print(
-                    "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\nPlease add the domain from your control panel [b]https://cloud.digitalocean.com/networking/domains/[/b]"
+                    "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\n"
+                    "Please add the domain from your control panel "
+                    "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
                 )
             else:
                 cursor.execute(
@@ -53,11 +55,8 @@ def add_domain(domain):
                         domain,
                     ),
                 )
-                print("The domain [b]%s[/b] has been added to the DB" % (domain))
-                logging.info(
-                    time.strftime("%Y-%m-%d %H:%M")
-                    + " - Info : Domain %s added" % (domain)
-                )
+                print(f"The domain [b]{domain}[/b] has been added to the DB")
+                logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
                 conn.commit()
 
 
@@ -65,20 +64,16 @@ def show_all_top_domains():
     cursor = conn.cursor()
     apikey = get_api()
     if apikey is not None:
-        req = urllib.request.Request(
-            "https://api.digitalocean.com/v2/domains/?per_page=200"
-        )
+        req = urllib.request.Request("https://api.digitalocean.com/v2/domains/?per_page=200")
         req.add_header("Content-Type", "application/json")
         req.add_header("Authorization", "Bearer " + apikey)
-        current = urllib.request.urlopen(req)
+        current = urllib.request.urlopen(req)  # noqa: S310
         remote = current.read().decode("utf-8")
         remoteData = json.loads(remote)
         print("Domains in database are marked with a [*]")
         print("================================================")
         for k in remoteData["domains"]:
-            cursor.execute(
-                "SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],)
-            )
+            cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],))
             count = cursor.fetchone()[0]
             if count != 0:
                 print("Name : [bold]" + k["name"] + " [*][/bold]")
@@ -94,7 +89,8 @@ def domaininfo(domain):
     cursor = conn.cursor()
     if set(domain).difference(ascii_letters + "." + digits + "@" + "-"):
         print(
-            "[red]Error:[/red]. Give the domain name in simple form e.g. [bold]test.domain.com[/bold]"
+            "[red]Error:[/red]. Give the domain name in simple form "
+            "e.g. [bold]test.domain.com[/bold]"
         )
     else:
         parts = domain.split(".")
@@ -103,16 +99,14 @@ def domaininfo(domain):
         else:
             top = parts[1] + "." + parts[2]
         cursor.execute("SELECT id FROM domains WHERE name like ?", (top,))
-        domainid = cursor.fetchone()[0]
-        cursor.execute("SELECT * FROM subdomains WHERE main_id like ?", (domainid,))
+        domain_id = cursor.fetchone()[0]
+        cursor.execute("SELECT * FROM subdomains WHERE main_id like ?", (domain_id,))
         domains = cursor.fetchall()
-        if local_ip != domains[0][3]:
-            localip = "[red]%s[/red]" % (local_ip)
-        else:
-            localip = local_ip
+        local_ip = f"[red]{local_ip}[/red]" if local_ip != domains[0][3] else local_ip
+
         print(
-            "The domain [bold]%s[/bold] has the IP [bold]%s[/bold]. Your public IP is [bold]%s[/bold]"
-            % (domain, domains[0][3], localip)
+            f"The domain [bold]{domain}[/bold] has the IP [bold]{domains[0][3]}[/bold]. "
+            f"Your public IP is [bold]{local_ip}[/bold]."
         )
 
 
@@ -139,14 +133,14 @@ def show_current_info():
 
     print("\n[b]ddns[/b] - a DigitalOcean dynamic DNS solution.")
     print("===================================================")
-    print("API key 	: [b]%s[/b]" % (API))
-    print("IP v4 resolver 	: [b]%s[/b]" % (ip4server))
-    print("IP v6 resolver 	: [b]%s[/b]" % (ip6server))
-    print("Logfile 	: [b]%s[/b]" % (constants.logfile))
-    print("Top domains 	: [b]%s[/b]" % (topdomains))
-    print("sub domains 	: [b]%s[/b]" % (subdomains))
+    print(f"API key 	: [b]{API}[/b]")
+    print(f"IP v4 resolver 	: [b]{ip4server}[/b]")
+    print(f"IP v6 resolver 	: [b]{ip6server}[/b]")
+    print(f"Logfile 	: [b]{constants.logfile}[/b]")
+    print(f"Top domains 	: [b]{topdomains}[/b]")
+    print(f"sub domains 	: [b]{subdomains}[/b]")
     print("")
-    print("App version 	: [b]%s[/b] (https://gitlab.pm/rune/ddns)" % (app_version))
+    print(f"App version 	: [b]{app_version}[/b] (https://gitlab.pm/rune/ddns)")
     print("")
     print("[i]IPv6 is not supported and not listed here.[/i]")
 
@@ -157,53 +151,46 @@ def ip_server(ipserver, ip_type):
         cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
         count = cursor.fetchone()[0]
         if count == 0:
-            cursor.execute(
-                "INSERT INTO ipservers values(?,?,?)", (None, ipserver, None)
-            )
+            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, ipserver, None))
             conn.commit()
-            print("New IP resolver (%s) for ipv%s added." % (ipserver, ip_type))
+            print(f"New IP resolver ({ipserver}) for ipv{ip_type} added.")
         else:
-            cursor.execute(
-                "UPDATE ipservers SET ip4_server = ? WHERE id = 1", (ipserver,)
-            )
-            print("IP resolver (%s) for ipv%s updated." % (ipserver, ip_type))
+            cursor.execute("UPDATE ipservers SET ip4_server = ? WHERE id = 1", (ipserver,))
+            print(f"IP resolver ({ipserver}) for ipv{ip_type} updated.")
             logging.info(
                 time.strftime("%Y-%m-%d %H:%M")
-                + " - Info : IP resolver (%s) for ipv%s updated." % (ipserver, ip_type)
+                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
             )
             conn.commit()
     elif ip_type == "6":
         cursor.execute("SELECT COUNT(ip6_server) FROM ipservers")
         count = cursor.fetchone()[0]
         if count == 0:
-            cursor.execute(
-                "INSERT INTO ipservers values(?,?,?)", (None, None, ipserver)
-            )
+            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, None, ipserver))
             conn.commit()
             print(
-                "New IP resolver (%s) for ipv%s added. \n\r This IP version is not supported."
-                % (ipserver, ip_type)
+                f"New IP resolver ({ipserver}) for ipv{ip_type} added. \n\r"
+                " This IP version is not supported."
             )
         else:
-            cursor.execute(
-                "UPDATE ipservers SET ip6_server = ? WHERE id = 1", (ipserver,)
-            )
+            cursor.execute("UPDATE ipservers SET ip6_server = ? WHERE id = 1", (ipserver,))
             print(
-                "IP resolver (%s) for ipv%s updated. \n\r This IP version is not supported."
-                % (ipserver, ip_type)
+                f"IP resolver ({ipserver}) for ipv{ip_type} updated. \n\r"
+                " This IP version is not supported."
             )
             logging.info(
                 time.strftime("%Y-%m-%d %H:%M")
-                + " - Info : IP resolver (%s) for ipv%s updated." % (ipserver, ip_type)
+                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
             )
             conn.commit()
 
 
 def show_log():
-    log_file = open(constants.logfile, "r")
-    content = log_file.read()
-    print(content)
-    log_file.close()
+    # TODO: refactor this...
+    # this logic seems ... odd?
+    with open(constants.logfile) as log_file:
+        content = log_file.read()
+        print(content)
 
 
 def run():
@@ -214,6 +201,10 @@ def run():
 
     args = vars(parser.parse_args())
 
+    # TODO: update args to support multiple domains at the same time.
+    # Right now, argparse has been updated to support multiple values but we haven't updated
+    # this section to make multiple args actually work.
+
     if args["list"]:
         sd.list_sub_domains(args["list"][0][0])
     elif args["domains"]:
@@ -222,8 +213,9 @@ def run():
         sd.list_do_sub_domains(args["serverdomains"][0][0])
     elif args["current"]:
         domaininfo(args["current"][0][0])
-    elif args["top"]:
-        add_domain(args["top"][0][0])
+    elif top_level_domains := args["top"]:
+        for tld in top_level_domains:
+            add_domain(tld)
     elif args["sub"]:
         sd.add_subdomain(args["sub"][0][0])
     elif args["version"]:
@@ -244,3 +236,7 @@ def run():
         sd.local_add_subdomain(args["local"][0][0], args["local"][0][1])
     else:
         updateip(None)
+
+
+if __name__ == "__main__":
+    run()
