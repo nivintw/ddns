@@ -255,6 +255,37 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-check"
+version = "2.3.1"
+description = "A pytest plugin that allows multiple failures per test."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_check-2.3.1-py3-none-any.whl", hash = "sha256:c54c18f0b890cac1c610c78ef2bb3d8ecb29cf33d1cf09fc1166802d6ab88e28"},
+    {file = "pytest_check-2.3.1.tar.gz", hash = "sha256:51b8f18a8ccaa426c5d913c4e0e46f014aaa7579481ea03d22d7e1f498f689b2"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0"
+
+[[package]]
+name = "pytest-mock"
+version = "3.14.0"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"},
+    {file = "pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f"},
+]
+
+[package.dependencies]
+pytest = ">=6.2.5"
+
+[package.extras]
+dev = ["pre-commit", "pytest-asyncio", "tox"]
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 description = "Python HTTP for Humans."
@@ -351,4 +382,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "b670a12ce73c88059fb3ee25a2688ff7a069a1866a521fa9532e63ef17e29806"
+content-hash = "fa87616e92805dae617bf289a2d06cd0f571d299f141b9c3666e072435c22607"
