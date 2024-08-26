@@ -9,7 +9,7 @@ from rich import print
 
 from . import __version__, constants
 from . import subdomains as sd
-from .api_key_helpers import api, get_api
+from .api_key_helpers import NoAPIKeyError, api, get_api
 from .args import setup_argparse
 from .database import connect_database, updatedb
 from .ip import get_ip, updateip
@@ -90,25 +90,22 @@ def add_domain(domain):
 def show_all_top_domains():
     cursor = conn.cursor()
     apikey = get_api()
-    if apikey is not None:
-        req = urllib.request.Request("https://api.digitalocean.com/v2/domains/?per_page=200")
-        req.add_header("Content-Type", "application/json")
-        req.add_header("Authorization", "Bearer " + apikey)
-        current = urllib.request.urlopen(req)  # noqa: S310
-        remote = current.read().decode("utf-8")
-        remoteData = json.loads(remote)
-        print("Domains in database are marked with a [*]")
-        print("================================================")
-        for k in remoteData["domains"]:
-            cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],))
-            count = cursor.fetchone()[0]
-            if count != 0:
-                print("Name : [bold]" + k["name"] + " [*][/bold]")
-            else:
-                print("Name : " + k["name"])
 
-    else:
-        print("[red]Error:[/red] Missing APIkey. Please add one!")
+    req = urllib.request.Request("https://api.digitalocean.com/v2/domains/?per_page=200")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Authorization", "Bearer " + apikey)
+    current = urllib.request.urlopen(req)  # noqa: S310
+    remote = current.read().decode("utf-8")
+    remoteData = json.loads(remote)
+    print("Domains in database are marked with a [*]")
+    print("================================================")
+    for k in remoteData["domains"]:
+        cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],))
+        count = cursor.fetchone()[0]
+        if count != 0:
+            print("Name : [bold]" + k["name"] + " [*][/bold]")
+        else:
+            print("Name : " + k["name"])
 
 
 def domaininfo(domain):
@@ -138,7 +135,13 @@ def domaininfo(domain):
 
 
 def show_current_info():
-    API = get_api()
+    try:
+        # NOTE: this is the rare (only?) time where
+        # there not being an API key yet is not an error / is ok.
+        API = get_api()
+    except NoAPIKeyError:
+        API = "[red]Error:[/red] API key not stored in DB"
+
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
     count = cursor.fetchone()[0]
@@ -149,9 +152,6 @@ def show_current_info():
         ipservers = cursor.fetchall()
         ip4server = ipservers[0][1]
         ip6server = ipservers[0][2]
-
-    if API is None:
-        API = "[red]Error:[/red] API key not stored in DB"
 
     cursor.execute("SELECT COUNT(*) FROM domains")
     topdomains = cursor.fetchone()[0]
