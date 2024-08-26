@@ -21,6 +21,9 @@ requests = "^2.31.0"
 [tool.poetry.group.linters.dependencies]
 ruff = "^0.6.2"
 
+[tool.poetry.group.tests.dependencies]
+pytest = "^8.3.2"
+
 [tool.ruff]
 # Uncomment to over-ride the line-length used by ruff.
 # Allowing line-length 100 for now due to prior code.
