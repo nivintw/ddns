@@ -27,15 +27,15 @@ def get_api() -> str:
 
 
 def api(api_value):
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM apikey")
-    count = cursor.fetchone()[0]
-    if count == 0:
-        cursor.execute("INSERT INTO apikey values(?,?)", (1, api_value))
-        logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key added")
-        print("Your API key has been added.")
-    else:
-        cursor.execute("UPDATE apikey SET api = ? WHERE id = 1", (api_value,))
-        logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key updated")
-        print("Your API key has been updated.")
-    conn.commit()
+    with conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM apikey")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            cursor.execute("INSERT INTO apikey values(?,?)", (1, api_value))
+            logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key added")
+            print("Your API key has been added.")
+        else:
+            cursor.execute("UPDATE apikey SET api = ? WHERE id = 1", (api_value,))
+            logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key updated")
+            print("Your API key has been updated.")
