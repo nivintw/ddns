@@ -23,7 +23,7 @@ def get_ip():
         server = cursor.fetchone()
         server = server[0]
         try:
-            current_ip = urllib.request.urlopen(server).read().decode("utf-8")
+            current_ip = urllib.request.urlopen(server).read().decode("utf-8")  # noqa: S310
             return current_ip
         except Exception as e:
             error = str(e)
@@ -51,7 +51,9 @@ def updateip(force):
         rows = cursor.fetchall()
         for i in rows:
             cursor.execute(
-                "SELECT name FROM domains WHERE id like (SELECT main_id from subdomains WHERE id = ?)",
+                "SELECT name "
+                "FROM domains "
+                "WHERE id like (SELECT main_id from subdomains WHERE id = ?)",
                 (i[0],),
             )
             domain_info = cursor.fetchone()
@@ -68,7 +70,7 @@ def updateip(force):
                 )
                 req.add_header("Content-Type", "application/json")
                 req.add_header("Authorization", "Bearer " + apikey)
-                current = urllib.request.urlopen(req)
+                current = urllib.request.urlopen(req)  # noqa: S310
                 remote = current.read().decode("utf-8")
                 remoteData = json.loads(remote)
                 remoteIP4 = remoteData["domain_record"]["data"]
@@ -86,6 +88,7 @@ def updateip(force):
                         + subdomain_id,
                         data=json.dumps(data),
                         headers=headers,
+                        timeout=60,
                     )
                     if str(response) != "<Response [200]>":
                         logging.error(
