@@ -7,21 +7,27 @@ from ddns_digital_ocean import api_key_helpers
 from ddns_digital_ocean.database import connect_database
 
 
+@pytest.fixture()
+def mock_db_for_test(temp_database_path: Path, mocker):
+    """Mock api_key_helpers.conn to have a per-test connection / database.
+    Ensures isolation of the database state between tests.
+    """
+    test_specific_conn = connect_database(temp_database_path)
+    mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
+
+
+@pytest.mark.usefixtures("mock_db_for_test")
 class TestApiKeyStorage:
     """We can store and lookup an API key in the database."""
 
-    def test_lookup_no_api_key(self, temp_database_path: Path, mocker):
+    def test_lookup_no_api_key(self):
         """Validate behavior when we try to grab an API key but there is none."""
-        test_specific_conn = connect_database(temp_database_path)
-        mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
 
         with pytest.raises(api_key_helpers.NoAPIKeyError):
             api_key_helpers.get_api()
 
-    def test_store_retrieve_api_key(self, temp_database_path: Path, mocker):
+    def test_store_retrieve_api_key(self):
         """Validate successful retrieval of an API key stored in the DB."""
-        test_specific_conn = connect_database(temp_database_path)
-        mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
 
         EXPECTED_API_KEY = "fake-value-for-testing"  # pragma: allowlist secret
 
@@ -33,10 +39,8 @@ class TestApiKeyStorage:
         with check:
             assert found_api_key == EXPECTED_API_KEY
 
-    def test_update_api_key(self, temp_database_path: Path, mocker):
+    def test_update_api_key(self):
         """We can update the API if asked."""
-        test_specific_conn = connect_database(temp_database_path)
-        mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
 
         ORIGINAL_API_KEY = "original-api-key"  # pragma: allowlist secret
         EXPECTED_API_KEY = "updated-api-key"  # pragma: allowlist secret
