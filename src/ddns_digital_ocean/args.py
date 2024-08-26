@@ -67,10 +67,7 @@ def setup_argparse():
     parser.add_argument(
         "-t",
         "--top",
-        help=(
-            "Add new domain(s) from your DigitalOcean account "
-            "to use as a dynamic DNS domain."
-        ),
+        help=("Add new domain(s) from your DigitalOcean account to use as a dynamic DNS domain."),
         required=False,
         metavar=("domain"),
         nargs="+",
@@ -79,9 +76,7 @@ def setup_argparse():
     parser.add_argument(
         "-s",
         "--sub",
-        help=(
-            "Add new subdomain(s) to your DigitalOcean account and use as dynamic DNS."
-        ),
+        help=("Add new subdomain(s) to your DigitalOcean account and use as dynamic DNS."),
         required=False,
         nargs="+",
         metavar=("domain"),
@@ -90,10 +85,7 @@ def setup_argparse():
     parser.add_argument(
         "-k",
         "--local",
-        help=(
-            "Add an existing DigitalOcean subdomain to your ddns DB "
-            "and use as dynamic DNS."
-        ),
+        help=("Add an existing DigitalOcean subdomain to your ddns DB and use as dynamic DNS."),
         required=False,
         nargs=2,
         metavar=("domain", "domainid"),
@@ -117,9 +109,7 @@ def setup_argparse():
         action="store_true",
     )
 
-    parser.add_argument(
-        "-q", "--log", help=argparse.SUPPRESS, required=False, action="store_true"
-    )
+    parser.add_argument("-q", "--log", help=argparse.SUPPRESS, required=False, action="store_true")
 
     parser.add_argument(
         "-e",
