@@ -12,7 +12,7 @@ from . import subdomains as sd
 from .api_key_helpers import NoAPIKeyError, api, get_api
 from .args import setup_argparse
 from .database import connect_database, updatedb
-from .ip import get_ip, updateip
+from .ip import get_ip, ip_server, updateip
 
 logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
 
@@ -170,46 +170,6 @@ def show_current_info():
     print(f"App version 	: [b]{app_version}[/b] (https://github.com/nivintw/ddns)")
     print("")
     print("[i]IPv6 is not supported and not listed here.[/i]")
-
-
-def ip_server(ipserver, ip_type):
-    cursor = conn.cursor()
-    if ip_type == "4":
-        cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
-        count = cursor.fetchone()[0]
-        if count == 0:
-            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, ipserver, None))
-            conn.commit()
-            print(f"New IP resolver ({ipserver}) for ipv{ip_type} added.")
-        else:
-            cursor.execute("UPDATE ipservers SET ip4_server = ? WHERE id = 1", (ipserver,))
-            print(f"IP resolver ({ipserver}) for ipv{ip_type} updated.")
-            logging.info(
-                time.strftime("%Y-%m-%d %H:%M")
-                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
-            )
-            conn.commit()
-    elif ip_type == "6":
-        cursor.execute("SELECT COUNT(ip6_server) FROM ipservers")
-        count = cursor.fetchone()[0]
-        if count == 0:
-            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, None, ipserver))
-            conn.commit()
-            print(
-                f"New IP resolver ({ipserver}) for ipv{ip_type} added. \n\r"
-                " This IP version is not supported."
-            )
-        else:
-            cursor.execute("UPDATE ipservers SET ip6_server = ? WHERE id = 1", (ipserver,))
-            print(
-                f"IP resolver ({ipserver}) for ipv{ip_type} updated. \n\r"
-                " This IP version is not supported."
-            )
-            logging.info(
-                time.strftime("%Y-%m-%d %H:%M")
-                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
-            )
-            conn.commit()
 
 
 def show_log():

@@ -14,6 +14,54 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
+def ip_server(ipserver, ip_type):
+    """Configure the server to use to retrieve our IP address.
+
+    Current Limitations:
+        1. Only IPv4 is supported.
+        2. The code is written to support only one row/ip server configuration.
+        3. The code can "store" an IPv6 server address,
+            but the other code will not _use_ this server to perform a lookup.
+    """
+    cursor = conn.cursor()
+    if ip_type == "4":
+        cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, ipserver, None))
+            conn.commit()
+            print(f"New IP resolver ({ipserver}) for ipv{ip_type} added.")
+        else:
+            cursor.execute("UPDATE ipservers SET ip4_server = ? WHERE id = 1", (ipserver,))
+            print(f"IP resolver ({ipserver}) for ipv{ip_type} updated.")
+            logging.info(
+                time.strftime("%Y-%m-%d %H:%M")
+                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
+            )
+            conn.commit()
+    elif ip_type == "6":
+        cursor.execute("SELECT COUNT(ip6_server) FROM ipservers")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            cursor.execute("INSERT INTO ipservers values(?,?,?)", (None, None, ipserver))
+            conn.commit()
+            print(
+                f"New IP resolver ({ipserver}) for ipv{ip_type} added. \n\r"
+                " This IP version is not supported."
+            )
+        else:
+            cursor.execute("UPDATE ipservers SET ip6_server = ? WHERE id = 1", (ipserver,))
+            print(
+                f"IP resolver ({ipserver}) for ipv{ip_type} updated. \n\r"
+                " This IP version is not supported."
+            )
+            logging.info(
+                time.strftime("%Y-%m-%d %H:%M")
+                + f" - Info : IP resolver ({ipserver}) for ipv{ip_type} updated."
+            )
+            conn.commit()
+
+
 def get_ip():
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
