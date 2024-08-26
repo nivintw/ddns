@@ -1,7 +1,7 @@
 import argparse
 import textwrap
 
-from ddns_digital_ocean import api_key_helpers, ip, logs
+from ddns_digital_ocean import api_key_helpers, info, ip, logs
 
 
 def setup_argparse():
@@ -40,6 +40,11 @@ def setup_argparse():
         help=("Print the logs."),
     )
     parser_logs.set_defaults(func=logs.show_log)
+    parser_show_info = subparsers.add_parser(
+        name="show_info",
+        help="Show information about do_ddns, including current configuration and version.",
+    )
+    parser_show_info.set_defaults(func=info.show_current_info)
 
     parser.add_argument(
         "-l",
@@ -106,13 +111,6 @@ def setup_argparse():
         help="Remove a subdomain from your DigitalOcean account and ddns.",
         nargs="+",
         metavar=("domain"),
-    )
-
-    parser.add_argument(
-        "-v",
-        "--version",
-        help="Show current version and config info",
-        action="store_true",
     )
 
     parser.add_argument(

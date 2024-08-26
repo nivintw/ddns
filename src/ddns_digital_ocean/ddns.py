@@ -7,16 +7,15 @@ from string import ascii_letters, digits
 import requests
 from rich import print
 
-from . import __version__, constants
+from . import constants
 from . import subdomains as sd
-from .api_key_helpers import NoAPIKeyError, get_api
+from .api_key_helpers import get_api
 from .args import setup_argparse
 from .database import connect_database, updatedb
 from .ip import get_ip
 
 logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
 
-app_version = __version__
 
 conn = connect_database(constants.database_path)
 
@@ -135,45 +134,6 @@ def domaininfo(domain):
     )
 
 
-def show_current_info():
-    try:
-        # NOTE: this is the rare (only?) time where
-        # there not being an API key yet is not an error / is ok.
-        API = get_api()
-    except NoAPIKeyError:
-        API = "[red]Error:[/red] API key not stored in DB"
-
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
-    count = cursor.fetchone()[0]
-    if count == 0:
-        ip4server = "[red]None Configured[/red]"
-        ip6server = "[red]None Configured[/red]"
-    else:
-        cursor.execute("SELECT * FROM ipservers")
-        ipservers = cursor.fetchall()
-        ip4server = ipservers[0][1]
-        ip6server = ipservers[0][2]
-
-    cursor.execute("SELECT COUNT(*) FROM domains")
-    topdomains = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM subdomains")
-    subdomains = cursor.fetchone()[0]
-
-    print("\n[b]ddns[/b] - a DigitalOcean dynamic DNS solution.")
-    print("===================================================")
-    print(f"API key 	: [b]{API}[/b]")
-    print(f"IP v4 resolver 	: [b]{ip4server}[/b]")
-    print(f"IP v6 resolver 	: [b]{ip6server}[/b]")
-    print(f"Logfile 	: [b]{constants.logfile}[/b]")
-    print(f"Top domains 	: [b]{topdomains}[/b]")
-    print(f"sub domains 	: [b]{subdomains}[/b]")
-    print("")
-    print(f"App version 	: [b]{app_version}[/b] (https://github.com/nivintw/ddns)")
-    print("")
-    print("[i]IPv6 is not supported and not listed here.[/i]")
-
-
 def run():
     # Commandline arguments
     updatedb()
@@ -200,13 +160,12 @@ def run():
             add_domain(tld)
     elif args["sub"]:
         sd.add_subdomain(args["sub"][0][0])
-    elif args["version"]:
-        show_current_info()
     elif args_raw.subparser_name in [
         "ip_lookup_config",
         "api_key",
         "update_ips",
         "logs",
+        "show_info",
     ]:
         # NOTE: these subparsers have been configured.
         # eventually, all options will be handled similarly.
