@@ -3,12 +3,39 @@ name = "ddns_digital_ocean"
 version = "0.4.0"
 description = "Python-based CLI tool for managing dynamic dns."
 authors = [{ name = "Tyler Nivin", email = "tyler@nivin.tech" }]
+license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.9"
+
+classifiers = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    # Specify the Python versions you support here.
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+
+    # Topics
+    "Topic :: Internet",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+
 dependencies = ["rich>=13.8.0", "requests>=2.32.3"]
 
 [project.scripts]
 do_ddns = 'ddns_digital_ocean.ddns:run'
+
 
 [tool.uv]
 dev-dependencies = [
