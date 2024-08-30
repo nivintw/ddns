@@ -29,6 +29,6 @@ def show_log(args: Namespace):
     # this logic seems ... odd?
     # NOTE: right now, intentionally don't use args here.
     # but for consistencies sake, just keep the API the same.
-    with open(constants.logfile) as log_file:
+    with constants.logfile.open() as log_file:
         content = log_file.read()
         print(content)

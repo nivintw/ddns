@@ -83,6 +83,7 @@ select = [
     "I",   # isort
     "RUF", # Ruff-specific rules
     "S",   # Flake8-bandit
+    "PTH", # flake8-use-pathlib
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
