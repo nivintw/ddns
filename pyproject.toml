@@ -74,22 +74,15 @@ line-length = 100
 [tool.ruff.lint]
 # Configure which ruff rules to enable.
 select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
-    # Unused noqa comments
-    "RUF100",
-    # Flake8-bandit
-    "S",
+    "E",   # pycodestyle - errors
+    "W",   # pycodestyle - warnings
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I",   # isort
+    "RUF", # Ruff-specific rules
+    "S",   # Flake8-bandit
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]

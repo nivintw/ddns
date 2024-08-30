@@ -235,7 +235,7 @@ def add_subdomain(domain):
             print(f"The domain {domain} has been added.")
             logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : subdomain {domain} added")
     else:
-        return f"[red]Error: {str(response)} [/red]"
+        return f"[red]Error: {response!s} [/red]"
 
 
 def remove_subdomain(domain):
