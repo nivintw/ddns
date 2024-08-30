@@ -25,7 +25,7 @@ from typing import Literal
 import pytest
 from responses import RequestsMock, matchers
 
-from ddns_digital_ocean import api_key_helpers, tlds
+from ddns_digital_ocean import api_key_helpers, domains
 from ddns_digital_ocean.database import connect_database
 
 
@@ -40,7 +40,7 @@ def mock_db_for_test(temp_database_path: Path, mocker):
     """
     test_specific_conn = connect_database(temp_database_path)
     test_specific_conn.row_factory = sqlite3.Row
-    mocker.patch.object(tlds, "conn", test_specific_conn)
+    mocker.patch.object(domains, "conn", test_specific_conn)
     mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
 
     return test_specific_conn
@@ -100,7 +100,7 @@ class TestAddDomain:
             status=200,
         )
 
-        tlds.add_domain(EXPECTED_NEW_DOMAIN)
+        domains.add_domain(EXPECTED_NEW_DOMAIN)
 
         # Validate: Ensure domain was added to the database.
         with mock_db_for_test:
@@ -149,7 +149,7 @@ class TestAddDomain:
                 ),
             )
 
-        tlds.add_domain(EXPECTED_EXISTING_DOMAIN)
+        domains.add_domain(EXPECTED_EXISTING_DOMAIN)
 
         captured_output = capsys.readouterr()
         assert (
@@ -223,7 +223,7 @@ class TestAddDomain:
             status=status_code,
         )
 
-        tlds.add_domain(EXPECTED_NEW_DOMAIN)
+        domains.add_domain(EXPECTED_NEW_DOMAIN)
 
         # Validate: user was informed of failure situation.
         captured_output = capsys.readouterr()
@@ -261,7 +261,7 @@ class TestListAllDomains:
             status=200,
         )
 
-        tlds.show_all_top_domains()
+        domains.show_all_domains()
         captured_output = capsys.readouterr()
         assert "No domains associated with this Digital Ocean account!" in captured_output.out
 
@@ -307,7 +307,7 @@ class TestListAllDomains:
             status=200,
         )
 
-        tlds.show_all_top_domains()
+        domains.show_all_domains()
         captured_output = capsys.readouterr()
         assert "Name : nivin.tech [*]" in captured_output.out
         assert "Name : example.com" in captured_output.out
@@ -352,7 +352,7 @@ class TestListAllDomains:
             },
             status=200,
         )
-        tlds.show_all_top_domains()
+        domains.show_all_domains()
         captured_output = capsys.readouterr()
         assert "Name : nivin.tech" in captured_output.out
         assert "Name : nivin.tech [*]" not in captured_output.out

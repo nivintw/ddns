@@ -22,7 +22,7 @@ from string import ascii_letters, digits
 
 from rich import print
 
-from . import constants, tlds
+from . import constants
 from . import subdomains as sd
 from .args import setup_argparse
 from .database import connect_database, updatedb
@@ -74,17 +74,10 @@ def run():
     # Right now, argparse has been updated to support multiple values but we haven't updated
     # this section to make multiple args actually work.
 
-    if args["list"]:
-        sd.list_sub_domains(args["list"][0][0])
-    elif args["domains"]:
-        tlds.show_all_top_domains()
-    elif args["show_unmanaged"]:
+    if args["show_unmanaged"]:
         sd.list_do_sub_domains(args["show_unmanaged"][0][0])
     elif args["current"]:
         domaininfo(args["current"][0][0])
-    elif top_level_domains := args["top"]:
-        for tld in top_level_domains:
-            tlds.add_domain(tld)
     elif args["sub"]:
         sd.add_subdomain(args["sub"][0][0])
     elif args_raw.subparser_name in [
@@ -93,6 +86,7 @@ def run():
         "update_ips",
         "logs",
         "show_info",
+        "domains",
     ]:
         # NOTE: these subparsers have been configured.
         # eventually, all options will be handled similarly.

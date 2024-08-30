@@ -17,8 +17,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
 
+
 import logging
 import time
+from argparse import Namespace
 
 import requests
 from rich import print
@@ -96,7 +98,7 @@ def add_domain(domain):
     conn.commit()
 
 
-def show_all_top_domains():
+def show_all_domains():
     cursor = conn.cursor()
     apikey = get_api()
 
@@ -143,3 +145,11 @@ def show_all_top_domains():
                 print("Name : [bold]" + k["name"] + " [*][/bold]")
             else:
                 print("Name : " + k["name"])
+
+
+def main(args: Namespace):
+    """Handle tlds subparser."""
+    if args.list:
+        show_all_domains()
+    else:
+        add_domain(args.add)

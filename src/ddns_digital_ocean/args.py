@@ -22,6 +22,8 @@ import textwrap
 
 from ddns_digital_ocean import api_key_helpers, info, ip, logs
 
+from . import domains
+
 
 def setup_argparse():
     parser = argparse.ArgumentParser(
@@ -71,29 +73,40 @@ def setup_argparse():
         default=False,
     )
 
+    parser_tld = subparsers.add_parser(name="domains", help="View and configure domains.")
+    parser_tld.set_defaults(func=domains.main)
+
+    group_tld = parser_tld.add_mutually_exclusive_group(required=True)
+    group_tld.add_argument(
+        "-l",
+        "--list",
+        help="List domains registered in your DigitalOcean account, indicating which are managed.",
+        action="store_true",
+    )
+
+    group_tld.add_argument(
+        "-a",
+        "--add",
+        help="Add <domain> to domains managed by ddns-digital-ocean.",
+        metavar=("<domain>"),
+    )
+
     parser.add_argument(
         "-l",
         "--list",
-        help="List subdomains for supplied domain.",
+        help="List subdomains for <domain> which are managed by ddns-digital-ocean.",
         nargs=1,
         metavar=("domain"),
         action="append",
     )
 
     parser.add_argument(
-        "-o",
-        "--serverdomains",
-        help="List subdomains for supplied domain not in ddns DB.",
+        "-u",
+        "--show-unmanaged",
+        help="List subdomains for <domain> which are not managed by ddns-digital-ocean.",
         nargs=1,
         metavar=("domain"),
         action="append",
-    )
-
-    parser.add_argument(
-        "-d",
-        "--domains",
-        help="List top domains in your DigitalOcean account.",
-        action="store_true",
     )
 
     parser.add_argument(
