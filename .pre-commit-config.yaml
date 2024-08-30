@@ -1,3 +1,27 @@
+# ddns-digital-ocean
+# Copyright (C) 2023  Tyler Nivin <tyler@nivin.tech>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
+
+default_stages: [pre-commit, manual]
+default_install_hook_types:
+  - pre-commit
+  - post-commit
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0 # Use the ref you want to point at
@@ -24,3 +48,27 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       # Run the formatter
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: hawkeye-format
+        name: Hawkeye license header checker and formatter (rust)
+        language: rust
+        entry: hawkeye format
+
+        ## Hacky way to run hawkeye without a file list.
+        # Hawkeye manages what files it runs against and
+        # does not accept a list of files as input.
+        types: [text]
+        always_run: true
+        exclude: ".*" # Exclude all; intentional.
+        # End hacks
+
+        additional_dependencies:
+          - "cli:hawkeye:5.8.0"
+
+        stages:
+          # post-commit is used here to prevent hawkeye running
+          # before a file is committed (and thus before it has relevant git info)
+          - post-commit
+          - manual
