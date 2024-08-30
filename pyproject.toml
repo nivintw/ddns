@@ -63,7 +63,7 @@ dev-dependencies = [
     "ruff>=0.6.2",
     "pytest-check>=2.3.1",
     "pytest-mock>=3.14.0",
-    "requests-mock>=1.12.1",
+    "responses>=0.25.3",
 ]
 
 [tool.ruff]
