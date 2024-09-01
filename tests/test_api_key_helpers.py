@@ -25,6 +25,8 @@ from pytest_check import check
 from ddns_digital_ocean import api_key_helpers
 from ddns_digital_ocean.database import connect_database
 
+# TODO add checks for last_updated column behavior.
+
 
 @pytest.fixture()
 def mock_db_for_test(temp_database_path: Path, mocker):

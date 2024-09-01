@@ -17,8 +17,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
 
+import datetime as dt
 import logging
-import time
 from argparse import Namespace
 
 from rich import print
@@ -49,26 +49,36 @@ def view_or_update(args: Namespace):
 def get_api() -> str:
     cursor = conn.cursor()
 
-    cursor.execute("SELECT api FROM apikey")
+    cursor.execute("SELECT key FROM apikey")
     row = cursor.fetchone()
 
     if row is None:
         print("[red]Error:[/red] Missing APIkey. Please add one!")
         raise NoAPIKeyError("Missing API key. Please add one!")
 
-    return row[0]
+    return row["key"]
 
 
 def set_api_key(api_value):
     with conn:
+        now = dt.datetime.now()
+        update_datetime = now.strftime("%Y-%m-%d %H:%M")
+
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM apikey")
         count = cursor.fetchone()[0]
+
         if count == 0:
-            cursor.execute("INSERT INTO apikey values(?,?)", (1, api_value))
-            logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key added")
+            cursor.execute(
+                "INSERT INTO apikey values(:id, :key, :last_updated)",
+                {"id": 1, "key": api_value, "last_updated": update_datetime},
+            )
+            logging.info(update_datetime + " - Info : API key added")
             print("Your API key has been added.")
         else:
-            cursor.execute("UPDATE apikey SET api = ? WHERE id = 1", (api_value,))
-            logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : API key updated")
+            cursor.execute(
+                "UPDATE apikey SET key = :key, last_updated = :last_updated WHERE id = 1",
+                {"key": api_value, "last_updated": update_datetime},
+            )
+            logging.info(update_datetime + " - Info : API key updated")
             print("Your API key has been updated.")
