@@ -17,6 +17,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
 
+
+#
+# list_sub_domains -> list_managed_sub_domains?
+# list_do_sub_domains -> list_unmanaged_sub_domains?
+# edit_subdomain -> toggle_subdomain_management
+# add_subdomain -> register_and_manage_subdomain
+# local_add_subdomain -> manage_existing_subdomain
+# remove_subdomain -> unregister_subdomain
+
 import json
 import logging
 import time
@@ -93,7 +102,14 @@ def list_do_sub_domains(domain):
                 print(k["name"] + "." + domain + "\t\tID : " + str(k["id"]))
 
 
-def edit_subdomain(domain):
+def toggle_subdomain_management(domain):
+    """Toggle management state for a locally catalogued subdomain.
+
+    I.e. managed -> unmanaged and unmanaged -> managed.
+
+    Assumptions:
+      - The relevant subdomain has previously been catalogued in the local database.
+    """
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
         print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
         return
