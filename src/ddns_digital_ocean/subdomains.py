@@ -16,7 +16,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech>
-# and the ddns-digital-ocean contributors
+#   and the ddns-digital-ocean contributors
 
 #
 # list_sub_domains -> list_managed_sub_domains?
