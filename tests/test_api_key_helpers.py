@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
+# Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
+# and the ddns-digital-ocean contributors
 
 from pathlib import Path
 
