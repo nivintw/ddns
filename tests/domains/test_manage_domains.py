@@ -15,58 +15,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
+# Copyright , Tyler Nivin <tyler@nivin.tech>
+# and the ddns-digital-ocean contributors
 
-import sqlite3
-from pathlib import Path
+import datetime as dt
 from sqlite3 import Connection
 from typing import Literal
 
 import pytest
 from responses import RequestsMock, matchers
 
-from ddns_digital_ocean import api_key_helpers, domains
-from ddns_digital_ocean.database import connect_database
-
-
-@pytest.fixture()
-def mock_db_for_test(temp_database_path: Path, mocker):
-    """Mock api_key_helpers.conn to have a per-test connection / database.
-    Ensures isolation of the database state between tests.
-
-    In this module we have to mock out the conn objects everywhere they are created
-      in order to ensure all modules/functions are using the same databases.
-
-    """
-    test_specific_conn = connect_database(temp_database_path)
-    test_specific_conn.row_factory = sqlite3.Row
-    mocker.patch.object(domains, "conn", test_specific_conn)
-    mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
-
-    return test_specific_conn
-
-
-@pytest.fixture()
-def preload_api_key(mock_db_for_test: Connection):
-    """Load a sentinel API key.
-    Almost all operations require an api key to be configured.
-    This fixture provides a sentinel / not-real API key for us to use.
-    """
-    SENTINEL_API_KEY = "sentinel-api-key"  # pragma: allowlist secret
-    api_key_helpers.set_api_key(SENTINEL_API_KEY)
-    return SENTINEL_API_KEY
+from ddns_digital_ocean import domains
 
 
 @pytest.mark.usefixtures("mock_db_for_test")
-class TestAddDomain:
-    def test_add_domain_empty_db(
+class TestManageDomain:
+    def test_manage_domain_empty_db(
         self,
         mocked_responses: RequestsMock,
         preload_api_key: Literal["sentinel-api-key"],
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
     ):
-        """Add a domain to an empty database."""
+        """Add a domain to an empty database as managed."""
 
         EXPECTED_NEW_DOMAIN = "sentinel.new.test.domain.local"
         # See: https://docs.digitalocean.com/reference/api/api-reference/#operation/domains_get
@@ -100,7 +71,7 @@ class TestAddDomain:
             status=200,
         )
 
-        domains.add_domain(EXPECTED_NEW_DOMAIN)
+        domains.manage_domain(EXPECTED_NEW_DOMAIN)
 
         # Validate: Ensure domain was added to the database.
         with mock_db_for_test:
@@ -108,16 +79,17 @@ class TestAddDomain:
                 "SELECT * FROM domains where name = ?", (EXPECTED_NEW_DOMAIN,)
             )
             row = cursor.fetchone()
-            assert row is not None
             assert row["name"] == EXPECTED_NEW_DOMAIN
             assert row["id"] == 1
+            assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+            assert dt.datetime.strptime(row["last_managed"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
 
         # Validate: Ensure user was informed.
         captured_output = capsys.readouterr()
         assert f"The domain {EXPECTED_NEW_DOMAIN} has been added to the DB" in captured_output.out
 
     @pytest.mark.usefixtures("preload_api_key", "mocked_responses")
-    def test_add_domain_already_in_db(
+    def test_manage_domain_already_in_db(
         self,
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
@@ -141,20 +113,32 @@ class TestAddDomain:
         # Arrange: inject the domain directly into the table before
         # calling the function under test.
         with mock_db_for_test:
+            update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
             mock_db_for_test.execute(
-                "INSERT INTO domains values(?,?)",
-                (
-                    None,
-                    EXPECTED_EXISTING_DOMAIN,
-                ),
+                "INSERT INTO domains(name, cataloged, last_managed) "
+                " values(:name, :cataloged, :last_managed)",
+                {
+                    "name": EXPECTED_EXISTING_DOMAIN,
+                    "cataloged": update_datetime,
+                    "last_managed": update_datetime,
+                },
             )
 
-        domains.add_domain(EXPECTED_EXISTING_DOMAIN)
+        domains.manage_domain(EXPECTED_EXISTING_DOMAIN)
 
         captured_output = capsys.readouterr()
         assert (
             f"Domain name ({EXPECTED_EXISTING_DOMAIN}) already in database!" in captured_output.out
         )
+
+        # Ensure values were unchanged.
+        with mock_db_for_test:
+            cursor = mock_db_for_test.execute(
+                "select * from domains where name = ?", (EXPECTED_EXISTING_DOMAIN,)
+            )
+            row = cursor.fetchone()
+            assert row["cataloged"] == update_datetime
+            assert row["last_managed"] == update_datetime
 
     @pytest.mark.parametrize(
         "status_code, json_response, expected_stdout",
@@ -223,7 +207,7 @@ class TestAddDomain:
             status=status_code,
         )
 
-        domains.add_domain(EXPECTED_NEW_DOMAIN)
+        domains.manage_domain(EXPECTED_NEW_DOMAIN)
 
         # Validate: user was informed of failure situation.
         captured_output = capsys.readouterr()
@@ -234,127 +218,3 @@ class TestAddDomain:
             "SELECT * FROM domains where name = ?", (EXPECTED_NEW_DOMAIN,)
         ).fetchone()
         assert row is None
-
-
-@pytest.mark.usefixtures("mock_db_for_test")
-class TestListAllDomains:
-    """We can show (up to 200) upstream domains."""
-
-    def test_no_upstream_domains(
-        self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
-        capsys: pytest.CaptureFixture[str],
-    ):
-        """Ensure proper handling of response when no upstream domains are registered."""
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={"domains": [], "meta": {"total": 0}},
-            status=200,
-        )
-
-        domains.show_all_domains()
-        captured_output = capsys.readouterr()
-        assert "No domains associated with this Digital Ocean account!" in captured_output.out
-
-    def test_list_upstream_domains_output(
-        self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
-        mock_db_for_test: Connection,
-        capsys: pytest.CaptureFixture[str],
-    ):
-        """Validate output for upstream domains.
-
-        Properly marks both ddns-digital-ocean managed domains as well as
-        domains that exist upstream that are not managed by ddns-digital-ocean.
-        """
-
-        # Arrange: insert records into the DB to show nivin.tech as managed by ddns-digital-ocean
-        with mock_db_for_test:
-            mock_db_for_test.execute(
-                "INSERT INTO domains values(?,?)",
-                (
-                    None,
-                    "nivin.tech",
-                ),
-            )
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={
-                "domains": [
-                    {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},  # not managed
-                    {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},  # managed
-                ],
-                "meta": {"total": 2},
-            },
-            status=200,
-        )
-
-        domains.show_all_domains()
-        captured_output = capsys.readouterr()
-        assert "Name : nivin.tech [*]" in captured_output.out
-        assert "Name : example.com" in captured_output.out
-        assert "Name : example.com [*]" not in captured_output.out
-
-    def test_multiple_pages_of_domains(
-        self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
-        capsys: pytest.CaptureFixture[str],
-    ):
-        """Proper handling when there is more than one page of results."""
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={
-                "domains": [
-                    {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},
-                ],
-                "meta": {"total": 200},  # a convenient lie...
-            },
-            status=200,
-        )
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200, "page": 2}),
-            ],
-            json={
-                "domains": [
-                    {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},
-                ],
-                "meta": {"total": 1},
-            },
-            status=200,
-        )
-        domains.show_all_domains()
-        captured_output = capsys.readouterr()
-        assert "Name : nivin.tech" in captured_output.out
-        assert "Name : nivin.tech [*]" not in captured_output.out
-        assert "Name : example.com" in captured_output.out
-        assert "Name : example.com [*]" not in captured_output.out

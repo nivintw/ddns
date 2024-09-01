@@ -18,8 +18,8 @@
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech> and the ddns-digital-ocean contributors
 
 
+import datetime as dt
 import logging
-import time
 from argparse import Namespace
 
 import requests
@@ -32,7 +32,7 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
-def add_domain(domain):
+def manage_domain(domain):
     apikey = get_api()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (domain,))
@@ -86,16 +86,28 @@ def add_domain(domain):
         )
         return
 
+    update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     cursor.execute(
-        "INSERT INTO domains values(?,?)",
-        (
-            None,
-            domain,
-        ),
+        "INSERT INTO domains(name, cataloged, last_managed) "
+        " values(:name, :cataloged, :last_managed)",
+        {
+            "name": domain,
+            "cataloged": update_datetime,
+            "last_managed": update_datetime,
+        },
     )
     print(f"The domain [b]{domain}[/b] has been added to the DB")
-    logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Domain {domain} added")
+    logging.info(update_datetime + f" - Info : Domain {domain} added")
     conn.commit()
+
+
+def un_manage_domain(domain):
+    """Mark the domain as unmanaged.
+
+    Will not remove or deregister the associated domain.
+    """
+    # TODO: Implement.
+    ...
 
 
 def show_all_domains():
@@ -152,4 +164,4 @@ def main(args: Namespace):
     if args.list:
         show_all_domains()
     else:
-        add_domain(args.add)
+        manage_domain(args.add)
