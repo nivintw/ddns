@@ -23,16 +23,20 @@ import logging
 import time
 from collections.abc import Generator
 from string import ascii_letters, digits
+from typing import Any
 
 import requests
+from more_itertools import countable
 from rich import print
 
 from .api_key_helpers import get_api
 
 
-def get_A_records(domain) -> dict:
+def get_A_records(domain) -> Generator[dict[str, Any]]:
     """Retrieve A records for `domain` from Digital Ocean."""
     apikey = get_api()
+    page_results_limit = 20
+
     headers = {
         "Authorization": "Bearer " + apikey,
         "Content-Type": "application/json",
@@ -41,11 +45,26 @@ def get_A_records(domain) -> dict:
         f"https://api.digitalocean.com/v2/domains/{domain}/records",
         headers=headers,
         timeout=45,
-        params={"type": "A", "per_page": 200},
+        params={"type": "A", "per_page": page_results_limit},
     )
     response.raise_for_status()
+    response_data = response.json()
+    domain_records = countable(response_data["domain_records"])
 
-    return response.json()
+    yield from domain_records
+    page = 1
+    while domain_records.items_seen == page_results_limit:
+        page += 1
+        response = requests.get(
+            f"https://api.digitalocean.com/v2/domains/{domain}/records",
+            headers=headers,
+            timeout=45,
+            params={"type": "A", "per_page": page_results_limit, "page": page},
+        )
+        response.raise_for_status()
+        response_data = response.json()
+        domain_records = countable(response_data["domain_records"])
+        yield from domain_records
 
 
 def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
