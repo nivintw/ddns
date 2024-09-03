@@ -194,3 +194,12 @@ class TestGetARecords:
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
             next(do_api.get_A_records(EXPECTED_DOMAIN))
+
+
+class TestCreateARecord:
+    """We can create A records for given subdomain/domain pair."""
+
+    # TODO: Add these tests.
+    def test_placeholder(
+        self,
+    ): ...
