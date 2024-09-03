@@ -77,6 +77,45 @@ This has the additional effect of removing the subdomain from the local digital-
 - [ ] Register and upload package to PyPI.
 - [ ] Add automated CI/CD process including package release to PyPI.
 - [ ] Integrate python-semantic-release for version management.
+- [ ] Add support to read config from a toml file.
 - [ ] Change license to MIT license
   - This will happen when this codebase undergoes further revision and reaches an "inspired by" state.
   - Currently, substantial changes have been made from the original fork. With other planned changes, most of the original code will no longer be part of this project.
+
+## Scratch
+
+- NOTE: Digital Ocean API's pagination urls drop filters (and thus can't be used to paginate)
+- NOTE: Digital Ocean API's meta.total value in the response is ALL POSSIBLE records, NOT the number of records in the response.
+  - I.e., it does not account for pagination (but does seem to account for filters e.g. "type"="A" for domain records.)
+    TODO: Update my code to account for these discrepancies i've found.
+
+do_ddns
+
+- manage
+  - `--domain example.com --subdomain @`
+  - `--subdomain support.example.com --domain example.com`
+    - Automatic domain management via subdomain driven commands.
+    - Keeps the focus on the A records.
+    - let's you manage a sub-selection of all A records / subdomains for the given domain.
+    - Will create or update the A record for the specified subdomain.
+  - `--domain example.com`
+    - start managing IP addresses for all current A records.
+    - Will identify existing A records and begin managing those.
+- un-manage
+  - `--domain --subdomain`
+  - `--subdomain support.example.com --domain example.com`
+    - stop managing A records for the specific subdomain / host name.
+  - `--domain`
+    - stop managing A records for the entire domain.
+  - Leaves the current configuration in the database, marked unmanaged.
+- records create (not recommended)
+  - `--domain example.com --subdomain support.example.com`
+  - low-level interface to add specific A records from Digital Ocean
+  - Generally not needed; creating the record will be handled by manage.
+- records delete (not recommended)
+  - `--domain example.com --subdomain spprt.example.com`
+  - low-level interface to remove specific A records from Digital Ocean
+  - Generally only needed if you made a mistake while adding a subdomain and want to clean up.
+- update_records (do automatic update for managed records)
+  - no args
+    - Updates IP addresses for A records on configured domains/subdomains.
