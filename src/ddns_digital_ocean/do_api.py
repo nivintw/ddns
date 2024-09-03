@@ -129,7 +129,7 @@ def get_all_domains() -> Generator[dict[str, str], None, None]:
     """Return all domains associated with this account."""
     apikey = get_api()
 
-    page_results_limit = 200
+    page_results_limit = 20
 
     headers = {
         "Authorization": "Bearer " + apikey,
@@ -144,10 +144,11 @@ def get_all_domains() -> Generator[dict[str, str], None, None]:
     response.raise_for_status()
 
     response_data = response.json()
+    domains = countable(response_data["domains"])
+    yield from domains
 
-    yield from response_data["domains"]
     page = 1
-    while response_data["meta"]["total"] == page_results_limit:
+    while domains.items_seen == page_results_limit:
         page += 1
         response = requests.get(
             "https://api.digitalocean.com/v2/domains/",
@@ -157,4 +158,5 @@ def get_all_domains() -> Generator[dict[str, str], None, None]:
         )
         response.raise_for_status()
         response_data = response.json()
-        yield from response_data["domains"]
+        domains = countable(response_data["domains"])
+        yield from domains

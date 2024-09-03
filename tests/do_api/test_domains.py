@@ -18,8 +18,7 @@
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
 #   and the ddns-digital-ocean contributors
 
-import datetime as dt
-from sqlite3 import Connection
+from itertools import repeat
 from typing import Literal
 
 import pytest
@@ -31,6 +30,9 @@ from ddns_digital_ocean import do_api
 
 class TestGetAllDomains:
     """Retrieve all domains associated with an account."""
+
+    # Constants common to get_all_domains()
+    PAGE_RESULTS_LIMIT = 20
 
     def test_no_upstream_domains(
         self,
@@ -46,7 +48,7 @@ class TestGetAllDomains:
             url="https://api.digitalocean.com/v2/domains/",
             match=[
                 matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
+                matchers.query_param_matcher({"per_page": self.PAGE_RESULTS_LIMIT}),
             ],
             json={"domains": [], "meta": {"total": 0}},
             status=200,
@@ -55,11 +57,10 @@ class TestGetAllDomains:
         with pytest.raises(StopIteration):
             next(do_api.get_all_domains())
 
-    def test_list_upstream_domains_output(
+    def test_single_page_of_domains(
         self,
         mocked_responses: RequestsMock,
         preload_api_key: Literal["sentinel-api-key"],
-        mock_db_for_test: Connection,
     ):
         """Validate output for upstream domains.
 
@@ -72,18 +73,6 @@ class TestGetAllDomains:
             {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},  # managed
         ]
 
-        # Arrange: insert records into the DB to show nivin.tech as managed by ddns-digital-ocean
-        with mock_db_for_test:
-            update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-            mock_db_for_test.execute(
-                "INSERT INTO domains(name, cataloged, last_managed) "
-                " values(:name, :cataloged, :last_managed)",
-                {
-                    "name": "nivin.tech",
-                    "cataloged": update_datetime,
-                    "last_managed": update_datetime,
-                },
-            )
         headers = {
             "Authorization": "Bearer " + preload_api_key,
             "Content-Type": "application/json",
@@ -92,13 +81,12 @@ class TestGetAllDomains:
             url="https://api.digitalocean.com/v2/domains/",
             match=[
                 matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
+                matchers.query_param_matcher({"per_page": self.PAGE_RESULTS_LIMIT}),
             ],
             json={
                 "domains": EXPECTED_DOMAINS,
-                "meta": {"total": 2},
+                "meta": {"total": len(EXPECTED_DOMAINS)},
             },
-            status=200,
         )
 
         domains = [x for x in do_api.get_all_domains()]
@@ -111,7 +99,13 @@ class TestGetAllDomains:
     ):
         """Proper handling when there is more than one page of results."""
         EXPECTED_DOMAINS = [
-            {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},
+            *[
+                x
+                for x in repeat(
+                    {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},
+                    self.PAGE_RESULTS_LIMIT,
+                )
+            ],
             {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},
         ]
         headers = {
@@ -122,32 +116,75 @@ class TestGetAllDomains:
             url="https://api.digitalocean.com/v2/domains/",
             match=[
                 matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
+                matchers.query_param_matcher({"per_page": self.PAGE_RESULTS_LIMIT}),
             ],
             json={
-                "domains": [
-                    EXPECTED_DOMAINS[0],
-                ],
-                "meta": {"total": 200},  # a convenient lie...
+                "domains": EXPECTED_DOMAINS[: self.PAGE_RESULTS_LIMIT],
+                # Match observed DO api behavior; total returns TOTAL,
+                # not total for this response; despite what docs say...
+                # I reported to DO via a ticket.
+                "meta": {"total": len(EXPECTED_DOMAINS)},
             },
-            status=200,
         )
         mocked_responses.get(
             url="https://api.digitalocean.com/v2/domains/",
             match=[
                 matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200, "page": 2}),
+                matchers.query_param_matcher({"per_page": self.PAGE_RESULTS_LIMIT, "page": 2}),
             ],
             json={
-                "domains": [
-                    EXPECTED_DOMAINS[1],
-                ],
-                "meta": {"total": 1},
+                "domains": EXPECTED_DOMAINS[self.PAGE_RESULTS_LIMIT :],
+                # Match observed DO api behavior; total returns TOTAL,
+                # not total for this response; despite what docs say...
+                # I reported to DO via a ticket.
+                "meta": {"total": len(EXPECTED_DOMAINS)},
             },
-            status=200,
         )
         domains = [x for x in do_api.get_all_domains()]
         assert domains == EXPECTED_DOMAINS
+
+    @pytest.mark.parametrize(
+        "status_code, json_response",
+        [
+            pytest.param(
+                401,
+                {"id": "unauthorized", "message": "Unable to authenticate you."},
+                id="unauthorized",
+            ),
+            pytest.param(
+                429,
+                {"id": "too_many_requests", "message": "API Rate limit exceeded."},
+                id="too_many_requests",
+            ),
+            pytest.param(
+                500,
+                {"id": "server_error", "message": "Unexpected server-side error"},
+                id="server_error",
+            ),
+        ],
+    )
+    def test_invalid_responses(
+        self,
+        mocked_responses: RequestsMock,
+        preload_api_key: Literal["sentinel-api-key"],
+        status_code,
+        json_response,
+    ):
+        headers = {
+            "Authorization": "Bearer " + preload_api_key,
+            "Content-Type": "application/json",
+        }
+        mocked_responses.get(
+            url="https://api.digitalocean.com/v2/domains/",
+            match=[
+                matchers.header_matcher(headers),
+                matchers.query_param_matcher({"per_page": self.PAGE_RESULTS_LIMIT}),
+            ],
+            json=json_response,
+            status=status_code,
+        )
+        with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
+            next(do_api.get_all_domains())
 
 
 class TestVerifyDomainIsRegistered:
