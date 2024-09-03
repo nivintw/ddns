@@ -145,6 +145,7 @@ class TestGetARecords:
         domain_records = [x for x in do_api.get_A_records(EXPECTED_DOMAIN)]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
+    # TODO: Add test for 404/invalid domain used in domain records request.
     @pytest.mark.parametrize(
         "status_code, json_response",
         [
