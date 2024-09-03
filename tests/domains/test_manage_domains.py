@@ -92,9 +92,9 @@ class TestManageDomain:
     def test_manage_domain_already_in_db(
         self,
         mock_db_for_test: Connection,
-        capsys: pytest.CaptureFixture[str],
     ):
-        """If user tries to add a DB already in the database we alert them and change nothing.
+        """If user tries to add a DB already in the database we change nothing.
+        This is not an error state.
 
         Note: I don't configure any mocked requests because,
           the way this test and the function under test are written,
@@ -104,9 +104,6 @@ class TestManageDomain:
             1. No requests are made
                 - If there were a request, it would mean we haven't early-exited
                     after checking the local db.
-            2. Output contains 'already in database!' message.
-                - If this message is not in stdout,
-                    then the user doesn't get feedback on what happened.
         """
         EXPECTED_EXISTING_DOMAIN = "sentinel.existing.test.domain.local"
 
@@ -126,11 +123,6 @@ class TestManageDomain:
 
         domains.manage_domain(EXPECTED_EXISTING_DOMAIN)
 
-        captured_output = capsys.readouterr()
-        assert (
-            f"Domain name ({EXPECTED_EXISTING_DOMAIN}) already in database!" in captured_output.out
-        )
-
         # Ensure values were unchanged.
         with mock_db_for_test:
             cursor = mock_db_for_test.execute(
@@ -139,82 +131,3 @@ class TestManageDomain:
             row = cursor.fetchone()
             assert row["cataloged"] == update_datetime
             assert row["last_managed"] == update_datetime
-
-    @pytest.mark.parametrize(
-        "status_code, json_response, expected_stdout",
-        [
-            pytest.param(
-                401,
-                {"id": "unauthorized", "message": "Unable to authenticate you."},
-                "The api key that is configured resulted in an unauthorized response.",
-                id="unauthorized",
-            ),
-            pytest.param(
-                404,
-                {"id": "not_found", "message": "The resource you requested could not be found."},
-                "The domain does not exist in your DigitalOcean account.",
-                id="not_found",
-            ),
-            pytest.param(
-                429,
-                {"id": "too_many_requests", "message": "API Rate limit exceeded."},
-                "API Rate limit exceeded. Please try again later.",
-                id="too_many_requests",
-            ),
-            pytest.param(
-                500,
-                {"id": "server_error", "message": "Unexpected server-side error"},
-                "Unexpected Internal Server Error Response from DigitalOcean. ",
-                id="server_error",
-            ),
-            pytest.param(
-                10_000,
-                {"id": "example_error", "message": "some error message"},
-                "Completely unexpected error response from Digital Ocean.",
-                id="do_default_error",
-            ),
-        ],
-    )
-    @pytest.mark.usefixtures("mock_db_for_test")
-    def test_invalid_upstream_responses(
-        self,
-        status_code,
-        json_response,
-        expected_stdout,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
-        mock_db_for_test: Connection,
-        capsys: pytest.CaptureFixture[str],
-    ):
-        """We handle all documented upstream error states.
-
-        See: https://docs.digitalocean.com/reference/api/api-reference/#operation/domains_get
-        """
-
-        EXPECTED_NEW_DOMAIN = "sentinel.new.test.domain.local"
-
-        # Arrange: Configure HTTP requests to mock out.
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/" + EXPECTED_NEW_DOMAIN,
-            match=[
-                matchers.header_matcher(headers),
-            ],
-            json=json_response,
-            status=status_code,
-        )
-
-        domains.manage_domain(EXPECTED_NEW_DOMAIN)
-
-        # Validate: user was informed of failure situation.
-        captured_output = capsys.readouterr()
-        assert expected_stdout in captured_output.out
-
-        # Validate: nothing was added to the database.
-        row = mock_db_for_test.execute(
-            "SELECT * FROM domains where name = ?", (EXPECTED_NEW_DOMAIN,)
-        ).fetchone()
-        assert row is None

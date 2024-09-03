@@ -20,38 +20,28 @@
 
 import datetime as dt
 from sqlite3 import Connection
-from typing import Literal
 
 import pytest
-from responses import RequestsMock, matchers
+from pytest_mock import MockerFixture
 
 from ddns_digital_ocean import domains
 
 
-@pytest.mark.usefixtures("mock_db_for_test")
+@pytest.mark.usefixtures("mock_db_for_test", "mocked_responses")
 class TestListAllDomains:
     """We can show (up to 200) upstream domains."""
 
     def test_no_upstream_domains(
         self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
         capsys: pytest.CaptureFixture[str],
+        mocker: MockerFixture,
     ):
         """Ensure proper handling of response when no upstream domains are registered."""
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={"domains": [], "meta": {"total": 0}},
-            status=200,
+
+        mocked_get_all_domains = mocker.patch.object(
+            domains.do_api, "get_all_domains", autospec=True
         )
+        mocked_get_all_domains.return_value = []  # no domains
 
         domains.show_all_domains()
         captured_output = capsys.readouterr()
@@ -59,10 +49,9 @@ class TestListAllDomains:
 
     def test_list_upstream_domains_output(
         self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
+        mocker: MockerFixture,
     ):
         """Validate output for upstream domains.
 
@@ -82,74 +71,17 @@ class TestListAllDomains:
                     "last_managed": update_datetime,
                 },
             )
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={
-                "domains": [
-                    {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},  # not managed
-                    {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},  # managed
-                ],
-                "meta": {"total": 2},
-            },
-            status=200,
+
+        mocked_get_all_domains = mocker.patch.object(
+            domains.do_api, "get_all_domains", autospec=True
         )
+        mocked_get_all_domains.return_value = [
+            {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},  # not managed
+            {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},  # managed
+        ]
 
         domains.show_all_domains()
         captured_output = capsys.readouterr()
         assert "Name : nivin.tech [*]" in captured_output.out
-        assert "Name : example.com" in captured_output.out
-        assert "Name : example.com [*]" not in captured_output.out
-
-    def test_multiple_pages_of_domains(
-        self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
-        capsys: pytest.CaptureFixture[str],
-    ):
-        """Proper handling when there is more than one page of results."""
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200}),
-            ],
-            json={
-                "domains": [
-                    {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},
-                ],
-                "meta": {"total": 200},  # a convenient lie...
-            },
-            status=200,
-        )
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/",
-            match=[
-                matchers.header_matcher(headers),
-                matchers.query_param_matcher({"per_page": 200, "page": 2}),
-            ],
-            json={
-                "domains": [
-                    {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},
-                ],
-                "meta": {"total": 1},
-            },
-            status=200,
-        )
-        domains.show_all_domains()
-        captured_output = capsys.readouterr()
-        assert "Name : nivin.tech" in captured_output.out
-        assert "Name : nivin.tech [*]" not in captured_output.out
         assert "Name : example.com" in captured_output.out
         assert "Name : example.com [*]" not in captured_output.out

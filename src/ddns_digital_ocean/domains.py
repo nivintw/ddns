@@ -22,83 +22,51 @@ import datetime as dt
 import logging
 from argparse import Namespace
 
-import requests
+from more_itertools import peekable
 from rich import print
 
-from . import constants
-from .api_key_helpers import get_api
+from . import constants, do_api
 from .database import connect_database
+from .subdomains import manage_subdomain
 
 conn = connect_database(constants.database_path)
 
 
 def manage_domain(domain):
-    apikey = get_api()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (domain,))
     count = cursor.fetchone()[0]
     if count != 0:
-        print(f"[red]Error:[/red] Domain name ({domain}) already in database!")
+        # domain is already being managed; nothing to do.
         return
 
-    headers = {
-        "Authorization": "Bearer " + apikey,
-        "Content-Type": "application/json",
-    }
-    response = requests.get(
-        "https://api.digitalocean.com/v2/domains/" + domain,
-        headers=headers,
-        timeout=45,
-    )
-    response_data = response.json()
-
-    if response.status_code == 401:
-        print(
-            "[red]Error: [/red]"
-            "The api key that is configured resulted in an unauthorized response.\n"
-            "Please configure a valid Digital Ocean API key to use."
-            f"Response: {response_data}"
-        )
-        return
-    elif response.status_code == 404:
-        print(
-            "[red]Error: [/red]The domain does not exist in your DigitalOcean account.\n"
-            "Please add the domain from your control panel "
-            "[b]https://cloud.digitalocean.com/networking/domains/[/b]"
-        )
-        return
-    elif response.status_code == 429:
-        print("[red]Error: [/red]API Rate limit exceeded. Please try again later.")
-        return
-    elif response.status_code == 500:
-        print(
-            "[red]Error: [/red]"
-            "Unexpected Internal Server Error Response from DigitalOcean. "
-            "Please try again later."
-        )
-        return
-    elif response.status_code != requests.codes.ok:
-        print(
-            "[red]Error: [/red]"
-            "Completely unexpected error response from Digital Ocean."
-            "This is neat. If you see this more than once, open a ticket."
-            f"Response: {response_data}"
-        )
-        return
+    do_api.verify_domain_is_registered(domain)
 
     update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-    cursor.execute(
-        "INSERT INTO domains(name, cataloged, last_managed) "
-        " values(:name, :cataloged, :last_managed)",
-        {
-            "name": domain,
-            "cataloged": update_datetime,
-            "last_managed": update_datetime,
-        },
-    )
-    print(f"The domain [b]{domain}[/b] has been added to the DB")
-    logging.info(update_datetime + f" - Info : Domain {domain} added")
-    conn.commit()
+    with conn:
+        conn.execute(
+            "INSERT INTO domains(name, cataloged, last_managed) "
+            " values(:name, :cataloged, :last_managed)",
+            {
+                "name": domain,
+                "cataloged": update_datetime,
+                "last_managed": update_datetime,
+            },
+        )
+        print(f"The domain [b]{domain}[/b] has been added to the DB")
+        logging.info(update_datetime + f" - Info : Domain {domain} added")
+
+
+def manage_all_existing_A_records(domain: str, domain_id: str):
+    """Begin managing all existing A records for `domain`.
+
+    Used to import existing externally created A records into digital-ocean-dynamic-dns.
+    Upon subsequent runs of `do_ddns update` these A records will be automatically handled.
+    """
+    existing_A_records = do_api.get_A_records(domain)
+
+    for record in existing_A_records["domain_records"]:
+        manage_subdomain(subdomain=record["name"], domain_id=domain_id)
 
 
 def un_manage_domain(domain):
@@ -112,51 +80,21 @@ def un_manage_domain(domain):
 
 def show_all_domains():
     cursor = conn.cursor()
-    apikey = get_api()
+    domains = peekable(do_api.get_all_domains())
 
-    page_results_limit = 200
-
-    headers = {
-        "Authorization": "Bearer " + apikey,
-        "Content-Type": "application/json",
-    }
-    response = requests.get(
-        "https://api.digitalocean.com/v2/domains/",
-        headers=headers,
-        timeout=45,
-        params={"per_page": page_results_limit},
-    )
-    response_data = response.json()
-    if response_data["meta"]["total"] == 0:
+    if domains.peek(None) is None:
         print("No domains associated with this Digital Ocean account!")
+        return
 
     print("Domains in database are marked with a [*]")
     print("================================================")
-    for k in response_data["domains"]:
+    for k in domains:
         cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],))
         count = cursor.fetchone()[0]
         if count != 0:
             print("Name : [bold]" + k["name"] + " [*][/bold]")
         else:
             print("Name : " + k["name"])
-
-    page = 1
-    while response_data["meta"]["total"] == page_results_limit:
-        page += 1
-        response = requests.get(
-            "https://api.digitalocean.com/v2/domains/",
-            headers=headers,
-            timeout=45,
-            params={"per_page": page_results_limit, "page": page},
-        )
-        response_data = response.json()
-        for k in response_data["domains"]:
-            cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (k["name"],))
-            count = cursor.fetchone()[0]
-            if count != 0:
-                print("Name : [bold]" + k["name"] + " [*][/bold]")
-            else:
-                print("Name : " + k["name"])
 
 
 def main(args: Namespace):
