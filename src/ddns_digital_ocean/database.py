@@ -64,7 +64,7 @@ def connect_database(database_path: Path):
         )
         c.execute(
             """CREATE TABLE IF NOT EXISTS subdomains (
-                id integer PRIMARY KEY,
+                domain_record_id integer PRIMARY KEY,
                 main_id integer NOT NULL,
                 name text NOT NULL,
                 current_ip4 text NOT NULL,
