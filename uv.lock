@@ -48,6 +48,7 @@ name = "ddns-digital-ocean"
 version = "0.4.0"
 source = { editable = "." }
 dependencies = [
+    { name = "more-itertools" },
     { name = "requests" },
     { name = "rich" },
 ]
@@ -63,6 +64,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "more-itertools", specifier = ">=10.4.0" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "rich", specifier = ">=13.8.0" },
 ]
@@ -113,6 +115,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979 },
+]
+
+[[package]]
+name = "more-itertools"
+version = "10.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/0d/ad6a82320cb8eba710fd0dceb0f678d5a1b58d67d03ae5be14874baa39e0/more-itertools-10.4.0.tar.gz", hash = "sha256:fe0e63c4ab068eac62410ab05cccca2dc71ec44ba8ef29916a0090df061cf923", size = 120755 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/0b/6a51175e1395774449fca317fb8861379b7a2d59be411b8cce3d19d6ce78/more_itertools-10.4.0-py3-none-any.whl", hash = "sha256:0f7d9f83a0a8dcfa8a2694a770590d98a67ea943e3d9f5298309a484758c4e27", size = 60935 },
 ]
 
 [[package]]

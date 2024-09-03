@@ -48,7 +48,11 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-dependencies = ["rich>=13.8.0", "requests>=2.32.3"]
+dependencies = [
+    "rich>=13.8.0",
+    "requests>=2.32.3",
+    "more-itertools>=10.4.0",
+]
 
 [project.urls]
 Repository = "https://github.com/nivintw/ddns"
