@@ -48,11 +48,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-dependencies = [
-    "rich>=13.8.0",
-    "requests>=2.32.3",
-    "more-itertools>=10.4.0",
-]
+dependencies = ["rich>=13.8.0", "requests>=2.32.3", "more-itertools>=10.4.0"]
 
 [project.urls]
 Repository = "https://github.com/nivintw/ddns"
@@ -93,7 +89,7 @@ select = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/**/*.py" = [
-    # at least this three should be fine in tests:
+    # at least these four should be fine in tests:
     "S101", # asserts allowed in tests...
     "ARG",  # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT",  # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
