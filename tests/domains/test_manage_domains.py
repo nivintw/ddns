@@ -20,58 +20,36 @@
 
 import datetime as dt
 from sqlite3 import Connection
-from typing import Literal
 
 import pytest
-from responses import RequestsMock, matchers
+from pytest_mock import MockerFixture
 
 from ddns_digital_ocean import domains
 
 
-@pytest.mark.usefixtures("mock_db_for_test")
+@pytest.mark.usefixtures("mock_db_for_test", "mocked_responses", "preload_api_key")
 class TestManageDomain:
     def test_manage_domain_empty_db(
         self,
-        mocked_responses: RequestsMock,
-        preload_api_key: Literal["sentinel-api-key"],
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
+        mocker: MockerFixture,
     ):
         """Add a domain to an empty database as managed."""
-
         EXPECTED_NEW_DOMAIN = "sentinel.new.test.domain.local"
-        # See: https://docs.digitalocean.com/reference/api/api-reference/#operation/domains_get
-        MOCKED_RESP_JSON = {
-            "domain": {
-                "name": "example.com",
-                "ttl": 1800,
-                "zone_file": (
-                    "$ORIGIN example.com.\n"
-                    "$TTL 1800\n"
-                    "example.com. IN SOA ns1.digitalocean.com. "
-                    "hostmaster.example.com. 1415982611 10800 3600 604800 1800\n"
-                    "example.com. 1800 IN NS ns1.digitalocean.com.\n"
-                    "example.com. 1800 IN NS ns2.digitalocean.com.\n"
-                    "example.com. 1800 IN NS ns3.digitalocean.com.\n"
-                    "example.com. 1800 IN A 1.2.3.4\n"
-                ),
-            }
-        }
-        # Arrange: Configure HTTP requests to mock out.
-        headers = {
-            "Authorization": "Bearer " + preload_api_key,
-            "Content-Type": "application/json",
-        }
-        mocked_responses.get(
-            url="https://api.digitalocean.com/v2/domains/" + EXPECTED_NEW_DOMAIN,
-            match=[
-                matchers.header_matcher(headers),
-            ],
-            json=MOCKED_RESP_JSON,
-            status=200,
+
+        # Arrange: Mock verify_domain_is_registered.
+        # No return necessary; lack of exception being raised means success.
+        mocked_verify_domain = mocker.patch.object(
+            domains.do_api,
+            "verify_domain_is_registered",
+            autospec=True,
         )
 
         domains.manage_domain(EXPECTED_NEW_DOMAIN)
+
+        # Validate that verify_domain_is_registered was called.
+        mocked_verify_domain.assert_called_once_with(EXPECTED_NEW_DOMAIN)
 
         # Validate: Ensure domain was added to the database.
         with mock_db_for_test:
@@ -88,7 +66,6 @@ class TestManageDomain:
         captured_output = capsys.readouterr()
         assert f"The domain {EXPECTED_NEW_DOMAIN} has been added to the DB" in captured_output.out
 
-    @pytest.mark.usefixtures("preload_api_key", "mocked_responses")
     def test_manage_domain_already_in_db(
         self,
         mock_db_for_test: Connection,

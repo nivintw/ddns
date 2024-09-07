@@ -29,7 +29,11 @@ from ddns_digital_ocean import domains
 
 @pytest.mark.usefixtures("mock_db_for_test", "mocked_responses")
 class TestListAllDomains:
-    """We can show (up to 200) upstream domains."""
+    """We can show all upstream domains.
+
+    Assumptions:
+        1. upstream do_api functions handle pagination and return iterables
+    """
 
     def test_no_upstream_domains(
         self,

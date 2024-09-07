@@ -33,6 +33,7 @@ conn = connect_database(constants.database_path)
 
 
 def manage_domain(domain):
+    """Ensure <domain> is a registered domain for this account and mark as managed."""
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (domain,))
     count = cursor.fetchone()[0]
@@ -65,7 +66,7 @@ def manage_all_existing_A_records(domain: str, domain_id: str):
     """
     existing_A_records = do_api.get_A_records(domain)
 
-    for record in existing_A_records["domain_records"]:
+    for record in existing_A_records:
         manage_subdomain(subdomain=record["name"], domain_id=domain_id)
 
 
