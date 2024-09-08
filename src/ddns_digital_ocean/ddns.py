@@ -29,9 +29,8 @@ from string import ascii_letters, digits
 from rich import print
 
 from . import constants
-from . import subdomains as sd
 from .args import setup_argparse
-from .database import connect_database, updatedb
+from .database import connect_database
 from .ip import get_ip
 
 logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
@@ -69,8 +68,6 @@ def domaininfo(domain):
 
 def run():
     # Commandline arguments
-    updatedb()
-
     parser = setup_argparse()
 
     args_raw = parser.parse_args()
@@ -80,12 +77,9 @@ def run():
     # Right now, argparse has been updated to support multiple values but we haven't updated
     # this section to make multiple args actually work.
 
-    if args["show_unmanaged"]:
-        sd.list_do_sub_domains(args["show_unmanaged"][0][0])
-    elif args["current"]:
+    if args["current"]:
         domaininfo(args["current"][0][0])
-    elif args["sub"]:
-        sd.add_subdomain(args["sub"][0][0])
+
     elif args_raw.subparser_name in [
         "ip_lookup_config",
         "api_key",
@@ -97,12 +91,6 @@ def run():
         # NOTE: these subparsers have been configured.
         # eventually, all options will be handled similarly.
         args_raw.func(args_raw)
-    elif args["remove"]:
-        sd.remove_subdomain(args["remove"][0][0])
-    elif args["edit"]:
-        sd.edit_subdomain(args["edit"][0][0])
-    elif args["local"]:
-        sd.local_add_subdomain(args["local"][0][0], args["local"][0][1])
 
 
 if __name__ == "__main__":
