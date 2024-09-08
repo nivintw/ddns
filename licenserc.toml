@@ -1,5 +1,5 @@
 # ddns-digital-ocean
-# Copyright (C) 2023  Tyler Nivin <tyler@nivin.tech>
+# Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 #   and associated documentation files (the "Software"), to deal in the Software
@@ -27,7 +27,7 @@
 
 inlineHeader = """
 ${projectName}
-Copyright (C) ${inceptionYear}  ${copyrightOwner}
+Copyright (C) ${inceptionYear} ${copyrightOwner}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software
   and associated documentation files (the "Software"), to deal in the Software
