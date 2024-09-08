@@ -54,8 +54,8 @@ def connect_database(database_path: Path):
         c.execute(
             """CREATE TABLE IF NOT EXISTS ipservers (
                 id integer NOT NULL PRIMARY KEY,
-                ip4_server text NOT NULL,
-                ip6_server text
+                URL text NOT NULL UNIQUE,
+                ip_version text NOT NULL
             )"""
         )
         c.execute(
@@ -70,7 +70,7 @@ def connect_database(database_path: Path):
         c.execute(
             """CREATE TABLE IF NOT EXISTS subdomains (
                 domain_record_id integer PRIMARY KEY,
-                main_id integer NOT NULL,
+                main_id integer NOT NULL REFERENCES domains (id) ON DELETE RESTRICT,
                 name text NOT NULL,
                 current_ip4 text NOT NULL,
                 current_ip6 text NULL,
