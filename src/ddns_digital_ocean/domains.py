@@ -67,7 +67,7 @@ def manage_all_existing_A_records(domain: str, domain_id: str):
     existing_A_records = do_api.get_A_records(domain)
 
     for record in existing_A_records:
-        manage_subdomain(subdomain=record["name"], domain_id=domain_id)
+        manage_subdomain(subdomain=record["name"], domain=domain)
 
 
 def un_manage_domain(domain):

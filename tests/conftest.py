@@ -24,7 +24,7 @@ from sqlite3 import Connection
 import pytest
 import responses
 
-from ddns_digital_ocean import api_key_helpers, domains
+from ddns_digital_ocean import api_key_helpers, domains, subdomains
 from ddns_digital_ocean.database import connect_database
 
 
@@ -52,6 +52,7 @@ def mock_db_for_test(temp_database_path: Path, mocker):
     test_specific_conn = connect_database(temp_database_path)
     mocker.patch.object(domains, "conn", test_specific_conn)
     mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
+    mocker.patch.object(subdomains, "conn", test_specific_conn)
 
     return test_specific_conn
 
