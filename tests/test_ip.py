@@ -26,3 +26,25 @@
 """Tests for functions in the ip module."""
 
 # TODO: add tests here!
+
+
+class TestGetIP:
+    def test_no_upstream_ip_resolver(
+        self,
+    ):
+        """Inform user and raise NoIPResolverServerError when no upstream IP server configured."""
+        ...
+
+    def test_http_error_in_ip_lookup(
+        self,
+    ):
+        """Raise any HTTP errors that occured when calling ip resolver."""
+        ...
+
+    def test_return_public_ip(
+        self,
+    ):
+        """If configured correctly, return the current public IP4 address.
+        NOTE: IP6 is not currently supported.
+        """
+        ...
