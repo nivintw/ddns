@@ -62,6 +62,8 @@ This has the additional effect of removing the subdomain from the local digital-
 
 ## Planned Updates
 
+- [ ] Add support for multiple IP address resolvers.
+  - examples: https://ip-api.com, https://api.whatismyip.com/ip.php?key=<API_KEY>, etc
 - [ ] Finish updating the command line user interface.
   - Substantial changes have already been made, and further re-writes are planned.
   - [/] changes to using subparsers instead of overloaded command line flags.
@@ -78,9 +80,6 @@ This has the additional effect of removing the subdomain from the local digital-
 - [ ] Add automated CI/CD process including package release to PyPI.
 - [ ] Integrate python-semantic-release for version management.
 - [ ] Add support to read config from a toml file.
-- [ ] Change license to MIT license
-  - This will happen when this codebase undergoes further revision and reaches an "inspired by" state.
-  - Currently, substantial changes have been made from the original fork. With other planned changes, most of the original code will no longer be part of this project.
 
 ## Scratch
 
