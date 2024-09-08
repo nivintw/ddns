@@ -47,7 +47,7 @@ def temp_database_path(tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def mock_db_for_test(temp_database_path: Path, mocker):
-    """Mock api_key_helpers.conn to have a per-test connection / database.
+    """Mock connection object to have a per-test connection / database.
     Ensures isolation of the database state between tests.
 
     In this module we have to mock out the conn objects everywhere they are created
