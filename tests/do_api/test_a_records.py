@@ -150,10 +150,14 @@ class TestGetARecords:
         domain_records = [x for x in do_api.get_A_records(EXPECTED_DOMAIN)]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
-    # TODO: Add test for 404/invalid domain used in domain records request.
     @pytest.mark.parametrize(
         "status_code, json_response",
         [
+            pytest.param(
+                404,
+                {"id": "not_found", "message": "The resource you requested could not be found."},
+                id="invalid-top-domain",
+            ),
             pytest.param(
                 401,
                 {"id": "unauthorized", "message": "Unable to authenticate you."},
@@ -175,8 +179,8 @@ class TestGetARecords:
         self,
         mocked_responses: RequestsMock,
         preload_api_key: Literal["sentinel-api-key"],
-        status_code,
-        json_response,
+        status_code: int,
+        json_response: dict[str, str],
     ):
         """Invalid responses are raised.
         This includes if the domain specified can't be found.
@@ -204,7 +208,114 @@ class TestGetARecords:
 class TestCreateARecord:
     """We can create A records for given subdomain/domain pair."""
 
-    # TODO: Add these tests.
-    def test_placeholder(
+    @pytest.mark.parametrize(
+        "expected_subdomain, expected_domain",
+        [
+            pytest.param("@", "example.com", id="short-subdomain"),
+            pytest.param("support.example.com", "example.com", id="long-subdomain"),
+        ],
+    )
+    def test_A_record_creation(
         self,
-    ): ...
+        mocked_responses: RequestsMock,
+        preload_api_key: Literal["sentinel-api-key"],
+        expected_domain: str,
+        expected_subdomain: str,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Given valid values, we can create an A record."""
+
+        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
+        EXPECTED_DOMAIN_RECORD_ID = 10001
+
+        headers = {
+            "Authorization": "Bearer " + preload_api_key,
+            "Content-Type": "application/json",
+        }
+        mocked_responses.post(
+            url=f"https://api.digitalocean.com/v2/domains/{expected_domain}/records",
+            match=[
+                matchers.header_matcher(headers),
+                matchers.json_params_matcher(
+                    {
+                        "name": EXPECTED_A_RECORD_NAME,
+                        "data": EXPECTED_IP_ADDRESS,
+                        "type": "A",
+                        "ttl": 3600,
+                    }
+                ),
+            ],
+            json={"domain_record": {"id": EXPECTED_DOMAIN_RECORD_ID}},
+        )
+
+        domain_record_id = do_api.create_A_record(
+            expected_subdomain, expected_domain, EXPECTED_IP_ADDRESS
+        )
+
+        assert domain_record_id == EXPECTED_DOMAIN_RECORD_ID
+        assert (
+            f"An A record for {EXPECTED_A_RECORD_NAME}.{expected_domain} has been added."
+            in capsys.readouterr().out
+        )
+
+    @pytest.mark.parametrize(
+        "status_code, json_response",
+        [
+            pytest.param(
+                404,
+                {"id": "not_found", "message": "The resource you requested could not be found."},
+                id="invalid-top-domain",
+            ),
+            pytest.param(
+                401,
+                {"id": "unauthorized", "message": "Unable to authenticate you."},
+                id="unauthorized",
+            ),
+            pytest.param(
+                429,
+                {"id": "too_many_requests", "message": "API Rate limit exceeded."},
+                id="too_many_requests",
+            ),
+            pytest.param(
+                500,
+                {"id": "server_error", "message": "Unexpected server-side error"},
+                id="server_error",
+            ),
+        ],
+    )
+    def test_invalid_api_responses(
+        self,
+        mocked_responses: RequestsMock,
+        preload_api_key: Literal["sentinel-api-key"],
+        status_code: int,
+        json_response: dict[str, str],
+    ):
+        """HTTPErrors are raised."""
+        EXPECTED_DOMAIN = "domain.example.com"
+        EXPECTED_A_RECORD_NAME = "@"
+        EXPECTED_IP_ADDRESS = "127.0.0.1"
+
+        headers = {
+            "Authorization": "Bearer " + preload_api_key,
+            "Content-Type": "application/json",
+        }
+        mocked_responses.post(
+            url=f"https://api.digitalocean.com/v2/domains/{EXPECTED_DOMAIN}/records",
+            match=[
+                matchers.header_matcher(headers),
+                matchers.json_params_matcher(
+                    {
+                        "name": EXPECTED_A_RECORD_NAME,
+                        "data": EXPECTED_IP_ADDRESS,
+                        "type": "A",
+                        "ttl": 3600,
+                    }
+                ),
+            ],
+            json=json_response,
+            status=status_code,
+        )
+
+        with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
+            _ = do_api.create_A_record(EXPECTED_A_RECORD_NAME, EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS)

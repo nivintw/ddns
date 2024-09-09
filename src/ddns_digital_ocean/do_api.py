@@ -23,7 +23,6 @@
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
 #   and the ddns-digital-ocean contributors
 
-import json
 import logging
 import time
 from collections.abc import Generator
@@ -96,7 +95,7 @@ def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
     }
     response = requests.post(
         "https://api.digitalocean.com/v2/domains/" + domain + "/records",
-        data=json.dumps(data),
+        json=data,
         headers=headers,
         timeout=60,
     )
@@ -105,7 +104,7 @@ def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
     print(f"An A record for {subdomain}.{domain} has been added.")
     logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : subdomain {domain} added")
     response_data = response.json()
-    domain_record_id = str(response_data["domain_record"]["id"])
+    domain_record_id = response_data["domain_record"]["id"]
     return domain_record_id
 
 
