@@ -11,6 +11,22 @@
       "module": "ddns_digital_ocean.ddns",
       "console": "integratedTerminal",
       "args": []
+    },
+    {
+      // This launch config is used when clicking the debug button
+      // via the tests explorer in the vscode ui.
+      // If we don't add PYTEST_ADDOPTS: "--no-cov" here, debugging
+      // becomes broken.
+      "name": "Python: Debug Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "purpose": ["debug-test"],
+      "console": "integratedTerminal",
+      "env": {
+        "PYTEST_ADDOPTS": "--no-cov"
+      },
+      "justMyCode": false
     }
   ]
 }

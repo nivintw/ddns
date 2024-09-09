@@ -70,6 +70,7 @@ dev-dependencies = [
     "pytest-check>=2.3.1",
     "pytest-mock>=3.14.0",
     "responses>=0.25.3",
+    "pytest-cov>=5.0.0",
 ]
 
 [tool.ruff]
@@ -100,3 +101,10 @@ select = [
     "FBT",  # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
+[tool.pytest.ini_options]
+addopts = "--cov=ddns_digital_ocean --cov-report html"
+
+[tool.coverage.run]
+# Measure branch coverage in addition to statement coverage.
+branch = true
+# source_pkgs = ["ddns_digital_ocean"]
