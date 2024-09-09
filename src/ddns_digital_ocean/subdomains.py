@@ -59,6 +59,9 @@ class NonSimpleDomainNameError(Exception):
     i.e. ascii_letters + "." + digits + "-" + "@"
     """
 
+    # TODO: move this to top-level exceptions.py and
+    #   use this same exception class in do_api.py.
+
 
 conn = connect_database(constants.database_path)
 
