@@ -26,12 +26,9 @@
 import logging
 import time
 from argparse import Namespace
-from datetime import datetime
 
 import requests
 from rich import print
-
-from ddns_digital_ocean import do_api
 
 from . import constants
 from .database import connect_database
@@ -45,10 +42,6 @@ class NoIPResolverServerError(Exception):
 
 class IPv6NotSupportedError(Exception):
     """Raised when the user attempts to configure IPv6."""
-
-
-class NoConfiguredSubdomainsError(Exception):
-    """updated_all_managed_subdomains was called and there are no configured subdomains."""
 
 
 def view_or_update_ip_server(args: Namespace):
@@ -118,94 +111,3 @@ def get_ip():
     except Exception as e:
         logging.error(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
         raise
-
-
-def update_all_managed_subdomains(args: Namespace):
-    force: bool = args.force
-
-    cursor = conn.cursor()
-
-    rows = cursor.execute("SELECT domain_record_id,managed FROM subdomains").fetchall()
-    if not rows:
-        print(
-            "[red]Error: [/red]There are no dynamic domains active."
-            " Start by adding a new domain with [i]ddns -s test.example.com[/i]"
-        )
-        raise NoConfiguredSubdomainsError()
-
-    now = datetime.now().strftime("%d-%m-%Y %H:%M")
-    current_ip = get_ip()
-    updated = None
-
-    for subdomain_row in rows:
-        domain_record_id = subdomain_row["domain_record_id"]
-        domain_info = cursor.execute(
-            "SELECT name "
-            "FROM domains "
-            "WHERE id = (SELECT main_id from subdomains WHERE domain_record_id = ?)",
-            (domain_record_id,),
-        ).fetchone()
-        domain_name = str(domain_info["name"])
-        subdomain_managed = subdomain_row["managed"]
-
-        if not subdomain_managed:
-            # Skip over subdomains that we used to manage but aren't currently.
-            continue
-
-        # Check DO API to see if an update is required
-        # TODO: Use the current_ip4 value instead of calling to
-        # DO-API unless force is specified...
-
-        # so we don't have to query DO just to check.
-        domain_record = do_api.get_A_record(
-            domain_record_id=domain_record_id,
-            domain=domain_name,
-        )
-        remoteIP4 = domain_record["data"]
-
-        if remoteIP4 != current_ip or force is True:
-            updated = True
-            domain_record = do_api.update_A_record(
-                domain_record_id=domain_record_id,
-                domain=domain_name,
-                new_ip_address=current_ip,
-            )
-
-            cursor.execute(
-                "UPDATE subdomains "
-                "SET "
-                "  current_ip4 = :current_ip, "
-                "  last_updated = :now, "
-                "  last_checked = :now "
-                "WHERE domain_record_id = :domain_record_id",
-                {
-                    "current_ip": current_ip,
-                    "now": now,
-                    "domain_record_id": domain_record_id,
-                },
-            )
-
-            conn.commit()
-        else:
-            cursor.execute(
-                "UPDATE subdomains "
-                "SET last_checked=:now "
-                "WHERE domain_record_id = :domain_record_id",
-                {
-                    "now": now,
-                    "domain_record_id": domain_record_id,
-                },
-            )
-            conn.commit()
-
-    if updated is None:
-        msg = time.strftime("%Y-%m-%d %H:%M") + " - Info : No updates necessary"
-        print(msg)
-        logging.info(msg)
-    else:
-        msg = (
-            time.strftime("%Y-%m-%d %H:%M")
-            + " - Info : Updates done. Use ddns -l domain.com to check domain"
-        )
-        print(msg)
-        logging.info(msg)

@@ -28,7 +28,7 @@ from __future__ import annotations
 import argparse
 import textwrap
 
-from ddns_digital_ocean import api_key_helpers, info, ip, logs
+from ddns_digital_ocean import api_key_helpers, info, ip, logs, subdomains
 
 from . import domains
 
@@ -97,7 +97,7 @@ def setup_argparse():
         name="update_ips",
         help=("Update the IP addresses for the subdomains that are configured."),
     )
-    parser_update_ips.set_defaults(func=ip.update_all_managed_subdomains)
+    parser_update_ips.set_defaults(func=subdomains.update_all_managed_subdomains)
 
     parser_update_ips.add_argument(
         "-f",
