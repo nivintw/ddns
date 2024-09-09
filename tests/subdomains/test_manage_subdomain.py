@@ -287,3 +287,13 @@ def test_subdomain_already_managed(
     # Validate user output
     captured_errout = capsys.readouterr()
     assert "is already being managed by digital-ocean-dynamic-dns." in captured_errout.out
+
+
+def test_non_simple_chars_in_domain_name(
+    capsys,
+):
+    """Raise NonSimpleDomainNameError if non-simple characters are used."""
+    with pytest.raises(subdomains.NonSimpleDomainNameError):
+        subdomains.manage_subdomain(
+            subdomain="\N{GREEK CAPITAL LETTER DELTA}-forge.example.com", domain="example.com"
+        )

@@ -54,6 +54,12 @@ class TopDomainNotManagedError(Exception):
     """
 
 
+class NonSimpleDomainNameError(Exception):
+    """Supported domain names must be in a simple format.
+    i.e. ascii_letters + "." + digits + "-" + "@"
+    """
+
+
 conn = connect_database(constants.database_path)
 
 
@@ -128,7 +134,7 @@ def manage_subdomain(subdomain: str, domain: str):
     """
     if set(subdomain).difference(ascii_letters + "." + digits + "-" + "@"):
         print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
-        return
+        raise NonSimpleDomainNameError()
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
     subdomain = subdomain.removesuffix("." + domain)
