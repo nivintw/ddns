@@ -102,7 +102,9 @@ select = [
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
 [tool.pytest.ini_options]
-addopts = "--cov=ddns_digital_ocean --cov-report html"
+# Commented out; adding coverage for every single test run slows things down
+# substantially.
+# addopts = "--cov=ddns_digital_ocean --cov-report html"
 
 [tool.coverage.run]
 # Measure branch coverage in addition to statement coverage.

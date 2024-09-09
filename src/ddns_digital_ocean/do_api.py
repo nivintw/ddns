@@ -71,6 +71,40 @@ def get_A_records(domain) -> Generator[dict[str, Any]]:
         yield from domain_records
 
 
+def get_A_record(domain_record_id: str, domain: str):
+    """Return the A record for `subdomain`."""
+    apikey = get_api()
+    headers = {
+        "Authorization": "Bearer " + apikey,
+        "Content-Type": "application/json",
+    }
+    response = requests.get(
+        f"https://api.digitalocean.com/v2/domains/{domain}/records/{domain_record_id}",
+        headers=headers,
+        timeout=45,
+    )
+    response.raise_for_status()
+    return response.json()["domain_record"]
+
+
+def update_A_record(domain_record_id: str, domain: str, new_ip_address: str):
+    """Update an existing A record."""
+    apikey = get_api()
+    headers = {
+        "Authorization": "Bearer " + apikey,
+        "Content-Type": "application/json",
+    }
+    data = {"type": "A", "data": new_ip_address}
+    response = requests.patch(
+        f"https://api.digitalocean.com/v2/domains/{domain}/records/{domain_record_id}",
+        headers=headers,
+        json=data,
+        timeout=45,
+    )
+    response.raise_for_status()
+    return response.json()["domain_record"]
+
+
 def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
     """Create an A record for subdomain.
 
