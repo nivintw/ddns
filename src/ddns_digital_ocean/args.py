@@ -97,7 +97,7 @@ def setup_argparse():
         name="update_ips",
         help=("Update the IP addresses for the subdomains that are configured."),
     )
-    parser_update_ips.set_defaults(func=ip.updateip)
+    parser_update_ips.set_defaults(func=ip.update_all_managed_subdomains)
 
     parser_update_ips.add_argument(
         "-f",

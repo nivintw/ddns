@@ -23,18 +23,17 @@
 # Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech>
 #   and the ddns-digital-ocean contributors
 
-import json
 import logging
 import time
-import urllib.request
 from argparse import Namespace
 from datetime import datetime
 
 import requests
 from rich import print
 
+from ddns_digital_ocean import do_api
+
 from . import constants
-from .api_key_helpers import get_api
 from .database import connect_database
 
 conn = connect_database(constants.database_path)
@@ -46,6 +45,10 @@ class NoIPResolverServerError(Exception):
 
 class IPv6NotSupportedError(Exception):
     """Raised when the user attempts to configure IPv6."""
+
+
+class NoConfiguredSubdomainsError(Exception):
+    """updated_all_managed_subdomains was called and there are no configured subdomains."""
 
 
 def view_or_update_ip_server(args: Namespace):
@@ -87,7 +90,7 @@ def config_ip_server(ipserver, ip_type):
         conn.commit()
         print(f"IP resolver set to ({ipserver}) for ipv{ip_type}.")
 
-    elif ip_type == "6":
+    else:
         print("IPv6 is not currently supported.")
         raise IPv6NotSupportedError()
 
@@ -117,111 +120,92 @@ def get_ip():
         raise
 
 
-def updateip(args: Namespace):
+def update_all_managed_subdomains(args: Namespace):
     force: bool = args.force
 
-    apikey = get_api()
-    current_ip = get_ip()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM subdomains")
-    count = cursor.fetchone()[0]
-    now = datetime.now().strftime("%d-%m-%Y %H:%M")
-    updated = None
-    if count == 0:
+
+    rows = cursor.execute("SELECT domain_record_id,managed FROM subdomains").fetchall()
+    if not rows:
         print(
             "[red]Error: [/red]There are no dynamic domains active."
             " Start by adding a new domain with [i]ddns -s test.example.com[/i]"
         )
-        return
+        raise NoConfiguredSubdomainsError()
 
-    cursor.execute("SELECT id,active FROM subdomains")
-    rows = cursor.fetchall()
-    for i in rows:
-        cursor.execute(
+    now = datetime.now().strftime("%d-%m-%Y %H:%M")
+    current_ip = get_ip()
+    updated = None
+
+    for subdomain_row in rows:
+        domain_record_id = subdomain_row["domain_record_id"]
+        domain_info = cursor.execute(
             "SELECT name "
             "FROM domains "
-            "WHERE id like (SELECT main_id from subdomains WHERE id = ?)",
-            (i[0],),
+            "WHERE id = (SELECT main_id from subdomains WHERE domain_record_id = ?)",
+            (domain_record_id,),
+        ).fetchone()
+        domain_name = str(domain_info["name"])
+        subdomain_managed = subdomain_row["managed"]
+
+        if not subdomain_managed:
+            # Skip over subdomains that we used to manage but aren't currently.
+            continue
+
+        # Check DO API to see if an update is required
+        # TODO: Use the current_ip4 value instead of calling to
+        # DO-API unless force is specified...
+
+        # so we don't have to query DO just to check.
+        domain_record = do_api.get_A_record(
+            domain_record_id=domain_record_id,
+            domain=domain_name,
         )
-        domain_info = cursor.fetchone()
-        domain_name = str(domain_info[0])
-        domain_status = i[1]
-        subdomain_id = str(i[0])
-        # Check if an update is required
-        if domain_status == 1:
-            req = urllib.request.Request(
-                "https://api.digitalocean.com/v2/domains/"
-                + domain_name
-                + "/records/"
-                + subdomain_id
+        remoteIP4 = domain_record["data"]
+
+        if remoteIP4 != current_ip or force is True:
+            updated = True
+            domain_record = do_api.update_A_record(
+                domain_record_id=domain_record_id,
+                domain=domain_name,
+                new_ip_address=current_ip,
             )
-            req.add_header("Content-Type", "application/json")
-            req.add_header("Authorization", "Bearer " + apikey)
-            current = urllib.request.urlopen(req)  # noqa: S310
-            remote = current.read().decode("utf-8")
-            remoteData = json.loads(remote)
-            remoteIP4 = remoteData["domain_record"]["data"]
-            if remoteIP4 != current_ip or force is True and domain_status == 1:
-                updated = True
-                data = {"type": "A", "data": current_ip}
-                headers = {
-                    "Authorization": "Bearer " + apikey,
-                    "Content-Type": "application/json",
-                }
-                response = requests.patch(
-                    "https://api.digitalocean.com/v2/domains/"
-                    + domain_name
-                    + "/records/"
-                    + subdomain_id,
-                    data=json.dumps(data),
-                    headers=headers,
-                    timeout=60,
-                )
-                if str(response) != "<Response [200]>":
-                    logging.error(
-                        time.strftime("%Y-%m-%d %H:%M")
-                        + " - Error updating ("
-                        + str(domain_name)
-                        + ") : "
-                        + str(response.content)
-                    )
-                else:
-                    cursor.execute(
-                        "UPDATE subdomains SET current_ip4=? WHERE id = ?",
-                        (
-                            current_ip,
-                            subdomain_id,
-                        ),
-                    )
-                    cursor.execute(
-                        "UPDATE subdomains SET last_updated=? WHERE id = ?",
-                        (
-                            now,
-                            subdomain_id,
-                        ),
-                    )
-                    cursor.execute(
-                        "UPDATE subdomains SET last_checked=? WHERE id = ?",
-                        (
-                            now,
-                            subdomain_id,
-                        ),
-                    )
-                    conn.commit()
-            else:
-                cursor.execute(
-                    "UPDATE subdomains SET last_checked=? WHERE id = ?",
-                    (
-                        now,
-                        subdomain_id,
-                    ),
-                )
-                conn.commit()
+
+            cursor.execute(
+                "UPDATE subdomains "
+                "SET "
+                "  current_ip4 = :current_ip, "
+                "  last_updated = :now, "
+                "  last_checked = :now "
+                "WHERE domain_record_id = :domain_record_id",
+                {
+                    "current_ip": current_ip,
+                    "now": now,
+                    "domain_record_id": domain_record_id,
+                },
+            )
+
+            conn.commit()
+        else:
+            cursor.execute(
+                "UPDATE subdomains "
+                "SET last_checked=:now "
+                "WHERE domain_record_id = :domain_record_id",
+                {
+                    "now": now,
+                    "domain_record_id": domain_record_id,
+                },
+            )
+            conn.commit()
 
     if updated is None:
-        logging.info(time.strftime("%Y-%m-%d %H:%M") + " - Info : No updated necessary")
+        msg = time.strftime("%Y-%m-%d %H:%M") + " - Info : No updates necessary"
+        print(msg)
+        logging.info(msg)
     else:
-        logging.info(
+        msg = (
             time.strftime("%Y-%m-%d %H:%M")
             + " - Info : Updates done. Use ddns -l domain.com to check domain"
         )
+        print(msg)
+        logging.info(msg)
