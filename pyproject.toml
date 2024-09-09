@@ -101,6 +101,12 @@ select = [
     "FBT",  # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
+
+[tool.ruff.lint.isort]
+# ruff/isort are detecting first-party most of the time correctly.
+# Set this explicitly if needed.
+# known-first-party = ["ddns_digital_ocean"]
+
 [tool.pytest.ini_options]
 # Commented out; adding coverage for every single test run slows things down
 # substantially.
