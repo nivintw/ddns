@@ -28,7 +28,7 @@ from __future__ import annotations
 import argparse
 import textwrap
 
-from ddns_digital_ocean import api_key_helpers, info, ip, logs, subdomains
+from ddns_digital_ocean import api_key_helpers, info, ip, logs, manage, subdomains
 
 from . import domains
 
@@ -73,6 +73,35 @@ def configure_ip_lookup_subparser(subparsers: argparse._SubParsersAction[argpars
         choices=["4", "6"],
         default="4",
         help=("IPv4 or IPv6. Which IP address to update. Default: %(default)s"),
+    )
+
+
+def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
+    """Subparser `manage`"""
+    parser_manage = subparsers.add_parser(
+        name="manage",
+        help="Configure domains and subdomains to be managed by digital-ocean-dynamic-dns",
+    )
+    parser_manage.set_defaults(func=manage.martial)
+    parser_manage.add_argument(
+        "domain",
+        help=(
+            "The domain for which A records will be created. "
+            "If --subdomain is NOT specified, then all current A records for `domain` will be "
+            "imported and managed moving forward. "
+            "If --subdomain _is_ specified, then A records will only be managed for"
+            " that --subdomain."
+        ),
+    )
+    group_show_add = parser_manage.add_mutually_exclusive_group()
+    group_show_add.add_argument(
+        "--subdomain",
+        help="The subdomain (i.e. `name` for the A record) to manage for `domain`",
+    )
+    group_show_add.add_argument(
+        "--list",
+        help="List the currently managed subdomains (A records) for `domain`",
+        action="store_true",
     )
 
 
@@ -126,6 +155,7 @@ def setup_argparse():
 
     configure_domains_subparser(subparsers)
     configure_ip_lookup_subparser(subparsers)
+    configure_manage_subparser(subparsers)
 
     parser.add_argument(
         "-l",

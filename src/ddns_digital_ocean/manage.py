@@ -31,13 +31,15 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
-def manage(args: Namespace):
+def martial(args: Namespace):
     """Martialing function for manage subparser."""
 
     # No matter what other options, always ensure the domain is managed.
     domains.manage_domain(args.domain)
 
-    if args.subdomain is None:
+    if args.list:
+        subdomains.list_sub_domains(args.domain)
+    elif args.subdomain is None:
         # usage do_ddns manage --domain example.com
         # I.e. importing all existing A records for example.com.
         domains.manage_all_existing_A_records(domain=args.domain)

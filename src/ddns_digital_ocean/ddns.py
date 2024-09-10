@@ -87,6 +87,7 @@ def run():
         "logs",
         "show_info",
         "domains",
+        "manage",
     ]:
         # NOTE: these subparsers have been configured.
         # eventually, all options will be handled similarly.
