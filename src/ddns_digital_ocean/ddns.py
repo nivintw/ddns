@@ -27,12 +27,8 @@ import logging
 
 from . import constants
 from .args import setup_argparse
-from .database import connect_database
 
 logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
-
-
-conn = connect_database(constants.database_path)
 
 
 def run():
