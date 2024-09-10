@@ -35,6 +35,7 @@ from argparse import Namespace
 from datetime import datetime
 from string import ascii_letters, digits
 
+from more_itertools import peekable
 from rich.console import Console
 from rich.table import Table
 
@@ -180,7 +181,17 @@ def manage_subdomain(subdomain: str, domain: str):
         return
 
     ip = get_ip()
-    domain_record_id = do_api.create_A_record(subdomain, domain, ip)
+    # check to see if there's an existing A record.
+    found_domain_records = peekable(do_api.get_A_record_by_name(subdomain, domain))
+    if domain_record := found_domain_records.peek(None):
+        # NOTE: strictly speaking, there could be multiple...
+        # we only care if there's at least 1 already existing.
+        # we will assume management of the first (unordered) A record we find that
+        # has a matching name.
+        domain_record_id = domain_record["id"]
+    else:
+        domain_record_id = do_api.create_A_record(subdomain, domain, ip)
+
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     cursor.execute(
         "INSERT INTO subdomains("

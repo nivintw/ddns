@@ -72,6 +72,47 @@ def get_A_records(domain) -> Generator[dict[str, Any]]:
         yield from domain_records
 
 
+def get_A_record_by_name(subdomain: str, domain: str):
+    """Retrieve a potentially existing A record by it's name."""
+
+    apikey = get_api()
+    page_results_limit = 20
+
+    headers = {
+        "Authorization": "Bearer " + apikey,
+        "Content-Type": "application/json",
+    }
+    response = requests.get(
+        f"https://api.digitalocean.com/v2/domains/{domain}/records",
+        headers=headers,
+        timeout=45,
+        params={"name": f"{subdomain}.{domain}", "type": "A", "per_page": page_results_limit},
+    )
+    response.raise_for_status()
+    response_data = response.json()
+    domain_records = countable(response_data["domain_records"])
+
+    yield from domain_records
+    page = 1
+    while domain_records.items_seen == page_results_limit:
+        page += 1
+        response = requests.get(
+            f"https://api.digitalocean.com/v2/domains/{domain}/records",
+            headers=headers,
+            timeout=45,
+            params={
+                "name": f"{subdomain}.{domain}",
+                "type": "A",
+                "per_page": page_results_limit,
+                "page": page,
+            },
+        )
+        response.raise_for_status()
+        response_data = response.json()
+        domain_records = countable(response_data["domain_records"])
+        yield from domain_records
+
+
 def get_A_record(domain_record_id: str, domain: str):
     """Return the A record for `subdomain`."""
     apikey = get_api()
