@@ -28,8 +28,6 @@ import platform
 from pathlib import Path
 
 
-# Old Path...
-# /Users/tylernivin/.config/ddns...
 def set_app_data_home():
     match platform.system():
         case "Linux" | "Darwin":
