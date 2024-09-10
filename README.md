@@ -80,6 +80,8 @@ This has the additional effect of removing the subdomain from the local digital-
 - [ ] Register and upload package to PyPI.
 - [ ] Add automated CI/CD process including package release to PyPI.
 - [ ] Integrate python-semantic-release for version management.
+- [ ] Add support for purging local database (without updating DO records).
+  - Used to just get a "fresh install".
 - [ ] Add support to read config from a toml file.
 
 ## Scratch
