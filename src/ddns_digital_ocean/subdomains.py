@@ -35,7 +35,8 @@ from argparse import Namespace
 from datetime import datetime
 from string import ascii_letters, digits
 
-from rich import print
+from rich.console import Console
+from rich.table import Table
 
 from . import constants, do_api
 from .database import connect_database
@@ -60,47 +61,57 @@ conn = connect_database(constants.database_path)
 
 def list_sub_domains(domain):
     cursor = conn.cursor()
+    console = Console()
 
     cursor.execute("SELECT id FROM domains WHERE name LIKE ?", (domain,))
     row = cursor.fetchone()
     if row is None:
-        print(
+        console.print(
             "[red]Error: [/red]No such domain. "
             "Check spelling or use ddns -d to show all top domains."
         )
         return
+
     topdomain_id = row["id"]
 
     subdomains = cursor.execute(
-        "SELECT name,last_updated,last_checked,created,active "
+        "SELECT "
+        "  subdomains.name as name,"
+        "  current_ip4,"
+        "  last_updated,"
+        "  last_checked,"
+        "  subdomains.cataloged,"
+        "  subdomains.managed "
         "FROM subdomains "
+        "INNER JOIN domains on subdomains.main_id = domains.id "
         "WHERE main_id LIKE ?",
         (topdomain_id,),
     ).fetchall()
 
     if not subdomains:
-        print(f"[red]Error:[/red] No sub domains for [b]{domain}[/b]")
+        console.print(f"[red]Error:[/red] No sub domains for [b]{domain}[/b]")
         return
 
-    print(f"\n\nCurrent sub domains for [b]{domain}[/b]\n\n")
-    print("Domain\t\t\t\tCreated\t\t\tUpdated\t\t\tChecked\t\t\tActive")
-    print("=" * 114)
-    for i in subdomains:
-        active = "True" if i["active"] == 1 else "False"
-        topdomain = i["name"] + "." + domain
-        topdomain = f"{topdomain:<25}"
-        print(
-            topdomain
-            + "\t"
-            + i["created"]
-            + "\t"
-            + i["last_updated"]
-            + "\t"
-            + i["last_checked"]
-            + "\t"
-            + active
+    table = Table(title=f"Current sub-domains for [b]{domain}[/b]", highlight=True)
+    table.add_column("Subdomain")
+    table.add_column("Current IPv4")
+    table.add_column("First Managed")
+    table.add_column("Last Checked")
+    table.add_column("Last Updated")
+    table.add_column("Currently Managed")
+
+    for row in subdomains:
+        active = "True" if row["managed"] == 1 else "False"
+        table.add_row(
+            row["name"],
+            row["current_ip4"],
+            row["cataloged"],
+            row["last_checked"],
+            row["last_updated"],
+            active,
         )
-    print("\n")
+
+    console.print(table)
 
 
 def list_do_unmanaged_sub_domains(domain):
@@ -127,8 +138,11 @@ def manage_subdomain(subdomain: str, domain: str):
         The name of the Domain registered with Digital Ocean.
 
     """
+    console = Console()
     if set(subdomain).difference(ascii_letters + "." + digits + "-" + "@"):
-        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
+        console.print(
+            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
+        )
         raise NonSimpleDomainNameError()
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
@@ -141,7 +155,7 @@ def manage_subdomain(subdomain: str, domain: str):
     ).fetchone()
 
     if row is None:
-        print(
+        console.print(
             f"[red]Error:[/red] [bold]{domain}[/bold] is not a managed domain. "
             "We do [bold]not[/bold] expect users to ever be exposed to this error. "
             "If you see this in the console while using digital-ocean-dynamic-dns please"
@@ -159,7 +173,7 @@ def manage_subdomain(subdomain: str, domain: str):
     )
     count = cursor.fetchone()[0]
     if count != 0:
-        print(
+        console.print(
             f"[yellow]Warning:[/yellow] [bold]{subdomain}[/bold]"
             " is already being managed by digital-ocean-dynamic-dns."
         )
@@ -197,7 +211,7 @@ def manage_subdomain(subdomain: str, domain: str):
         },
     )
     conn.commit()
-    print(
+    console.print(
         f"The A record for the subdomain {subdomain} for domain {domain} is now"
         " being managed by digital-ocean-dynamic-dns!"
     )
