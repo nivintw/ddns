@@ -157,66 +157,6 @@ def setup_argparse():
     configure_ip_lookup_subparser(subparsers)
     configure_manage_subparser(subparsers)
 
-    parser.add_argument(
-        "-l",
-        "--list",
-        help="List subdomains for <domain> which are managed by ddns-digital-ocean.",
-        nargs=1,
-        metavar=("domain"),
-        action="append",
-    )
-
-    parser.add_argument(
-        "-u",
-        "--show-unmanaged",
-        help="List subdomains for <domain> which are not managed by ddns-digital-ocean.",
-        nargs=1,
-        metavar=("domain"),
-        action="append",
-    )
-
-    parser.add_argument(
-        "-c",
-        "--current",
-        help="List the current IP address for the sub-domain given",
-        nargs=1,
-        action="append",
-    )
-
-    parser.add_argument(
-        "-s",
-        "--sub",
-        help=("Add new subdomain(s) to your DigitalOcean account and use as dynamic DNS."),
-        nargs="+",
-        metavar=("domain"),
-    )
-
-    parser.add_argument(
-        "-k",
-        "--local",
-        help=("Add an existing DigitalOcean subdomain to your ddns DB and use as dynamic DNS."),
-        nargs=2,
-        metavar=("domain", "domainid"),
-        action="append",
-    )
-
-    parser.add_argument(
-        "-r",
-        "--remove",
-        help="Remove a subdomain from your DigitalOcean account and ddns.",
-        nargs="+",
-        metavar=("domain"),
-    )
-
-    parser.add_argument(
-        "-e",
-        "--edit",
-        help="Changes domain from active to inactive or the other way around...",
-        nargs=1,
-        metavar=("test.example.com"),
-        action="append",
-    )
-
     parser_api_key = subparsers.add_parser(
         name="api_key",
         help="Add/Change the Digital Ocean API Key.",
