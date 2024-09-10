@@ -82,3 +82,19 @@ def connect_database(database_path: Path):
         )
 
         return conn
+
+
+# TODO: Decide if I want to implement this.
+# def purge_database(database_path: Path):
+#     """Delete all local database files.
+
+#     This rarely-used utility should only be used if you need to cleanup a prior database.
+#     """
+
+#     for root, dirs, files in database_path.walk(top_down=False):
+#         for name in files:
+#             (root / name).unlink()
+#         for name in dirs:
+#             (root / name).rmdir()
+
+#     database_path.rmdir()
