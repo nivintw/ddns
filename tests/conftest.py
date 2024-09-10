@@ -65,11 +65,22 @@ def mock_db_for_test(temp_database_path: Path, mocker):
 
 
 @pytest.fixture()
-def preload_api_key(mock_db_for_test: Connection):
+def preload_api_key(
+    mock_db_for_test: Connection,
+    monkeypatch: pytest.MonkeyPatch,
+):
     """Load a sentinel API key.
     Almost all operations require an api key to be configured.
     This fixture provides a sentinel / not-real API key for us to use.
+
+    This fixture sets the API token in _both_ places:
+    1. Env var DIGITALOCEAN_TOKEN.
+    2. The database table.
+
+    In theory, setting this API token in the database should be redundant
+      with setting DIGITALOCEAN_TOKEN, however, no strong reason to not set both.
     """
     SENTINEL_API_KEY = "sentinel-api-key"  # pragma: allowlist secret
+    monkeypatch.setenv("DIGITALOCEAN_TOKEN", SENTINEL_API_KEY)
     api_key_helpers.set_api_key(SENTINEL_API_KEY)
     return SENTINEL_API_KEY

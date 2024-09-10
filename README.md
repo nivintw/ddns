@@ -73,8 +73,9 @@ This has the additional effect of removing the subdomain from the local digital-
 - [ ] Update README.md to highlight where/how this tool is intended to be used.
 - [ ] Update logging features/implementation.
 - [/] Create tests for the codebase and reach > 80% coverage.
-- [ ] Add support for reading the Digital Ocean API key from environment variables.
+- [x] Add support for reading the Digital Ocean API key from environment variable `DIGITALOCEAN_TOKEN`.
   - Environment variables will have precedence over stored api key.
+  - Same environment variable name used by [the official Digital Ocean python library pydo](https://github.com/digitalocean/pydo)
 - [ ] Rename and update sub-domain related management functions.
 - [ ] Register and upload package to PyPI.
 - [ ] Add automated CI/CD process including package release to PyPI.

@@ -23,24 +23,14 @@
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
 #   and the ddns-digital-ocean contributors
 
-from pathlib import Path
 
 import pytest
 from pytest_check import check
+from pytest_mock import MockerFixture
 
 from ddns_digital_ocean import api_key_helpers
-from ddns_digital_ocean.database import connect_database
 
 # TODO add checks for last_updated column behavior.
-
-
-@pytest.fixture()
-def mock_db_for_test(temp_database_path: Path, mocker):
-    """Mock api_key_helpers.conn to have a per-test connection / database.
-    Ensures isolation of the database state between tests.
-    """
-    test_specific_conn = connect_database(temp_database_path)
-    mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
 
 
 @pytest.mark.usefixtures("mock_db_for_test")
@@ -85,3 +75,24 @@ class TestApiKeyStorage:
             api_key_helpers.set_api_key(EXPECTED_API_KEY)
             found_update_key = api_key_helpers.get_api()
             assert found_update_key == EXPECTED_API_KEY
+
+    def test_env_var_precedence(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
+    ):
+        """API token preferentially read from DIGITALOCEAN_TOKEN"""
+        EXPECTED_API_KEY = "sentinel-token-value"  # pragma: allowlist secret
+        monkeypatch.setenv("DIGITALOCEAN_TOKEN", EXPECTED_API_KEY)
+
+        # Arrange: Override our database connection from mock_db_for_test.
+        # This will "break" the database, but in this case that's actually what we want.
+        # I.e. we shouldn't touch the database, so we don't want it to be functional.
+        mocked_conn = mocker.patch.object(api_key_helpers, "conn")
+
+        found_api_token = api_key_helpers.get_api()
+        assert found_api_token == EXPECTED_API_KEY
+
+        # Validate we returned before instantiating the cursor.
+        # I.e. we don't lookup the API token from the database.
+        mocked_conn.cursor.assert_not_called()
