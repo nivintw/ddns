@@ -35,6 +35,8 @@ from ddns_digital_ocean.subdomains import do_api
 
 pytestmark = pytest.mark.usefixtures("mocked_responses")
 
+# TODO: Add tests related to claiming management of an existing A record.
+
 
 @pytest.mark.parametrize(
     "expected_subdomain, expected_domain",
@@ -122,6 +124,13 @@ def test_side_effects(
     )
     mocked_create_A_record.return_value = EXPECTED_DOMAIN_RECORD_ID
 
+    mocked_get_A_record = mocker.patch.object(
+        do_api,
+        "get_A_record_by_name",
+        autospec=True,
+    )
+    mocked_get_A_record.return_value = []
+
     # Arrange: Insert EXPECTED_DOMAIN into the db
     # as a managed domain.
     with mock_db_for_test:
@@ -145,6 +154,8 @@ def test_side_effects(
     mocked_create_A_record.assert_called_once_with(
         EXPECTED_A_RECORD_NAME, expected_domain, EXPECTED_IP4_ADDRESS
     )
+
+    mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
 
     # Validate the subdomain was added to the database.
     row = mock_db_for_test.execute(

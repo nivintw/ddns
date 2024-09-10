@@ -94,6 +94,14 @@ class TestUpdateAllManagedSubdomains:
             subdomains.do_api, "create_A_record", autospec=True
         )
         mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        # can manage the subdomains without needing to call out.
+        mocked_get_A_record = mocker.patch.object(
+            subdomains.do_api,
+            "get_A_record_by_name",
+            autospec=True,
+        )
+        mocked_get_A_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -164,6 +172,14 @@ class TestUpdateAllManagedSubdomains:
             subdomains.do_api, "create_A_record", autospec=True
         )
         mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        # can manage the subdomains without needing to call out.
+        mocked_get_A_record = mocker.patch.object(
+            subdomains.do_api,
+            "get_A_record_by_name",
+            autospec=True,
+        )
+        mocked_get_A_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -257,6 +273,14 @@ class TestUpdateAllManagedSubdomains:
             subdomains.do_api, "create_A_record", autospec=True
         )
         mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        # can manage the subdomains without needing to call out.
+        mocked_get_A_record = mocker.patch.object(
+            subdomains.do_api,
+            "get_A_record_by_name",
+            autospec=True,
+        )
+        mocked_get_A_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -377,6 +401,14 @@ class TestUpdateAllManagedSubdomains:
             subdomains.do_api, "create_A_record", autospec=True
         )
         mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        # can manage the subdomains without needing to call out.
+        mocked_get_A_record = mocker.patch.object(
+            subdomains.do_api,
+            "get_A_record_by_name",
+            autospec=True,
+        )
+        mocked_get_A_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -496,6 +528,14 @@ class TestUpdateAllManagedSubdomains:
             subdomains.do_api, "create_A_record", autospec=True
         )
         mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        # can manage the subdomains without needing to call out.
+        mocked_get_A_record = mocker.patch.object(
+            subdomains.do_api,
+            "get_A_record_by_name",
+            autospec=True,
+        )
+        mocked_get_A_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
