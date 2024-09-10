@@ -84,3 +84,9 @@ def preload_api_key(
     monkeypatch.setenv("DIGITALOCEAN_TOKEN", SENTINEL_API_KEY)
     api_key_helpers.set_api_key(SENTINEL_API_KEY)
     return SENTINEL_API_KEY
+
+
+@pytest.fixture(autouse=True)
+def clear_local_env_var_for_test(monkeypatch: pytest.MonkeyPatch):
+    """Ensure that the tests aren't infected by local env vars."""
+    monkeypatch.delenv("DIGITALOCEAN_TOKEN", raising=False)
