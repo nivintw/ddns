@@ -34,6 +34,7 @@ from more_itertools import countable
 from rich import print
 
 from .api_key_helpers import get_api
+from .exceptions import NonSimpleDomainNameError
 
 
 def get_A_records(domain) -> Generator[dict[str, Any]]:
@@ -113,9 +114,13 @@ def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
     returns:
         (str): The domain record id returned from the Digital Ocean API.
     """
-    if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
+    if set(domain).difference(ascii_letters + "." + digits + "-" + "@") or set(
+        subdomain
+    ).difference(ascii_letters + "." + digits + "-" + "@"):
         print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
-        raise ValueError("Error: Give the domain name in simple form e.g. test.domain.com")
+        raise NonSimpleDomainNameError(
+            "Error: Give the domain name in simple form e.g. test.domain.com"
+        )
 
     apikey = get_api()
 

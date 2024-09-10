@@ -320,6 +320,37 @@ class TestCreateARecord:
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
             _ = do_api.create_A_record(EXPECTED_A_RECORD_NAME, EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS)
 
+    @pytest.mark.parametrize(
+        "subdomain, domain",
+        [
+            pytest.param("@", "\N{GREEK CAPITAL LETTER DELTA}-forge.example.com", id="bad-domain"),
+            pytest.param(
+                "\N{GREEK CAPITAL LETTER DELTA}-forge.example.com",
+                "example.com",
+                id="bad-subdomain",
+            ),
+            pytest.param(
+                "\N{GREEK CAPITAL LETTER DELTA}-forge.example.com",
+                "\N{GREEK CAPITAL LETTER DELTA}-forge.example.com",
+                id="both-bad",
+            ),
+        ],
+    )
+    def test_non_simple_chars_in_domain_name(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        subdomain: str,
+        domain: str,
+    ):
+        """Raise NonSimpleDomainNameError if non-simple characters are used."""
+        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        with pytest.raises(do_api.NonSimpleDomainNameError):
+            do_api.create_A_record(
+                subdomain,
+                domain,
+                EXPECTED_IP_ADDRESS,
+            )
+
 
 class TestGetARecord:
     """Retrieve a single A record."""

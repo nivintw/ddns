@@ -39,6 +39,7 @@ from rich import print
 
 from . import constants, do_api
 from .database import connect_database
+from .exceptions import NonSimpleDomainNameError
 from .ip import get_ip
 
 
@@ -52,15 +53,6 @@ class TopDomainNotManagedError(Exception):
     I.e. all user-facing code paths are required to manage the top domain
       before managing the sub-domains/A records.
     """
-
-
-class NonSimpleDomainNameError(Exception):
-    """Supported domain names must be in a simple format.
-    i.e. ascii_letters + "." + digits + "-" + "@"
-    """
-
-    # TODO: move this to top-level exceptions.py and
-    #   use this same exception class in do_api.py.
 
 
 conn = connect_database(constants.database_path)
