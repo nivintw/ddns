@@ -35,8 +35,6 @@ from ddns_digital_ocean.subdomains import do_api
 
 pytestmark = pytest.mark.usefixtures("mocked_responses")
 
-# TODO: Add tests related to claiming management of an existing A record.
-
 
 @pytest.mark.parametrize(
     "expected_subdomain, expected_domain",
@@ -154,6 +152,119 @@ def test_side_effects(
     mocked_create_A_record.assert_called_once_with(
         EXPECTED_A_RECORD_NAME, expected_domain, EXPECTED_IP4_ADDRESS
     )
+
+    mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+
+    # Validate the subdomain was added to the database.
+    row = mock_db_for_test.execute(
+        "SELECT "
+        "   domain_record_id,"
+        "   main_id,"
+        "   name,"
+        "   current_ip4,"
+        "   cataloged,"
+        "   last_checked,"
+        "   last_updated "
+        "from subdomains "
+        "WHERE "
+        "name = :name",
+        {"name": EXPECTED_A_RECORD_NAME},
+    ).fetchone()
+    assert row is not None  # triggered when no match / no insert.
+
+    # Validate: inserted values.
+    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
+    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+    assert dt.datetime.strptime(row["last_checked"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+    assert dt.datetime.strptime(row["last_updated"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+    assert row["main_id"] == 1  # expected id from domains.id
+
+    # Validate user output
+    captured_errout = capsys.readouterr()
+    assert f"{EXPECTED_A_RECORD_NAME} for domain {expected_domain}" in captured_errout.out
+
+
+@pytest.mark.parametrize(
+    "expected_subdomain, expected_domain",
+    [
+        pytest.param("support.example.com", "example.com", id="full-sub-domain"),
+        pytest.param(
+            "@",
+            "example.com",
+            id="short-sub-domain",
+        ),
+    ],
+)
+def test_claim_existing_A_record(
+    mocker: MockerFixture,
+    mock_db_for_test: Connection,
+    capsys: CaptureFixture[str],
+    expected_subdomain: str,
+    expected_domain: str,
+):
+    """
+    Expected side effects:
+        1. subdomain added correctly to database.
+        2. User-facing output is provided.
+        3. create_A_record is NOT called.
+
+    """
+    # Arrange the create_A_record mock.
+    EXPECTED_DOMAIN_RECORD_ID = 1001
+    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
+    EXPECTED_IP4_ADDRESS = "127.0.0.1"
+    EXPECTED_DOMAIN_RECORD = {
+        "id": EXPECTED_DOMAIN_RECORD_ID,
+        "type": "A",
+        "name": expected_domain,
+        "data": "127.0.0.1",
+        "ttl": 1800,
+    }
+
+    # Arrange: Mock the IP address lookup
+    mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
+    mocked_get_ip.return_value = EXPECTED_IP4_ADDRESS
+
+    # Arrange: Mock the creation of the A record.
+    # We expect this mock to NOT be called.
+    mocked_create_A_record = mocker.patch.object(
+        do_api,
+        "create_A_record",
+        autospec=True,
+    )
+
+    mocked_get_A_record = mocker.patch.object(
+        do_api,
+        "get_A_record_by_name",
+        autospec=True,
+    )
+    mocked_get_A_record.return_value = [
+        EXPECTED_DOMAIN_RECORD,
+    ]
+
+    # Arrange: Insert EXPECTED_DOMAIN into the db
+    # as a managed domain.
+    with mock_db_for_test:
+        update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+        mock_db_for_test.execute(
+            "INSERT INTO domains(name, cataloged, last_managed) "
+            " values(:name, :cataloged, :last_managed)",
+            {
+                "name": expected_domain,
+                "cataloged": update_datetime,
+                "last_managed": update_datetime,
+            },
+        )
+
+    subdomains.manage_subdomain(subdomain=expected_subdomain, domain=expected_domain)
+
+    # IP Address lookup was called.
+    mocked_get_ip.assert_called_once()
+
+    # Validate: No attempt to create an A record;
+    # expect to claim the existing A record that matched.
+    mocked_create_A_record.assert_not_called()
 
     mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
 
