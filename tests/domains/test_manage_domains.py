@@ -25,6 +25,7 @@
 
 import datetime as dt
 from sqlite3 import Connection
+from unittest.mock import call
 
 import pytest
 from pytest_mock import MockerFixture
@@ -113,3 +114,40 @@ class TestManageDomain:
             row = cursor.fetchone()
             assert row["cataloged"] == update_datetime
             assert row["last_managed"] == update_datetime
+
+
+@pytest.mark.parametrize(
+    "existing_A_records",
+    [
+        pytest.param([], id="no-a-records"),
+        pytest.param(
+            [
+                {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
+                {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
+            ],
+            id="two-a-records",
+        ),
+    ],
+)
+def test_manage_all_existing_A_records(
+    existing_A_records: list,
+    mocker: MockerFixture,
+):
+    """We can manage all existing A records for a given domain."""
+    EXPECTED_DOMAIN = "example.com"
+
+    mocked_get_A_records = mocker.patch.object(domains.do_api, "get_A_records", autospec=True)
+    mocked_get_A_records.return_value = existing_A_records
+
+    mocked_managed_subdomain = mocker.patch.object(domains, "manage_subdomain", autospec=True)
+
+    domains.manage_all_existing_A_records(EXPECTED_DOMAIN)
+
+    mocked_get_A_records.assert_called_once_with(EXPECTED_DOMAIN)
+
+    if not existing_A_records:
+        mocked_managed_subdomain.assert_not_called()
+    else:
+        mocked_managed_subdomain.assert_has_calls(
+            [call(subdomain=x["name"], domain=EXPECTED_DOMAIN) for x in existing_A_records]
+        )
