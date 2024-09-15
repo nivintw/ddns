@@ -64,68 +64,68 @@ def list_sub_domains(domain):
     cursor = conn.cursor()
     console = Console()
 
-    cursor.execute("SELECT id FROM domains WHERE name LIKE ?", (domain,))
-    row = cursor.fetchone()
+    domain_A_records = {x["name"]: x for x in do_api.get_A_records(domain)}
+
+    row = cursor.execute("SELECT id FROM domains WHERE name = ?", (domain,)).fetchone()
     if row is None:
-        console.print(
-            "[red]Error: [/red]No such domain. "
-            "Check spelling or use ddns -d to show all top domains."
-        )
-        return
+        managed_subdomains = {}
+    else:
+        topdomain_id = row["id"]
 
-    topdomain_id = row["id"]
+        subdomains = cursor.execute(
+            "SELECT "
+            "  subdomains.name as name,"
+            "  current_ip4,"
+            "  last_updated,"
+            "  last_checked,"
+            "  subdomains.cataloged,"
+            "  subdomains.managed "
+            "FROM subdomains "
+            "INNER JOIN domains on subdomains.main_id = domains.id "
+            "WHERE main_id LIKE ?",
+            (topdomain_id,),
+        ).fetchall()
+        managed_subdomains = {x["name"]: x for x in subdomains}
 
-    subdomains = cursor.execute(
-        "SELECT "
-        "  subdomains.name as name,"
-        "  current_ip4,"
-        "  last_updated,"
-        "  last_checked,"
-        "  subdomains.cataloged,"
-        "  subdomains.managed "
-        "FROM subdomains "
-        "INNER JOIN domains on subdomains.main_id = domains.id "
-        "WHERE main_id LIKE ?",
-        (topdomain_id,),
-    ).fetchall()
+    unmanaged_domain_records = domain_A_records.keys() - managed_subdomains.keys()
+    managed_domain_records = domain_A_records.keys() & managed_subdomains.keys()
 
-    if not subdomains:
-        console.print(f"[red]Error:[/red] No sub domains for [b]{domain}[/b]")
-        return
+    if managed_domain_records:
+        table = Table(title=f"Managed A records for [b]{domain}[/b]", highlight=True)
+        table.add_column("Name/Subdomain")
+        table.add_column("Current IPv4")
+        table.add_column("First Managed")
+        table.add_column("Last Checked")
+        table.add_column("Last Updated")
+        table.add_column("Currently Managed")
 
-    table = Table(title=f"Current sub-domains for [b]{domain}[/b]", highlight=True)
-    table.add_column("Subdomain")
-    table.add_column("Current IPv4")
-    table.add_column("First Managed")
-    table.add_column("Last Checked")
-    table.add_column("Last Updated")
-    table.add_column("Currently Managed")
+        for subdomain in managed_domain_records:
+            row = managed_subdomains[subdomain]
+            active = "True" if row["managed"] == 1 else "False"
+            table.add_row(
+                row["name"],
+                row["current_ip4"],
+                row["cataloged"],
+                row["last_checked"],
+                row["last_updated"],
+                active,
+            )
 
-    for row in subdomains:
-        active = "True" if row["managed"] == 1 else "False"
-        table.add_row(
-            row["name"],
-            row["current_ip4"],
-            row["cataloged"],
-            row["last_checked"],
-            row["last_updated"],
-            active,
-        )
+        console.print(table)
+    else:
+        console.print(f"No managed A records for [b]{domain}[/b]")
 
-    console.print(table)
+    if unmanaged_domain_records:
+        table = Table(title=f"Unmanaged A records for [b]{domain}[/b]")
+        table.add_column("Name/Subdomain")
+        table.add_column("Domain Record Id")
 
+        for domain_record_name in unmanaged_domain_records:
+            table.add_row(domain_record_name, str(domain_A_records[domain_record_name]["id"]))
 
-def list_do_unmanaged_sub_domains(domain):
-    cursor = conn.cursor()
-    domain_A_records = do_api.get_A_records(domain)
-
-    print(f"Domains in your DigitalOcean account not in ddns DB for [b]{domain}[/b]")
-    print("===================================================================")
-    for k in domain_A_records:
-        cursor.execute("SELECT COUNT(*) FROM subdomains WHERE id like ?", (str(k["id"]),))
-        count = cursor.fetchone()[0]
-        if count == 0:
-            print(k["name"] + "." + domain + "\t\tID : " + str(k["id"]))
+        console.print(table)
+    else:
+        console.print(f"No unmanaged A records for [b]{domain}[/b]")
 
 
 def manage_subdomain(subdomain: str, domain: str):

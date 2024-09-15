@@ -94,22 +94,25 @@ This has the additional effect of removing the subdomain from the local digital-
 do_ddns
 
 - manage
-  - `--domain example.com --subdomain @`
-  - `--subdomain support.example.com --domain example.com`
+  - `example.com --subdomain @`
+  - `example.com --subdomain support.example.com`
     - Automatic domain management via subdomain driven commands.
-    - Keeps the focus on the A records.
+    - Keeps the focus on the management of A records.
     - let's you manage a sub-selection of all A records / subdomains for the given domain.
     - Will create or update the A record for the specified subdomain.
-  - `--domain example.com`
-    - start managing IP addresses for all current A records.
+  - `example.com`
+    - start managing IP addresses for all current A records associated with `example.com`.
     - Will identify existing A records and begin managing those.
+  - `example.com --list`
+    - Show all A records for example.com.
+    - Will show both managed and un-managed subdomains.
 - un-manage
-  - `--domain --subdomain`
-  - `--subdomain support.example.com --domain example.com`
-    - stop managing A records for the specific subdomain / host name.
-  - `--domain`
-    - stop managing A records for the entire domain.
-  - Leaves the current configuration in the database, marked unmanaged.
+  - `example.com --subdomain support`
+  - `example.com --subdomain support.example.com`
+    - stop managing A records with the name `support` for the domain example.com.
+  - `example.com`
+    - stop managing all A records for example.com.
+  - Leaves the current configuration in the database, marked un-managed.
 - records create (not recommended)
   - `--domain example.com --subdomain support.example.com`
   - low-level interface to add specific A records from Digital Ocean

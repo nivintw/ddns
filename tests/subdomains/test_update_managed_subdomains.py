@@ -36,25 +36,6 @@ from ddns_digital_ocean import args, ip, subdomains
 pytestmark = pytest.mark.usefixtures("mock_db_for_test")
 
 
-@pytest.fixture()
-def added_top_domain(
-    mock_db_for_test: Connection,
-    mocker: MockerFixture,
-):
-    """Inject a top-level domain into the test DB."""
-    from ddns_digital_ocean import domains
-
-    EXPECTED_TOP_DOMAIN = "example.com"
-    mocked_verify_domain_registered = mocker.patch.object(
-        domains.do_api, "verify_domain_is_registered", autospec=True
-    )
-
-    domains.manage_domain(EXPECTED_TOP_DOMAIN)
-
-    yield EXPECTED_TOP_DOMAIN
-    mocked_verify_domain_registered.assert_called_once_with(EXPECTED_TOP_DOMAIN)
-
-
 @pytest.mark.usefixtures("mocked_responses")
 class TestUpdateAllManagedSubdomains:
     """Update A records for all managed subdomains."""
