@@ -1,5 +1,8 @@
 # digital-ocean-dynamic-dns
 
+<!-- Pytest Coverage Comment:Begin -->
+<!-- Pytest Coverage Comment:End -->
+
 Dynamic DNS python tool for Digital Ocean
 
 This project offers a way to manage dynamic DNS, with specific support for [DigitalOcean](https://www.digitalocean.com/) authoritative DNS servers.
