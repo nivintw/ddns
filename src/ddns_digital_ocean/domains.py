@@ -40,7 +40,7 @@ conn = connect_database(constants.database_path)
 def manage_domain(domain):
     """Ensure <domain> is a registered domain for this account and mark as managed."""
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM domains WHERE name like ?", (domain,))
+    cursor.execute("SELECT COUNT(*) FROM domains WHERE name = ? and managed = 1", (domain,))
     count = cursor.fetchone()[0]
     if count != 0:
         # domain is already being managed; nothing to do.
@@ -52,7 +52,8 @@ def manage_domain(domain):
     with conn:
         conn.execute(
             "INSERT INTO domains(name, cataloged, last_managed) "
-            " values(:name, :cataloged, :last_managed)",
+            " values(:name, :cataloged, :last_managed) "
+            "ON CONFLICT (name) DO UPDATE SET managed = 1, last_managed = :last_managed",
             {
                 "name": domain,
                 "cataloged": update_datetime,
@@ -80,8 +81,27 @@ def un_manage_domain(domain):
 
     Will not remove or deregister the associated domain.
     """
-    # TODO: Implement.
-    ...
+    cursor = conn.cursor()
+    row = cursor.execute(
+        "select id from domains where name = ? and managed = 1", (domain,)
+    ).fetchone()
+    if row is None:
+        print(f"The domain [b]{domain}[/b] is not managed by digital-ocean-dynamic-dns.")
+        return
+    domain_id = row["id"]
+
+    with conn:
+        subs_res = conn.execute(
+            "UPDATE subdomains SET managed = 0 WHERE main_id = :domain_id and managed = 1",
+            {"domain_id": domain_id},
+        )
+        conn.execute(
+            "UPDATE domains set managed = 0 where id = :domain_id", {"domain_id": domain_id}
+        )
+        print(
+            f"Domain {domain} is no longer managed. "
+            f"{subs_res.rowcount} related subdomains also no longer managed."
+        )
 
 
 def show_all_domains():

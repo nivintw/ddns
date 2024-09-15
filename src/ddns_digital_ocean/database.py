@@ -61,7 +61,7 @@ def connect_database(database_path: Path):
         c.execute(
             """CREATE TABLE IF NOT EXISTS domains (
                 id integer PRIMARY KEY,
-                name text NOT NULL,
+                name text NOT NULL UNIQUE,
                 cataloged text NOT NULL,
                 managed integer default 1,
                 last_managed text default 'N/A'

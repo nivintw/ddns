@@ -166,7 +166,7 @@ def manage_subdomain(subdomain: str, domain: str):
     domain_id = row["id"]
 
     cursor.execute(
-        "SELECT count(*) FROM subdomains WHERE main_id = ? AND name = ?",
+        "SELECT count(*) FROM subdomains WHERE main_id = ? AND name = ? and managed = 1",
         (
             domain_id,
             subdomain,
@@ -210,7 +210,8 @@ def manage_subdomain(subdomain: str, domain: str):
         "   :cataloged,"
         "   :last_checked,"
         "   :last_updated"
-        ")",
+        ") ON CONFLICT(domain_record_id) DO UPDATE SET "
+        "    managed = 1",
         {
             "domain_record_id": domain_record_id,
             "main_id": domain_id,
