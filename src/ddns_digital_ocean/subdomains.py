@@ -151,7 +151,7 @@ def manage_subdomain(subdomain: str, domain: str):
 
     cursor = conn.cursor()
     row = cursor.execute(
-        "SELECT id FROM domains WHERE name = ?",
+        "SELECT id FROM domains WHERE name = ? and managed = 1",
         (domain,),
     ).fetchone()
 
@@ -189,6 +189,11 @@ def manage_subdomain(subdomain: str, domain: str):
         # we will assume management of the first (unordered) A record we find that
         # has a matching name.
         domain_record_id = domain_record["id"]
+        do_api.update_A_record(
+            domain_record_id=domain_record_id,
+            domain=domain,
+            new_ip_address=ip,
+        )
     else:
         domain_record_id = do_api.create_A_record(subdomain, domain, ip)
 
