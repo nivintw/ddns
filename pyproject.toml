@@ -28,7 +28,6 @@ name = "digital-ocean-dynamic-dns"
 version = "1.0.1"
 description = "Python-based CLI tool for managing dynamic dns with Digital Ocean."
 authors = [{ name = "Tyler Nivin", email = "tyler@nivin.tech" }]
-license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.12"
 
@@ -41,7 +40,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
 
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: OSI Approved :: MIT License",
     # Specify the Python versions you support here.
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
