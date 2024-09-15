@@ -58,19 +58,6 @@ jobs:
       - uses: yezz123/setup-uv@v4
       - name: Test with pytest
         run: uv run pytest --cov=digital_ocean_dynamic_dns --junitxml=junit/test-results.xml --cov-report=xml:coverage.xml --cov-report=html
-      - name: Test Summary
-        id: test_summary
-        uses: test-summary/action@v2
-        with:
-          paths: junit/test-results.xml
-        if: ${{ always() }}
-      - name: Comment PR with test results
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            ${{ steps.test_summary.outputs.passed }}/${{ steps.test_summary.outputs.total }} tests passed
-          comment_tag: test_results
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
