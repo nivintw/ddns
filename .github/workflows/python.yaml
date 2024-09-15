@@ -47,6 +47,8 @@ jobs:
           extra_args: --hook-stage manual --all-files
 
   tests:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
