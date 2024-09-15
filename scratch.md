@@ -21,20 +21,19 @@ do_ddns
     - Show all A records for example.com.
     - Will show both managed and un-managed subdomains.
 - un-manage
+
   - `example.com --subdomain support`
   - `example.com --subdomain support.example.com`
     - stop managing A records with the name `support` for the domain example.com.
   - `example.com`
     - stop managing all A records for example.com.
   - Leaves the current configuration in the database, marked un-managed.
-- records create (not recommended)
-  - `--domain example.com --subdomain support.example.com`
-  - low-level interface to add specific A records from Digital Ocean
-  - Generally not needed; creating the record will be handled by manage.
-- records delete (not recommended)
-  - `--domain example.com --subdomain spprt.example.com`
-  - low-level interface to remove specific A records from Digital Ocean
-  - Generally only needed if you made a mistake while adding a subdomain and want to clean up.
+
 - update_records (do automatic update for managed records)
+
   - no args
     - Updates IP addresses for A records on configured domains/subdomains.
+
+- show-info
+  - `do_ddns show-info`
+  - `do_ddns show-info domains`
