@@ -70,11 +70,11 @@ jobs:
           pytest-xml-coverage-path: ./coverage.xml
           junitxml-path: junit/test-results.xml
       - name: Update Readme with Coverage Html
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref_name == github.event.repository.default_branch }}
         run: |
           sed -i '/<!-- Pytest Coverage Comment:Begin -->/,/<!-- Pytest Coverage Comment:End -->/c\<!-- Pytest Coverage Comment:Begin -->\n\${{ steps.coverageComment.outputs.content }}\n<!-- Pytest Coverage Comment:End -->' ./README.md
       - name: Commit & Push changes to Readme
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref_name == github.event.repository.default_branch }}
         uses: actions-js/push@master
         with:
           message: Update coverage on Readme
