@@ -134,6 +134,20 @@ def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argpars
     )
 
 
+def configure_show_info_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
+    parser_show_info = subparsers.add_parser(
+        name="show_info",
+        help="Show information about do_ddns, including current configuration and version.",
+    )
+    parser_show_info.set_defaults(func=info.show_current_info)
+    parser_show_info.add_argument(
+        "--show-api-key",
+        help="Display the unmasked API key in output.",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
+
+
 def setup_argparse():
     parser = argparse.ArgumentParser(
         prog="do_ddns",
@@ -170,22 +184,12 @@ def setup_argparse():
         help=("Print the logs."),
     )
     parser_logs.set_defaults(func=logs.show_log)
-    parser_show_info = subparsers.add_parser(
-        name="show_info",
-        help="Show information about do_ddns, including current configuration and version.",
-    )
-    parser_show_info.set_defaults(func=info.show_current_info)
-    parser_show_info.add_argument(
-        "--show-api-key",
-        help="Display the unmasked API key in output.",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-    )
 
     configure_domains_subparser(subparsers)
     configure_ip_lookup_subparser(subparsers)
     configure_manage_subparser(subparsers)
     configure_un_manage_subparser(subparsers)
+    configure_show_info_subparser(subparsers)
 
     parser_api_key = subparsers.add_parser(
         name="api_key",

@@ -25,7 +25,8 @@
 
 from argparse import Namespace
 
-from rich import print
+from rich.console import Console
+from rich.table import Table
 
 from . import __version__, constants
 from .api_key_helpers import NoAPIKeyError, get_api
@@ -35,41 +36,38 @@ conn = connect_database(constants.database_path)
 
 
 def show_current_info(args: Namespace):
+    console = Console()
+    grid = Table(
+        title="[b]do_ddns[/b] - an open-source dynamic DNS solution for DigitalOcean.",
+        show_header=False,
+        box=None,
+        highlight=True,
+    )
+    grid.add_column()
+    grid.add_column()
+
     try:
         # NOTE: this is the rare (only?) time where
         # there not being an API key yet is not an error / is ok.
         API = get_api()
     except NoAPIKeyError:
-        API = "[red]Error:[/red] API key not stored in DB"
+        API = "[red]Error:[/red] Unable to source API Key."
     if args.show_api_key is not True:
-        API = "*" * len(API)
+        API = "[green]Configured[/green]"
 
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(ip4_server) FROM ipservers")
-    count = cursor.fetchone()[0]
-    if count == 0:
-        ip4server = "[red]None Configured[/red]"
-        ip6server = "[red]None Configured[/red]"
-    else:
-        cursor.execute("SELECT * FROM ipservers")
-        ipservers = cursor.fetchall()
-        ip4server = ipservers[0][1]
-        ip6server = ipservers[0][2]
+    row = cursor.execute("SELECT URL FROM ipservers where ip_version = '4'").fetchone()
+    ip4server = "[red]None Configured[/red]" if row is None else row["URL"]
 
     cursor.execute("SELECT COUNT(*) FROM domains")
     topdomains = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM subdomains")
     subdomains = cursor.fetchone()[0]
 
-    print("\n[b]ddns[/b] - a DigitalOcean dynamic DNS solution.")
-    print("===================================================")
-    print(f"API key 		: [b]{API}[/b]")
-    print(f"IP v4 resolver 		: [b]{ip4server}[/b]")
-    print(f"IP v6 resolver 		: [b]{ip6server}[/b]")
-    print(f"Logfile 		: [b]{constants.logfile}[/b]")
-    print(f"Top-Level domains 	: [b]{topdomains}[/b]")
-    print(f"Sub-domains 		: [b]{subdomains}[/b]")
-    print("")
-    print(f"App version 	: [b]{__version__}[/b] (https://github.com/nivintw/ddns)")
-    print("")
-    print("[i]IPv6 is not supported and not listed here.[/i]")
+    grid.add_row("API key", API)
+    grid.add_row("IPv4 resolver", f"{ip4server}")
+    grid.add_row("Log file", f"{constants.logfile}")
+    grid.add_row("Domains", f"{topdomains}")
+    grid.add_row('Sub-domains ("A" records)', f"{subdomains}")
+    grid.add_row("App version", f"{__version__} (https://github.com/nivintw/ddns)")
+    console.print(grid)
