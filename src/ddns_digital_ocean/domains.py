@@ -104,7 +104,13 @@ def un_manage_domain(domain):
         )
 
 
-def show_all_domains():
+def show_all_domains(_: Namespace):
+    """Show information for domains associated with this Digital Ocean account.
+
+    Args:
+        _ (Namespace): Parsed CLI args. Not used here.
+            Must be passed to this function because of how function martialing works.
+    """
     cursor = conn.cursor()
     domains = peekable(do_api.get_all_domains())
 
@@ -121,11 +127,3 @@ def show_all_domains():
             print("Name : [bold]" + k["name"] + " [*][/bold]")
         else:
             print("Name : " + k["name"])
-
-
-def main(args: Namespace):
-    """Handle tlds subparser."""
-    if args.list:
-        show_all_domains()
-    else:
-        manage_domain(args.add)

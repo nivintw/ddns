@@ -156,9 +156,11 @@ class TestViewUpdateIPServer:
         parser = args.setup_argparse()
         # NOTE: intentionally don't supply any args
         #  in order to force the "view" mode.
-        test_args = parser.parse_args(args=["ip_lookup_config"])
+        test_args = parser.parse_args(args=["ip-resolver-config"])
 
-        ip.view_or_update_ip_server(test_args)
+        # This should be equivalent to ip.view_or_update_ip_server.
+        # If not, then argparse config is broken!
+        test_args.func(test_args)
 
         # Validate that the ip server is not configured.
         # This is based on how we're calling view_our_update_ip_server.
@@ -184,9 +186,10 @@ class TestViewUpdateIPServer:
         parser = args.setup_argparse()
         # NOTE: intentionally don't supply any args
         #  in order to force the "view" mode.
-        test_args = parser.parse_args(args=["ip_lookup_config"])
-
-        ip.view_or_update_ip_server(test_args)
+        test_args = parser.parse_args(args=["ip-resolver-config"])
+        # This should be equivalent to ip.view_or_update_ip_server.
+        # If not, then argparse config is broken!
+        test_args.func(test_args)
 
         # Validate that the ip server is not configured.
         # This is based on how we're calling view_our_update_ip_server.
@@ -204,10 +207,12 @@ class TestViewUpdateIPServer:
         # Arrange
         EXPECTED_IP_SERVER = "https://config.iplookup.example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["ip_lookup_config", "--url", EXPECTED_IP_SERVER])
+        test_args = parser.parse_args(args=["ip-resolver-config", "--url", EXPECTED_IP_SERVER])
         spy_config_ip_server = mocker.spy(ip, "config_ip_server")
 
-        ip.view_or_update_ip_server(test_args)
+        # This should be equivalent to ip.view_or_update_ip_server.
+        # If not, then argparse config is broken!
+        test_args.func(test_args)
 
         spy_config_ip_server.assert_called_once_with(test_args.url, test_args.ip_mode)
 

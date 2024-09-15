@@ -33,30 +33,9 @@ from ddns_digital_ocean import api_key_helpers, info, ip, logs, manage, subdomai
 from . import domains
 
 
-def configure_domains_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
-    """Configure the parser for the domains subparser"""
-    parser_domains = subparsers.add_parser(name="domains", help="View and configure domains.")
-    parser_domains.set_defaults(func=domains.main)
-
-    group_domains = parser_domains.add_mutually_exclusive_group(required=True)
-    group_domains.add_argument(
-        "-l",
-        "--list",
-        help="List domains registered in your DigitalOcean account, indicating which are managed.",
-        action="store_true",
-    )
-
-    group_domains.add_argument(
-        "-a",
-        "--add",
-        help="Add <domain> to domains managed by ddns-digital-ocean.",
-        metavar=("<domain>"),
-    )
-
-
 def configure_ip_lookup_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
     parser_ip_server = subparsers.add_parser(
-        name="ip_lookup_config",
+        name="ip-resolver-config",
         help=("Update the service/server used to lookup your public IP address."),
     )
     parser_ip_server.set_defaults(func=ip.view_or_update_ip_server)
@@ -136,9 +115,10 @@ def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argpars
 
 def configure_show_info_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
     parser_show_info = subparsers.add_parser(
-        name="show_info",
+        name="show-info",
         help="Show information about do_ddns, including current configuration and version.",
     )
+
     parser_show_info.set_defaults(func=info.show_current_info)
     parser_show_info.add_argument(
         "--show-api-key",
@@ -146,6 +126,12 @@ def configure_show_info_subparser(subparsers: argparse._SubParsersAction[argpars
         action=argparse.BooleanOptionalAction,
         default=False,
     )
+    sub_sub_parsers = parser_show_info.add_subparsers()
+    parser_show_info_domains = sub_sub_parsers.add_parser(
+        "domains",
+        help="Show info for domains associated with this account.",
+    )
+    parser_show_info_domains.set_defaults(func=domains.show_all_domains)
 
 
 def setup_argparse():
@@ -153,20 +139,18 @@ def setup_argparse():
         prog="do_ddns",
         description=textwrap.dedent(
             """
-        Application to use domains from DigitalOcean account as dynamic DNS domain(s).
-        The app only supports IP4. IPv6 is planned for a later release!
+            Application to manage domains from DigitalOcean account as dynamic DNS domain(s).
+            The app only supports IPv4. IPv6 may come in a future release.
 
-        You'll always find the latest version on https://github.com/nivintw/ddns
-        For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues
-
-        Forked with appreciation from https://gitlab.pm/rune/ddns
-        """
+            You'll always find the latest version on https://github.com/nivintw/ddns
+            For bugs, suggestions, pull requests visit https://github.com/nivintw/ddns/issues
+            """
         ).strip(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="subparser_name")
     parser_update_ips = subparsers.add_parser(
-        name="update_ips",
+        name="update-ips",
         help=("Update the IP addresses for the subdomains that are configured."),
     )
     parser_update_ips.set_defaults(func=subdomains.update_all_managed_subdomains)
@@ -185,14 +169,13 @@ def setup_argparse():
     )
     parser_logs.set_defaults(func=logs.show_log)
 
-    configure_domains_subparser(subparsers)
     configure_ip_lookup_subparser(subparsers)
     configure_manage_subparser(subparsers)
     configure_un_manage_subparser(subparsers)
     configure_show_info_subparser(subparsers)
 
     parser_api_key = subparsers.add_parser(
-        name="api_key",
+        name="api-key",
         help="Add/Change the Digital Ocean API Key.",
     )
     parser_api_key.set_defaults(func=api_key_helpers.view_or_update)

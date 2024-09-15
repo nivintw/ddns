@@ -44,7 +44,7 @@ class TestShowInfo:
 
         """
         parser = args.setup_argparse()
-        test_args = parser.parse_args(["show_info"])
+        test_args = parser.parse_args(["show-info"])
 
         test_args.func(test_args)
         capd_output = " ".join(capsys.readouterr().out.split())

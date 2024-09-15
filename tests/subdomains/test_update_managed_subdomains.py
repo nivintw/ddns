@@ -47,17 +47,16 @@ class TestUpdateAllManagedSubdomains:
     ):
         """No subdomains at all configured."""
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["update_ips"])
+        test_args = parser.parse_args(args=["update-ips"])
 
         with pytest.raises(subdomains.NoManagedSubdomainsError):
-            subdomains.update_all_managed_subdomains(test_args)
+            test_args.func(test_args)
 
     def test_no_currently_managed_subdomains(
         self,
         mock_db_for_test,
         added_top_domain,
         mocker: MockerFixture,
-        capsys: CaptureFixture[str],
     ):
         """Subdomains exist, but are marked unmanaged."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
@@ -99,9 +98,9 @@ class TestUpdateAllManagedSubdomains:
             )
 
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["update_ips"])
+        test_args = parser.parse_args(args=["update-ips"])
         with pytest.raises(subdomains.NoManagedSubdomainsError):
-            subdomains.update_all_managed_subdomains(test_args)
+            test_args.func(test_args)
 
     def test_all_current(
         self,
@@ -178,8 +177,8 @@ class TestUpdateAllManagedSubdomains:
         ]
 
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["update_ips"])
-        subdomains.update_all_managed_subdomains(test_args)
+        test_args = parser.parse_args(args=["update-ips"])
+        test_args.func(test_args)
 
         cap_errout = capsys.readouterr()
 
@@ -283,8 +282,8 @@ class TestUpdateAllManagedSubdomains:
         ]
 
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["update_ips"])
-        subdomains.update_all_managed_subdomains(test_args)
+        test_args = parser.parse_args(args=["update-ips"])
+        test_args.func(test_args)
 
         cap_errout = capsys.readouterr()
 
@@ -412,8 +411,8 @@ class TestUpdateAllManagedSubdomains:
         ]
 
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["update_ips"])
-        subdomains.update_all_managed_subdomains(test_args)
+        test_args = parser.parse_args(args=["update-ips"])
+        test_args.func(test_args)
 
         cap_errout = capsys.readouterr()
 
@@ -538,8 +537,8 @@ class TestUpdateAllManagedSubdomains:
         parser = args.setup_argparse()
         # NOTE: Use --force flag to force updates, even though
         # we've configured things so that the IP addresses are current.
-        test_args = parser.parse_args(args=["update_ips", "--force"])
-        subdomains.update_all_managed_subdomains(test_args)
+        test_args = parser.parse_args(args=["update-ips", "--force"])
+        test_args.func(test_args)
 
         cap_errout = capsys.readouterr()
 

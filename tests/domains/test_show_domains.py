@@ -29,7 +29,7 @@ from sqlite3 import Connection
 import pytest
 from pytest_mock import MockerFixture
 
-from ddns_digital_ocean import domains
+from ddns_digital_ocean import args, domains
 
 
 @pytest.mark.usefixtures("mock_db_for_test", "mocked_responses")
@@ -51,8 +51,10 @@ class TestListAllDomains:
             domains.do_api, "get_all_domains", autospec=True
         )
         mocked_get_all_domains.return_value = []  # no domains
+        parser = args.setup_argparse()
+        test_args = parser.parse_args(["show-info", "domains"])
+        test_args.func(test_args)
 
-        domains.show_all_domains()
         captured_output = capsys.readouterr()
         assert "No domains associated with this Digital Ocean account!" in captured_output.out
 
@@ -89,7 +91,10 @@ class TestListAllDomains:
             {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},  # managed
         ]
 
-        domains.show_all_domains()
+        parser = args.setup_argparse()
+        test_args = parser.parse_args(["show-info", "domains"])
+        test_args.func(test_args)
+
         captured_output = capsys.readouterr()
         assert "Name : nivin.tech [*]" in captured_output.out
         assert "Name : example.com" in captured_output.out
