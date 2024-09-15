@@ -75,6 +75,7 @@ def list_sub_domains(domain):
         subdomains = cursor.execute(
             "SELECT "
             "  subdomains.name as name,"
+            "  domain_record_id,"
             "  current_ip4,"
             "  last_updated,"
             "  last_checked,"
@@ -85,7 +86,7 @@ def list_sub_domains(domain):
             "WHERE main_id = ?",
             (topdomain_id,),
         ).fetchall()
-        managed_subdomains = {x["name"]: x for x in subdomains}
+        managed_subdomains = {x["name"]: x for x in subdomains if x["managed"] == 1}
 
     unmanaged_domain_records = domain_A_records.keys() - managed_subdomains.keys()
     managed_domain_records = domain_A_records.keys() & managed_subdomains.keys()
@@ -93,22 +94,21 @@ def list_sub_domains(domain):
     if managed_domain_records:
         table = Table(title=f"Managed A records for [b]{domain}[/b]", highlight=True)
         table.add_column("Name/Subdomain")
-        table.add_column("Current IPv4")
+        table.add_column("Domain Record Id")
+        table.add_column("IPv4 Address")
         table.add_column("First Managed")
         table.add_column("Last Checked")
         table.add_column("Last Updated")
-        table.add_column("Currently Managed")
 
         for subdomain in managed_domain_records:
             row = managed_subdomains[subdomain]
-            active = "True" if row["managed"] == 1 else "False"
             table.add_row(
                 row["name"],
+                str(row["domain_record_id"]),
                 row["current_ip4"],
                 row["cataloged"],
                 row["last_checked"],
                 row["last_updated"],
-                active,
             )
 
         console.print(table)
@@ -116,12 +116,17 @@ def list_sub_domains(domain):
         console.print(f"No managed A records for [b]{domain}[/b]")
 
     if unmanaged_domain_records:
-        table = Table(title=f"Unmanaged A records for [b]{domain}[/b]")
+        table = Table(title=f"Unmanaged A records for [b]{domain}[/b]", highlight=True)
         table.add_column("Name/Subdomain")
         table.add_column("Domain Record Id")
+        table.add_column("IPv4 Address")
 
         for domain_record_name in unmanaged_domain_records:
-            table.add_row(domain_record_name, str(domain_A_records[domain_record_name]["id"]))
+            table.add_row(
+                domain_record_name,
+                str(domain_A_records[domain_record_name]["id"]),
+                str(domain_A_records[domain_record_name]["data"]),
+            )
 
         console.print(table)
     else:

@@ -221,7 +221,10 @@ class TestManagedDomain:
         """One managed A record, One unmanaged A record."""
         EXPECTED_DOMAIN_RECORDS = [
             {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
+            # support is marked unmanaged and in the DB.
             {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
+            # test is not in the DB at all
+            {"id": 3, "name": "test", "data": "127.0.0.1", "ttl": 1800},
         ]
         mocked_get_A_records = mocker.patch.object(
             subdomains.do_api,
@@ -264,26 +267,58 @@ class TestManagedDomain:
                     "last_updated": now,
                 },
             )
+            mock_db_for_test.execute(
+                "INSERT INTO subdomains("
+                "   domain_record_id,"
+                "   main_id,"
+                "   name,"
+                "   current_ip4,"
+                "   cataloged,"
+                "   last_checked,"
+                "   last_updated,"
+                "   managed "
+                ") values("
+                "   :domain_record_id,"
+                "   :main_id,"
+                "   :name,"
+                "   :current_ip4,"
+                "   :cataloged,"
+                "   :last_checked,"
+                "   :last_updated,"
+                "   0"
+                ")",
+                {
+                    "domain_record_id": EXPECTED_DOMAIN_RECORDS[1]["id"],
+                    "main_id": top_domain_id,
+                    "name": EXPECTED_DOMAIN_RECORDS[1]["name"],
+                    "current_ip4": "127.0.0.1",
+                    "cataloged": now,
+                    "last_checked": now,
+                    "last_updated": now,
+                },
+            )
 
         # Test
         subdomains.list_sub_domains(added_top_domain)
 
         mocked_get_A_records.assert_called_once_with(added_top_domain)
-        captured_errout = capsys.readouterr().out
+        captured_errout = " ".join(capsys.readouterr().out.split())
 
-        # Report: no managed A records
+        # Validate lack of output string: Do not report no managed A records
         assert f"No managed A records for {added_top_domain}" not in captured_errout
-
-        # Validate lack of output string: Do not report any managed A records
-        assert f"Managed A records for {added_top_domain}" in captured_errout
-        assert EXPECTED_DOMAIN_RECORDS[0]["name"] in captured_errout
-
-        # Report: unmanaged and registered A records
-        assert "Unmanaged A records for " in captured_errout
-        assert EXPECTED_DOMAIN_RECORDS[1]["name"] in captured_errout
-
         # Validate lack of output string: Do not report no unmanaged A records.
         assert f"No unmanaged A records for {added_top_domain}" not in captured_errout
+
+        managed_records_output, unmanaged_records_output = captured_errout.split(
+            f"Unmanaged A records for {added_top_domain}"
+        )
+        # Validate lack of output string: Do not report any managed A records
+        assert f"Managed A records for {added_top_domain}" in captured_errout
+        assert EXPECTED_DOMAIN_RECORDS[0]["name"] in managed_records_output
+
+        # Report: unmanaged and registered A records
+        assert EXPECTED_DOMAIN_RECORDS[1]["name"] in unmanaged_records_output
+        assert EXPECTED_DOMAIN_RECORDS[2]["name"] in unmanaged_records_output
 
     def test_all_managed_A_records(
         self,
