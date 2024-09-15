@@ -1,4 +1,4 @@
-# ddns-digital-ocean
+# digital-ocean-dynamic-dns
 # Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -21,7 +21,7 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
-#   and the ddns-digital-ocean contributors
+#   and the digital-ocean-dynamic-dns contributors
 
 from pathlib import Path
 from sqlite3 import Connection
@@ -29,8 +29,8 @@ from sqlite3 import Connection
 import pytest
 import responses
 
-from ddns_digital_ocean import api_key_helpers, domains, ip, manage, subdomains
-from ddns_digital_ocean.database import connect_database
+from digital_ocean_dynamic_dns import api_key_helpers, domains, ip, manage, subdomains
+from digital_ocean_dynamic_dns.database import connect_database
 
 
 @pytest.fixture()

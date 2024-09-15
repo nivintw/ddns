@@ -1,4 +1,4 @@
-# ddns-digital-ocean
+# digital-ocean-dynamic-dns
 # Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -21,7 +21,7 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
-#   and the ddns-digital-ocean contributors
+#   and the digital-ocean-dynamic-dns contributors
 
 from sqlite3 import Connection
 
@@ -35,7 +35,7 @@ def added_top_domain(
     mocker: MockerFixture,
 ):
     """Inject a top-level domain into the test DB."""
-    from ddns_digital_ocean import domains
+    from digital_ocean_dynamic_dns import domains
 
     EXPECTED_TOP_DOMAIN = "example.com"
     mocked_verify_domain_registered = mocker.patch.object(

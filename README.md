@@ -1,4 +1,4 @@
-# ddns_digital_ocean
+# digital_ocean_dynamic_dns
 
 Dynamic DNS python tool for Digital Ocean  
 This is a fork of https://gitlab.pm/rune/ddns.

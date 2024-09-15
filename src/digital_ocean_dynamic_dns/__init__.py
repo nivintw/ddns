@@ -1,4 +1,4 @@
-# ddns-digital-ocean
+# digital-ocean-dynamic-dns
 # Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -20,22 +20,7 @@
 #   OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # SPDX-License-Identifier: MIT
-# Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech>
-#   and the ddns-digital-ocean contributors
+# Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
+#   and the digital-ocean-dynamic-dns contributors
 
-import logging
-
-from . import constants
-from .args import setup_argparse
-
-logging.basicConfig(filename=constants.logfile, level=logging.INFO, format="%(message)s")
-
-
-def run():
-    parser = setup_argparse()
-    args = parser.parse_args()
-    args.func(args)
-
-
-if __name__ == "__main__":
-    run()
+__version__ = "1.0.0"

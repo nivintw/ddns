@@ -1,4 +1,4 @@
-# ddns-digital-ocean
+# digital-ocean-dynamic-dns
 # Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -21,7 +21,7 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
-#   and the ddns-digital-ocean contributors
+#   and the digital-ocean-dynamic-dns contributors
 
 """The constants.py module contains some constants related to local configuration / data storage."""
 
@@ -31,7 +31,7 @@ import pytest
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from ddns_digital_ocean import constants
+from digital_ocean_dynamic_dns import constants
 
 
 class TestAppDataHome:

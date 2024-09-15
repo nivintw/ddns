@@ -8,7 +8,7 @@
       "name": "Python Debugger: CLI Tool",
       "type": "debugpy",
       "request": "launch",
-      "module": "ddns_digital_ocean.ddns",
+      "module": "digital_ocean_dynamic_dns.ddns",
       "console": "integratedTerminal",
       "args": []
     }

@@ -1,4 +1,4 @@
-# ddns-digital-ocean
+# digital-ocean-dynamic-dns
 # Copyright (C) 2023 Tyler Nivin <tyler@nivin.tech>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -20,15 +20,15 @@
 #   OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # SPDX-License-Identifier: MIT
-# Copyright 2023 - 2024, Tyler Nivin <tyler@nivin.tech>
-#   and the ddns-digital-ocean contributors
+# Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
+#   and the digital-ocean-dynamic-dns contributors
 
 from __future__ import annotations
 
 import argparse
 import textwrap
 
-from ddns_digital_ocean import api_key_helpers, info, ip, logs, manage, subdomains
+from digital_ocean_dynamic_dns import api_key_helpers, info, ip, logs, manage, subdomains
 
 from . import domains
 
