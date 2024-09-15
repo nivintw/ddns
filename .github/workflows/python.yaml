@@ -87,6 +87,7 @@ jobs:
         uses: actions-js/push@master
         with:
           message: Update coverage on Readme
+          github_token: ${{ steps.app-token.outputs.token }}
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
