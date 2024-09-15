@@ -82,7 +82,7 @@ def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.A
         name="manage",
         help="Configure domains and subdomains to be managed by digital-ocean-dynamic-dns",
     )
-    parser_manage.set_defaults(func=manage.martial)
+    parser_manage.set_defaults(func=manage.martial_manage)
     parser_manage.add_argument(
         "domain",
         help=(
@@ -100,7 +100,36 @@ def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.A
     )
     group_show_add.add_argument(
         "--list",
-        help="List the currently managed subdomains (A records) for `domain`",
+        help="List the current subdomains (A records) for `domain`",
+        action="store_true",
+    )
+
+
+def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
+    """subparser `un-manage`"""
+    parser = subparsers.add_parser(
+        name="un-manage",
+        help="Stop digital-ocean-dynamic-dns from managing the specified domains and subdomains.",
+    )
+    parser.set_defaults(func=manage.martial_un_manage)
+    parser.add_argument(
+        "domain",
+        help=(
+            "The domain for which A records are managed. "
+            "If --subdomain is NOT specified, then all currently managed A records "
+            "for `domain` will stop being managed."
+            "If --subdomain _is_ specified, then only A records for --subdomain"
+            " will stop being managed."
+        ),
+    )
+    group_show_add = parser.add_mutually_exclusive_group()
+    group_show_add.add_argument(
+        "--subdomain",
+        help="The subdomain (i.e. `name` for the A record) to stop managing.",
+    )
+    group_show_add.add_argument(
+        "--list",
+        help="List the current subdomains (A records) for `domain`",
         action="store_true",
     )
 
@@ -156,6 +185,7 @@ def setup_argparse():
     configure_domains_subparser(subparsers)
     configure_ip_lookup_subparser(subparsers)
     configure_manage_subparser(subparsers)
+    configure_un_manage_subparser(subparsers)
 
     parser_api_key = subparsers.add_parser(
         name="api_key",

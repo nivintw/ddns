@@ -82,7 +82,7 @@ def list_sub_domains(domain):
             "  subdomains.managed "
             "FROM subdomains "
             "INNER JOIN domains on subdomains.main_id = domains.id "
-            "WHERE main_id LIKE ?",
+            "WHERE main_id = ?",
             (topdomain_id,),
         ).fetchall()
         managed_subdomains = {x["name"]: x for x in subdomains}
@@ -151,7 +151,7 @@ def manage_subdomain(subdomain: str, domain: str):
 
     cursor = conn.cursor()
     row = cursor.execute(
-        "SELECT id FROM domains WHERE name like ?",
+        "SELECT id FROM domains WHERE name = ?",
         (domain,),
     ).fetchone()
 
@@ -166,7 +166,7 @@ def manage_subdomain(subdomain: str, domain: str):
     domain_id = row["id"]
 
     cursor.execute(
-        "SELECT count(*) FROM subdomains WHERE main_id LIKE ? AND name like ?",
+        "SELECT count(*) FROM subdomains WHERE main_id = ? AND name = ?",
         (
             domain_id,
             subdomain,
@@ -225,6 +225,76 @@ def manage_subdomain(subdomain: str, domain: str):
     console.print(
         f"The A record for the subdomain {subdomain} for domain {domain} is now"
         " being managed by digital-ocean-dynamic-dns!"
+    )
+
+
+def un_manage_subdomain(subdomain: str, domain: str):
+    """Stop managing `subdomain` via digital-ocean-dynamic-dns.
+
+    subdomain:
+        The Hostname for the A record that will be created.
+        Can be either "bare" (e.g. "@", "www")
+            or a super-string of domain e.g. "@.example.com.", "blog.example.com".
+    domain:
+        The name of the Domain registered with Digital Ocean.
+
+    Will not delete `subdomain` from the database.
+    Marks `subdomain` as un-managed in the database.
+    """
+    console = Console()
+    if set(subdomain).difference(ascii_letters + "." + digits + "-" + "@"):
+        console.print(
+            "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
+        )
+        raise NonSimpleDomainNameError()
+
+    # Handle e.g. subdomain = "@.example.com", domain="example.com"
+    subdomain = subdomain.removesuffix("." + domain)
+
+    cursor = conn.cursor()
+    row = cursor.execute(
+        "SELECT id FROM domains WHERE name = ?",
+        (domain,),
+    ).fetchone()
+
+    if row is None:
+        console.print(
+            f"[red]Error:[/red] [bold]{domain}[/bold] is not a managed domain. "
+            "We do [bold]not[/bold] expect users to ever be exposed to this error. "
+            "If you see this in the console while using digital-ocean-dynamic-dns please"
+            " open an issue on the repository."
+        )
+        raise TopDomainNotManagedError(f"domain {domain} not found in local database.")
+    domain_id = row["id"]
+
+    row = cursor.execute(
+        "SELECT domain_record_id FROM subdomains WHERE main_id = ? AND name = ? AND managed = 1",
+        (
+            domain_id,
+            subdomain,
+        ),
+    ).fetchone()
+    if row is None:
+        console.print(
+            f"[yellow]Warning:[/yellow] [bold]{subdomain}[/bold]"
+            " is not being managed by digital-ocean-dynamic-dns."
+        )
+        return
+    domain_record_id = row["domain_record_id"]
+
+    cursor.execute(
+        "UPDATE subdomains SET "
+        "   managed = 0 "
+        "WHERE "
+        "   domain_record_id = :domain_record_id",
+        {
+            "domain_record_id": domain_record_id,
+        },
+    )
+    conn.commit()
+    console.print(
+        f"The A record for the subdomain {subdomain} for domain {domain} is "
+        " no longer being managed by digital-ocean-dynamic-dns!"
     )
 
 
