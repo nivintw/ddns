@@ -62,6 +62,13 @@ jobs:
         with:
           paths: junit/test-results.xml
         if: ${{ always() }}
+      - name: Comment PR with test results
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: thollander/actions-comment-pull-requests@v2
+        with:
+          message: |
+            ${{ steps.test_summary.outputs.passed }}/${{ steps.test_summary.outputs.total }} tests passed
+          comment_tag: test_results
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
