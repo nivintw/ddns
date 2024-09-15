@@ -1,10 +1,6 @@
-# digital_ocean_dynamic_dns
+# digital-ocean-dynamic-dns
 
-Dynamic DNS python tool for Digital Ocean  
-This is a fork of https://gitlab.pm/rune/ddns.
-Note: As of August 4th, 2024, the original repository is not accessible from the U.S.
-
-Mainly focusing on bug fixes and my own personal use.
+Dynamic DNS python tool for Digital Ocean
 
 This project offers a way to manage dynamic DNS, with specific support for [DigitalOcean](https://www.digitalocean.com/) authoritative DNS servers.
 
@@ -69,58 +65,11 @@ This has the additional effect of removing the subdomain from the local digital-
   - [/] changes to using subparsers instead of overloaded command line flags.
   - [/] Revise language to be more clear about what is being managed and how.
   - [ ] substantial changes to argparse usage/implementation
-- [ ] rename package to digital-ocean-dynamic-dns
 - [ ] Update README.md to highlight where/how this tool is intended to be used.
 - [ ] Update logging features/implementation.
-- [/] Create tests for the codebase and reach > 80% coverage.
-- [x] Add support for reading the Digital Ocean API key from environment variable `DIGITALOCEAN_TOKEN`.
-  - Environment variables will have precedence over stored api key.
-  - Same environment variable name used by [the official Digital Ocean python library pydo](https://github.com/digitalocean/pydo)
-- [ ] Rename and update sub-domain related management functions.
 - [ ] Register and upload package to PyPI.
 - [ ] Add automated CI/CD process including package release to PyPI.
 - [ ] Integrate python-semantic-release for version management.
 - [ ] Add support for purging local database (without updating DO records).
   - Used to just get a "fresh install".
 - [ ] Add support to read config from a toml file.
-
-## Scratch
-
-- NOTE: Digital Ocean API's pagination urls drop filters (and thus can't be used to paginate)
-- NOTE: Digital Ocean API's meta.total value in the response is ALL POSSIBLE records, NOT the number of records in the response.
-  - I.e., it does not account for pagination (but does seem to account for filters e.g. "type"="A" for domain records.)
-    TODO: Update my code to account for these discrepancies i've found.
-
-do_ddns
-
-- manage
-  - `example.com --subdomain @`
-  - `example.com --subdomain support.example.com`
-    - Automatic domain management via subdomain driven commands.
-    - Keeps the focus on the management of A records.
-    - let's you manage a sub-selection of all A records / subdomains for the given domain.
-    - Will create or update the A record for the specified subdomain.
-  - `example.com`
-    - start managing IP addresses for all current A records associated with `example.com`.
-    - Will identify existing A records and begin managing those.
-  - `example.com --list`
-    - Show all A records for example.com.
-    - Will show both managed and un-managed subdomains.
-- un-manage
-  - `example.com --subdomain support`
-  - `example.com --subdomain support.example.com`
-    - stop managing A records with the name `support` for the domain example.com.
-  - `example.com`
-    - stop managing all A records for example.com.
-  - Leaves the current configuration in the database, marked un-managed.
-- records create (not recommended)
-  - `--domain example.com --subdomain support.example.com`
-  - low-level interface to add specific A records from Digital Ocean
-  - Generally not needed; creating the record will be handled by manage.
-- records delete (not recommended)
-  - `--domain example.com --subdomain spprt.example.com`
-  - low-level interface to remove specific A records from Digital Ocean
-  - Generally only needed if you made a mistake while adding a subdomain and want to clean up.
-- update_records (do automatic update for managed records)
-  - no args
-    - Updates IP addresses for A records on configured domains/subdomains.
