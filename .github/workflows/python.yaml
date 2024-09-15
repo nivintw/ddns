@@ -45,3 +45,13 @@ jobs:
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: --hook-stage manual --all-files
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - uses: yezz123/setup-uv@v4
+      - run: uv run pytest --cov=digital_ocean_dynamic_dns --junitxml=junit/test-results.xml --cov-report=xml --cov-report=html
