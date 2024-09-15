@@ -229,9 +229,12 @@ def test_claim_existing_A_record(
     # Arrange: Mock the creation of the A record.
     # We expect this mock to NOT be called.
     mocked_create_A_record = mocker.patch.object(
-        do_api,
+        subdomains.do_api,
         "create_A_record",
         autospec=True,
+    )
+    mocked_update_A_record = mocker.patch.object(
+        subdomains.do_api, "update_A_record", autospec=True
     )
 
     mocked_get_A_record = mocker.patch.object(
@@ -267,6 +270,11 @@ def test_claim_existing_A_record(
     mocked_create_A_record.assert_not_called()
 
     mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+    mocked_update_A_record.assert_called_once_with(
+        domain_record_id=EXPECTED_DOMAIN_RECORD_ID,
+        domain=expected_domain,
+        new_ip_address=EXPECTED_IP4_ADDRESS,
+    )
 
     # Validate the subdomain was added to the database.
     row = mock_db_for_test.execute(

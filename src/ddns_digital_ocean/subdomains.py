@@ -45,7 +45,7 @@ from .exceptions import NonSimpleDomainNameError
 from .ip import get_ip
 
 
-class NoConfiguredSubdomainsError(Exception):
+class NoManagedSubdomainsError(Exception):
     """updated_all_managed_subdomains was called and there are no configured subdomains."""
 
 
@@ -216,7 +216,9 @@ def manage_subdomain(subdomain: str, domain: str):
         "   :last_checked,"
         "   :last_updated"
         ") ON CONFLICT(domain_record_id) DO UPDATE SET "
-        "    managed = 1",
+        "    managed = 1, "
+        "    last_checked = :last_checked, "
+        "    last_updated = :last_updated ",
         {
             "domain_record_id": domain_record_id,
             "main_id": domain_id,
@@ -264,12 +266,7 @@ def un_manage_subdomain(subdomain: str, domain: str):
     ).fetchone()
 
     if row is None:
-        console.print(
-            f"[red]Error:[/red] [bold]{domain}[/bold] is not a managed domain. "
-            "We do [bold]not[/bold] expect users to ever be exposed to this error. "
-            "If you see this in the console while using digital-ocean-dynamic-dns please"
-            " open an issue on the repository."
-        )
+        console.print(f"[red]Error:[/red] [bold]{domain}[/bold] is not a managed domain. ")
         raise TopDomainNotManagedError(f"domain {domain} not found in local database.")
     domain_id = row["id"]
 
@@ -288,20 +285,20 @@ def un_manage_subdomain(subdomain: str, domain: str):
         return
     domain_record_id = row["domain_record_id"]
 
-    cursor.execute(
-        "UPDATE subdomains SET "
-        "   managed = 0 "
-        "WHERE "
-        "   domain_record_id = :domain_record_id",
-        {
-            "domain_record_id": domain_record_id,
-        },
-    )
-    conn.commit()
-    console.print(
-        f"The A record for the subdomain {subdomain} for domain {domain} is "
-        " no longer being managed by digital-ocean-dynamic-dns!"
-    )
+    with conn:
+        conn.execute(
+            "UPDATE subdomains SET "
+            "   managed = 0 "
+            "WHERE "
+            "   domain_record_id = :domain_record_id",
+            {
+                "domain_record_id": domain_record_id,
+            },
+        )
+        console.print(
+            f"The A record for the subdomain {subdomain} for domain {domain} is "
+            " no longer being managed by digital-ocean-dynamic-dns!"
+        )
 
 
 def update_all_managed_subdomains(args: Namespace):
@@ -309,13 +306,13 @@ def update_all_managed_subdomains(args: Namespace):
 
     cursor = conn.cursor()
 
-    rows = cursor.execute("SELECT domain_record_id,managed FROM subdomains").fetchall()
+    rows = cursor.execute("SELECT domain_record_id FROM subdomains where managed = 1").fetchall()
     if not rows:
         print(
             "[red]Error: [/red]There are no dynamic domains active."
             " Start by adding a new domain with [i]ddns -s test.example.com[/i]"
         )
-        raise NoConfiguredSubdomainsError()
+        raise NoManagedSubdomainsError()
 
     now = datetime.now().strftime("%d-%m-%Y %H:%M")
     current_ip = get_ip()
@@ -330,17 +327,8 @@ def update_all_managed_subdomains(args: Namespace):
             (domain_record_id,),
         ).fetchone()
         domain_name = str(domain_info["name"])
-        subdomain_managed = subdomain_row["managed"]
-
-        if not subdomain_managed:
-            # Skip over subdomains that we used to manage but aren't currently.
-            continue
 
         # Check DO API to see if an update is required
-        # TODO: Use the current_ip4 value instead of calling to
-        # DO-API unless force is specified...
-
-        # so we don't have to query DO just to check.
         domain_record = do_api.get_A_record(
             domain_record_id=domain_record_id,
             domain=domain_name,

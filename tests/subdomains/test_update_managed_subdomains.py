@@ -49,7 +49,7 @@ class TestUpdateAllManagedSubdomains:
         parser = args.setup_argparse()
         test_args = parser.parse_args(args=["update_ips"])
 
-        with pytest.raises(subdomains.NoConfiguredSubdomainsError):
+        with pytest.raises(subdomains.NoManagedSubdomainsError):
             subdomains.update_all_managed_subdomains(test_args)
 
     def test_no_currently_managed_subdomains(
@@ -88,46 +88,20 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
         mocked_get_ip.return_value = EXPECTED_IP_ADDRESS
 
-        mocked_get_ip = mocker.patch.object(ip, "get_ip", autospec=True)
-        mocked_get_ip.return_value = EXPECTED_IP_ADDRESS
-
         for subdomain in EXPECTED_SUBDOMAINS:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (1.2): mark the subdomains as unmanaged.
         with mock_db_for_test:
             mock_db_for_test.execute(
-                "update subdomains set managed = 0 " "where domain_record_id in (?, ?)",
+                "update subdomains set managed = 0 where domain_record_id in (?, ?)",
                 EXPECTED_DOMAIN_RECORD_IDS,
             )
-        # Arrange (2): Mock the update_A_record method
-        # so we assert that it was not called.
-        mocked_update_A_record = mocker.patch.object(
-            subdomains.do_api,
-            "update_A_record",
-            autospec=True,
-        )
-        # Arrange (3): Mock the get_A_record method
-        # so we can assert that it was not called.
-        # We expect this because all subdomains are marked as unmanaged.
-        mocked_get_A_record = mocker.patch.object(
-            subdomains.do_api,
-            "get_A_record",
-            autospec=True,
-        )
 
         parser = args.setup_argparse()
         test_args = parser.parse_args(args=["update_ips"])
-        subdomains.update_all_managed_subdomains(test_args)
-
-        cap_errout = capsys.readouterr()
-
-        # Validate: No errors occurred.
-        # Validate: Reported "No updates necessary"
-        assert "No updates necessary" in cap_errout.out
-        # Validate: *_A_record functions not called.
-        mocked_update_A_record.assert_not_called()
-        mocked_get_A_record.assert_not_called()
+        with pytest.raises(subdomains.NoManagedSubdomainsError):
+            subdomains.update_all_managed_subdomains(test_args)
 
     def test_all_current(
         self,
