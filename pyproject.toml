@@ -25,8 +25,8 @@
 
 [project]
 name = "digital-ocean-dynamic-dns"
-version = "1.0.0"
-description = "Python-based CLI tool for managing dynamic dns."
+version = "1.0.1"
+description = "Python-based CLI tool for managing dynamic dns with Digital Ocean."
 authors = [{ name = "Tyler Nivin", email = "tyler@nivin.tech" }]
 license = { file = "LICENSE" }
 readme = "README.md"
