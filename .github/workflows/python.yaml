@@ -61,6 +61,7 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "junit/test-results.xml"
+          show: "all"
         if: always()
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
