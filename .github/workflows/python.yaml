@@ -64,7 +64,7 @@ jobs:
         if: ${{ always() }}
       - name: Comment PR with test results
         if: ${{ github.event_name == 'pull_request' }}
-        uses: thollander/actions-comment-pull-requests@v2
+        uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
             ${{ steps.test_summary.outputs.passed }}/${{ steps.test_summary.outputs.total }} tests passed
