@@ -1,7 +1,7 @@
 # digital-ocean-dynamic-dns
 
 <!-- Pytest Coverage Comment:Begin -->
-<!-- Pytest Coverage Comment:End -->
+\n<!-- Pytest Coverage Comment:End -->
 
 Dynamic DNS python tool for Digital Ocean
 
