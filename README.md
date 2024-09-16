@@ -3,7 +3,7 @@
 [![pre-commit enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![coverage badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/nivintw/d3939953524d972fa08a6e494be4e12f/raw/pytest-coverage-comment__main.json)
-![CI status badge](https://github.com/nivintw/ddns/actions/workflows/python.yaml/badge.svg)
+[![Test status badge](https://img.shields.io/github/actions/workflow/status/nivintw/ddns/python.yaml?branch=main&label=Test%20Status&logo=github)](https://github.com/nivintw/ddns/actions/workflows/python.yaml)
 
 Dynamic DNS python tool for Digital Ocean
 
