@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.0.0 (2024-09-16)
+
+### Breaking
+
+* fix: :bookmark: Fix version; bump to 1.0
+
+Bump the version to 1.0 as it should be. semantic-release reset the version
+
+BREAKING CHANGE: force version 1.0 ([`83bfd69`](https://github.com/nivintw/ddns/commit/83bfd69a1337a6ee6f7e4ca36034421d8e6193c4))
+
 ## v0.1.0 (2024-09-16)
 
 ### Feature
