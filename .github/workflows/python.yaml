@@ -87,7 +87,9 @@ jobs:
   version-manage:
     if: github.ref_name == github.event.repository.default_branch
     needs: [pre-commit, tests]
-    concurrency: release
+    concurrency:
+      group: release
+      cancel-in-progress: true
     permissions:
       pull-requests: write
       contents: write
