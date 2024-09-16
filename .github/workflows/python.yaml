@@ -96,14 +96,14 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Get App Token for Coverage App
+      - name: Get App Token for write CI actions
+        # Special Github App user required to push directly to branches
+        # that otherwise restrict direct pushes.
         uses: actions/create-github-app-token@v1
         id: app-token
         with:
-          # Poorly named; this is a token with contents read/write for having CI make changes to the repo.
-          # TODO: update this later.
-          app-id: ${{ vars.COVERAGE_APP_APPID }}
-          private-key: ${{ secrets.COVERAGE_APP_SECRET }}
+          app-id: ${{ vars.CI_APP_APPID }}
+          private-key: ${{ secrets.CI_APP_SECRET }}
       - name: Checkout with App Token
         uses: actions/checkout@v4
         with:
