@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## v1.2.0 (2024-09-16)
+
+### Ci
+
+* ci: :construction_worker: Remove deprecated CI step ([`bdf1ed9`](https://github.com/nivintw/ddns/commit/bdf1ed964852037b79d6998d08efecad19b4e1c2))
+
+* ci: :construction_worker: Update CI vars/secrets names ([`3e1f431`](https://github.com/nivintw/ddns/commit/3e1f43179b50db2446854de73a4afda419f1d328))
+
+* ci: :construction_worker: Add cancel-in-progress: true for the version-manage job ([`afd8af3`](https://github.com/nivintw/ddns/commit/afd8af35547314cb9f2c2cb1b22574b731764f35))
+
+* ci: :construction_worker: remove redundant if statement for version-manage job
+
+we don&#39;t need to check for tag refs because the entire workflow is not configured to run for tag pushes ([`3569844`](https://github.com/nivintw/ddns/commit/35698448a241ab64b68d4e535a28a026305d5e88))
+
+### Documentation
+
+* docs: :memo: remove old README.md
+
+that readme.md is from the original project, which is at most an &#34;inspired by&#34; at this point. ([`7fe53df`](https://github.com/nivintw/ddns/commit/7fe53df95efa2536e2122903f22262dbee18bb7d))
+
+### Feature
+
+* feat: :building_construction: Remove api key table
+
+Storing the API key in a table was redundant with reading it from an environment variable. The new approach means there&#39;s less to manage, is better for security (since we don&#39;t write the API token unencrypted into the database file), and simplifies management, maintenance, and understanding of usage. ([`e7d878e`](https://github.com/nivintw/ddns/commit/e7d878e2b95f1f0a29f2bd3d91de908b99ce09ff))
+
+### Unknown
+
+* Merge pull request #7 from nivintw/remove-API-table
+
+Remove api table ([`5ac0829`](https://github.com/nivintw/ddns/commit/5ac0829f48a1c906c407f36fd9e63dcad9c4f55f))
+
+* Merge pull request #6 from nivintw/CI-updates-and-testing
+
+ci: :construction_worker: Remove deprecated CI step ([`e3dc217`](https://github.com/nivintw/ddns/commit/e3dc21742485e3196aa583519f27184ef48fc7e2))
+
 ## v1.1.1 (2024-09-16)
 
 ### Fix
