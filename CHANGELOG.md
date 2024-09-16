@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.3.6 (2024-09-16)
+
+### Fix
+
+* fix: :construction_worker: debug... have to include a &#34;fix&#34; so we can see who the heck the actor is ([`8fe0c92`](https://github.com/nivintw/ddns/commit/8fe0c925f50ee878537763911d7cf36960365962))
+
+### Unknown
+
+* Merge pull request #14 from nivintw/fix/ci/dont-run-pypi-push-on-semantic-release-commits
+
+fix: :construction_worker: debug... have to include a &#34;fix&#34; so we can… ([`d3a3eeb`](https://github.com/nivintw/ddns/commit/d3a3eeb250acd544a7d436e7f2b89835c294d8f4))
+
 ## v1.3.5 (2024-09-16)
 
 ### Fix
