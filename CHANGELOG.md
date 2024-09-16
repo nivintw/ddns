@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v1.1.0 (2024-09-16)
+
+### Feature
+
+* feat: :construction_worker: Add build_command for semantic release
+
+add build command for semantic release to build libraries. Also update manage-version job to only run on non-tag pushes to main. ([`e8cd0fb`](https://github.com/nivintw/ddns/commit/e8cd0fbf4f257535efa94d1a8fd630ddb3e63936))
+
+### Fix
+
+* fix: :construction_worker: Make semantic-release actually do the version operation
+
+sigh ([`1a7274b`](https://github.com/nivintw/ddns/commit/1a7274bf442bd0ccba6f0690ee866b78ae803c7f))
+
+* fix: :construction_worker: and `uv tool install python-semantic-release`
+
+I wasn&#39;t sure if installing before the run command was needed; it is here because the semantic-release binary comes from the previous install of python-semantic-release. ([`c62dafe`](https://github.com/nivintw/ddns/commit/c62dafe715a9cfd039db51db784c3ee7c60864cb))
+
+* fix: :construction_worker: switch to not using python-semantic-release GH action.
+
+The github action runs a docker container which in our case causes an issue because we want our build_command to be `uv build` and we can&#39;t install uv into the semantic-release container. ([`ff19de0`](https://github.com/nivintw/ddns/commit/ff19de0e5a83c38ad3f2b6e907c2d50fb86838ab))
+
+* fix: :construction_worker: Add yezz/setup-uv@v4 to the version-manage job.
+
+We need uv available in order for semantic-release to run the build command `uv build` ([`c0742a7`](https://github.com/nivintw/ddns/commit/c0742a72776c1dfbcf9b641bcf925412b0f0d828))
+
 ## v1.0.0 (2024-09-16)
 
 ### Breaking
