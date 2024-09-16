@@ -90,6 +90,8 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
+      - name: WHO AM I
+        run: echo ${{ github.actor }}
       - name: Get App Token for write CI actions
         # Special Github App user required to push directly to branches
         # that otherwise restrict direct pushes.
