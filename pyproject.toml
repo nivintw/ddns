@@ -118,3 +118,7 @@ select = [
 # Measure branch coverage in addition to statement coverage.
 branch = true
 # source_pkgs = ["digital_ocean_dynamic_dns"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/digital_ocean_dynamic_dns/__init__.py:__version__"]
