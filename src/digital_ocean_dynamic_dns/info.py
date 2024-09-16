@@ -51,9 +51,11 @@ def show_current_info(args: Namespace):
         # there not being an API key yet is not an error / is ok.
         API = get_api()
     except NoAPIKeyError:
-        API = "[red]Error:[/red] Unable to source API Key."
-    if args.show_api_key is not True:
-        API = "[green]Configured[/green]"
+        API = "[red]Error:[/red] Unable to read the API Key. Set DIGITALOCEAN_TOKEN env variable."
+    else:
+        # API key was found.
+        if args.show_api_key is not True:
+            API = "[green]Configured[/green]"
 
     cursor = conn.cursor()
     row = cursor.execute("SELECT URL FROM ipservers where ip_version = '4'").fetchone()
