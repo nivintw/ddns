@@ -1,6 +1,7 @@
 # digital-ocean-dynamic-dns
 
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/nivintw/d3939953524d972fa08a6e494be4e12f/raw/pytest-coverage-comment__main.json)
+![coverage badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/nivintw/d3939953524d972fa08a6e494be4e12f/raw/pytest-coverage-comment__main.json)
+![CI status badge](https://github.com/nivintw/ddns/actions/workflows/python.yaml/badge.svg)
 
 Dynamic DNS python tool for Digital Ocean
 
