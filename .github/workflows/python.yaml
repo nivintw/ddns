@@ -78,16 +78,6 @@ jobs:
           pytest-xml-coverage-path: ./coverage.xml
           junitxml-path: junit/test-results.xml
 
-      # - name: Update Readme with Coverage Html
-      #   if: ${{ github.ref_name == github.event.repository.default_branch }}
-      #   run: |
-      #     sed -i '/<!-- Pytest Coverage Comment:Begin -->/,/<!-- Pytest Coverage Comment:End -->/c\<!-- Pytest Coverage Comment:Begin -->\n\${{ steps.coverageComment.outputs.content }}\n<!-- Pytest Coverage Comment:End -->' ./README.md
-      # - name: Commit & Push changes to Readme
-      #   if: ${{ github.ref_name == github.event.repository.default_branch }}
-      #   uses: actions-js/push@master
-      #   with:
-      #     message: Update coverage on Readme
-      #     github_token: ${{ steps.app-token.outputs.token }}
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
@@ -95,3 +85,19 @@ jobs:
           path: junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
+      - name: Create the Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: d3939953524d972fa08a6e494be4e12f # repo-specific # pragma: allowlist secret
+          filename: pytest-coverage-comment__main.json
+          label: Coverage Report
+          message: ${{ steps.coverageComment.outputs.coverage }}
+          color: ${{ steps.coverageComment.outputs.color }}
+          namedLogo: python
+      # - name: Commit & Push changes; will maybe be used for semantic-release later.
+      #   if: ${{ github.ref_name == github.event.repository.default_branch }}
+      #   uses: actions-js/push@master
+      #   with:
+      #     message: Update coverage on Readme
+      #     github_token: ${{ steps.app-token.outputs.token }}
