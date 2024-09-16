@@ -23,4 +23,4 @@
 # Copyright 2024 - 2024, Tyler Nivin <tyler@nivin.tech>
 #   and the digital-ocean-dynamic-dns contributors
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"

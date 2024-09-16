@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v1.3.2 (2024-09-16)
+
+### Fix
+
+* fix: :loud_sound: Fix output messages for certain states.
+
+References to old argparse config updated. ([`22cbc9a`](https://github.com/nivintw/ddns/commit/22cbc9a37aa1e8421be6ca53a57c452c71439c7a))
+
+### Unknown
+
+* Merge pull request #10 from nivintw/fix/logs-update-output-message
+
+fix: :loud_sound: Fix output messages for certain states. ([`780b1cf`](https://github.com/nivintw/ddns/commit/780b1cfe9c19c28da6fda1855225a67ed848d6f1))
+
 ## v1.3.1 (2024-09-16)
 
 ### Fix
