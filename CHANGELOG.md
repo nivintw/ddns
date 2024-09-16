@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v1.3.5 (2024-09-16)
+
+### Fix
+
+* fix: :construction_worker: fix fix fix
+
+guessing the actor name at this point ([`1a81591`](https://github.com/nivintw/ddns/commit/1a81591bfeeec432682a27dc8897335891cfb230))
+
+### Unknown
+
+* Merge pull request #13 from nivintw/fix/ci/dont-run-pypi-push-on-semantic-release-commits
+
+fix: :construction_worker: fix fix fix ([`155328f`](https://github.com/nivintw/ddns/commit/155328fc5a6013e7a3ec5c6d59ee8de130d2edaa))
+
 ## v1.3.4 (2024-09-16)
 
 ### Fix
