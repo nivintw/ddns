@@ -85,8 +85,9 @@ jobs:
           path: junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-      - name: Create the Badge
+      - name: Update Gist for Coverage Badge in README.md
         uses: schneegans/dynamic-badges-action@v1.7.0
+        if: ${{ github.ref_name == github.event.repository.default_branch }}
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: d3939953524d972fa08a6e494be4e12f # repo-specific # pragma: allowlist secret
