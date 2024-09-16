@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.1.1 (2024-09-16)
+
+### Fix
+
+* fix: :construction_worker: Add `uv tool run semantic-release publish` to publish the built artifacts to the release
+
+I would have thought this happened automatically since the version command runs the build, but i&#39;m not seeing them on the release... ([`5dbbd21`](https://github.com/nivintw/ddns/commit/5dbbd21295fed025c7acf372f11e3c68e0e44152))
+
 ## v1.1.0 (2024-09-16)
 
 ### Feature
