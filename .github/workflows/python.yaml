@@ -79,7 +79,7 @@ jobs:
           namedLogo: python
 
   version-manage:
-    if: github.ref_name == github.event.repository.default_branch && github.actor != 'nivintw-ci-app'
+    if: github.ref_name == github.event.repository.default_branch && github.actor != 'semantic-release'
     needs: [pre-commit, tests]
     concurrency:
       group: release
