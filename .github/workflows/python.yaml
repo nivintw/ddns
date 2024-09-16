@@ -107,6 +107,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
+      - uses: yezz123/setup-uv@v4 # need uv available to run the build command.
       - name: Python Semantic Release
         # Adjust tag with desired version if applicable. Version shorthand
         # is NOT available, e.g. vX or vX.X will not work.
