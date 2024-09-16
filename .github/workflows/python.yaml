@@ -111,3 +111,9 @@ jobs:
           uv tool install python-semantic-release
           uv tool run semantic-release version
           uv tool run semantic-release publish
+      - name: Upload to PyPI
+        env:
+          TWINE_USERNAME: "__token__"
+          TWINE_PASSWORD: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
+        run: |
+          uv tool run twine upload --non-interactive dist/*
