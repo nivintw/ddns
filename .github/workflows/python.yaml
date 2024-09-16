@@ -113,4 +113,4 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           uv tool install python-semantic-release
-          uv tool run semantic-release
+          uv tool run semantic-release version
