@@ -29,7 +29,7 @@ from sqlite3 import Connection
 import pytest
 import responses
 
-from digital_ocean_dynamic_dns import api_key_helpers, domains, ip, manage, subdomains
+from digital_ocean_dynamic_dns import domains, ip, manage, subdomains
 from digital_ocean_dynamic_dns.database import connect_database
 
 
@@ -56,7 +56,6 @@ def mock_db_for_test(temp_database_path: Path, mocker):
     """
     test_specific_conn = connect_database(temp_database_path)
     mocker.patch.object(domains, "conn", test_specific_conn)
-    mocker.patch.object(api_key_helpers, "conn", test_specific_conn)
     mocker.patch.object(subdomains, "conn", test_specific_conn)
     mocker.patch.object(ip, "conn", test_specific_conn)
     mocker.patch.object(manage, "conn", test_specific_conn)
@@ -82,7 +81,6 @@ def preload_api_key(
     """
     SENTINEL_API_KEY = "sentinel-api-key"  # pragma: allowlist secret
     monkeypatch.setenv("DIGITALOCEAN_TOKEN", SENTINEL_API_KEY)
-    api_key_helpers.set_api_key(SENTINEL_API_KEY)
     return SENTINEL_API_KEY
 
 

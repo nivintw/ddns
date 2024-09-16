@@ -24,12 +24,8 @@
 #   and the digital-ocean-dynamic-dns contributors
 
 import pytest
-from pytest_check import check
-from pytest_mock import MockerFixture
 
 from digital_ocean_dynamic_dns import api_key_helpers
-
-# TODO add checks for last_updated column behavior.
 
 
 @pytest.mark.usefixtures("mock_db_for_test")
@@ -42,56 +38,20 @@ class TestApiKeyStorage:
         with pytest.raises(api_key_helpers.NoAPIKeyError):
             api_key_helpers.get_api()
 
-    def test_store_retrieve_api_key(self):
-        """Validate successful retrieval of an API key stored in the DB."""
-
-        EXPECTED_API_KEY = "fake-value-for-testing"  # pragma: allowlist secret
-
-        # Arrange/Test: add an API key so we can test the lookup.
-        api_key_helpers.set_api_key(EXPECTED_API_KEY)
-
-        # Test: Lookup the API key we just inserted.
-        found_api_key = api_key_helpers.get_api()
-        with check:
-            assert found_api_key == EXPECTED_API_KEY
-
-    def test_update_api_key(self):
-        """We can update the API if asked."""
-
-        ORIGINAL_API_KEY = "original-api-key"  # pragma: allowlist secret
-        EXPECTED_API_KEY = "updated-api-key"  # pragma: allowlist secret
-
-        with check:
-            # Arrange: Store the original API key.
-            api_key_helpers.set_api_key(ORIGINAL_API_KEY)
-            # Arrange/validate: the initial key store functioned as expected.
-            # NOTE: this is really just to guard against silent failures
-            # and prove we are _changing_ the key; not just storing.
-            pre_update_key = api_key_helpers.get_api()
-            assert pre_update_key == ORIGINAL_API_KEY
-
-            # Test Store new API key.
-            api_key_helpers.set_api_key(EXPECTED_API_KEY)
-            found_update_key = api_key_helpers.get_api()
-            assert found_update_key == EXPECTED_API_KEY
-
-    def test_env_var_precedence(
+    def test_update_api_key(
         self,
         monkeypatch: pytest.MonkeyPatch,
-        mocker: MockerFixture,
+        preload_api_key,
     ):
-        """API token preferentially read from DIGITALOCEAN_TOKEN"""
-        EXPECTED_API_KEY = "sentinel-token-value"  # pragma: allowlist secret
+        """We can update the API if asked."""
+        ORIGINAL_API_KEY = preload_api_key
+        EXPECTED_API_KEY = "updated-api-key"  # pragma: allowlist secret
         monkeypatch.setenv("DIGITALOCEAN_TOKEN", EXPECTED_API_KEY)
 
-        # Arrange: Override our database connection from mock_db_for_test.
-        # This will "break" the database, but in this case that's actually what we want.
-        # I.e. we shouldn't touch the database, so we don't want it to be functional.
-        mocked_conn = mocker.patch.object(api_key_helpers, "conn")
+        # Test
+        found_api = api_key_helpers.get_api()
 
-        found_api_token = api_key_helpers.get_api()
-        assert found_api_token == EXPECTED_API_KEY
-
-        # Validate we returned before instantiating the cursor.
-        # I.e. we don't lookup the API token from the database.
-        mocked_conn.cursor.assert_not_called()
+        # Validate: api key was updated
+        assert found_api != ORIGINAL_API_KEY
+        # validate: api key is new value
+        assert found_api == EXPECTED_API_KEY

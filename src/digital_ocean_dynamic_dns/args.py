@@ -28,7 +28,7 @@ from __future__ import annotations
 import argparse
 import textwrap
 
-from digital_ocean_dynamic_dns import api_key_helpers, info, ip, logs, manage, subdomains
+from digital_ocean_dynamic_dns import info, ip, logs, manage, subdomains
 
 from . import domains
 
@@ -173,17 +173,5 @@ def setup_argparse():
     configure_manage_subparser(subparsers)
     configure_un_manage_subparser(subparsers)
     configure_show_info_subparser(subparsers)
-
-    parser_api_key = subparsers.add_parser(
-        name="api-key",
-        help="Add/Change the Digital Ocean API Key.",
-    )
-    parser_api_key.set_defaults(func=api_key_helpers.view_or_update)
-    parser_api_key.add_argument(
-        "-k",
-        "--api-key-value",
-        help="The API key value",
-        type=str,
-    )
 
     return parser

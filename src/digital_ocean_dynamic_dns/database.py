@@ -45,13 +45,6 @@ def connect_database(database_path: Path):
     else:
         c = conn.cursor()
         c.execute(
-            """CREATE TABLE IF NOT EXISTS apikey (
-                id integer NOT NULL PRIMARY KEY,
-                key text NOT NULL,
-                last_updated text default 'N/A'
-            )"""
-        )
-        c.execute(
             """CREATE TABLE IF NOT EXISTS ipservers (
                 id integer NOT NULL PRIMARY KEY,
                 URL text NOT NULL UNIQUE,
