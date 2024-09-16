@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v1.3.3 (2024-09-16)
+
+### Ci
+
+* ci: :construction_worker: testing fixing version-manage run situations ([`5931e9c`](https://github.com/nivintw/ddns/commit/5931e9c00c0e14c05643d050e9abd04b7e091249))
+
+### Fix
+
+* fix: :clown_face: Fake a &#34;fix&#34; commit so I can ensure CI is running properly ([`25fa68d`](https://github.com/nivintw/ddns/commit/25fa68d7a565e1ea34262fc89b0c6f8259f532e0))
+
+### Unknown
+
+* Merge pull request #11 from nivintw/fix/ci/dont-run-pypi-push-on-semantic-release-commits
+
+Fix/ci/dont run pypi push on semantic release commits ([`78b8170`](https://github.com/nivintw/ddns/commit/78b817063f087bdd784ddc1a376e51f754f60e25))
+
 ## v1.3.2 (2024-09-16)
 
 ### Fix
