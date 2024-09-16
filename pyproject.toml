@@ -122,3 +122,4 @@ branch = true
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["src/digital_ocean_dynamic_dns/__init__.py:__version__"]
+build_command = "uv build"
