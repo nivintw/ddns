@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.3.4 (2024-09-16)
+
+### Fix
+
+* fix: :construction_worker: use the right name for the github.actor ([`533a9a3`](https://github.com/nivintw/ddns/commit/533a9a312be4dcc2fdbfad436e36c623a8eb2c9b))
+
+### Unknown
+
+* Merge pull request #12 from nivintw/fix/ci/dont-run-pypi-push-on-semantic-release-commits
+
+fix: :construction_worker: use the right name for the github.actor ([`b7fab95`](https://github.com/nivintw/ddns/commit/b7fab956d79b970b230a8500d726e730aaadc114))
+
 ## v1.3.3 (2024-09-16)
 
 ### Ci
