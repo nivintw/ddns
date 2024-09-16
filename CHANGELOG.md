@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.3.0 (2024-09-16)
+
+### Feature
+
+* feat: :construction_worker: Add twine upload to PYPI as part of release ([`00e522a`](https://github.com/nivintw/ddns/commit/00e522afefc055990ce3d148f35e165f27af9fd6))
+
+### Unknown
+
+* Merge pull request #8 from nivintw/add-twine-upload
+
+feat: :construction_worker: Add twine upload to PYPI as part of release ([`53d64a3`](https://github.com/nivintw/ddns/commit/53d64a38beaae870f23f3ac73cd36e118f8c43f3))
+
 ## v1.2.0 (2024-09-16)
 
 ### Ci
