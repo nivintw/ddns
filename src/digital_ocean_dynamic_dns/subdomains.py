@@ -315,7 +315,8 @@ def update_all_managed_subdomains(args: Namespace):
     if not rows:
         print(
             "[red]Error: [/red]There are no dynamic domains active."
-            " Start by adding a new domain with [i]ddns -s test.example.com[/i]"
+            " Start by adding a new domain with [i]do_ddns manage[/i]."
+            " E.g. [i]do_ddns manage example.com --sub-domain test[/i]."
         )
         raise NoManagedSubdomainsError()
 
@@ -382,7 +383,7 @@ def update_all_managed_subdomains(args: Namespace):
     else:
         msg = (
             time.strftime("%Y-%m-%d %H:%M")
-            + " - Info : Updates done. Use ddns -l domain.com to check domain"
+            + " - Info : Updates done. Use do_ddns manage <domain> --list to check <domain>"
         )
         print(msg)
         logging.info(msg)
