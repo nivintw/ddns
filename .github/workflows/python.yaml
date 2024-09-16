@@ -114,3 +114,4 @@ jobs:
         run: |
           uv tool install python-semantic-release
           uv tool run semantic-release version
+          uv tool run semantic-release publish
