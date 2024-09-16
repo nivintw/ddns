@@ -109,8 +109,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - uses: yezz123/setup-uv@v4 # need uv available to run the build command.
       - name: Python Semantic Release
-        # Adjust tag with desired version if applicable. Version shorthand
-        # is NOT available, e.g. vX or vX.X will not work.
-        uses: python-semantic-release/python-semantic-release@v9.8.8
-        with:
-          github_token: ${{ steps.app-token.outputs.token }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          uv tool run semantic-release
