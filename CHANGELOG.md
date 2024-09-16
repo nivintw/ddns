@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.3.1 (2024-09-16)
+
+### Fix
+
+* fix: :loud_sound: Fix conflicting user output when an API key has not been set ([`2ee5fe2`](https://github.com/nivintw/ddns/commit/2ee5fe2845836b1139ff5ac26769e5be44c8a592))
+
+### Unknown
+
+* Merge pull request #9 from nivintw/fix/show-info-api-key-output
+
+fix: :loud_sound: Fix conflicting user output when an API key has not… ([`5c3a213`](https://github.com/nivintw/ddns/commit/5c3a21381ed6507e434d440e8d125e3df5c33849))
+
 ## v1.3.0 (2024-09-16)
 
 ### Feature
