@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for the show-info command output."""
 
 import pytest
 
@@ -12,7 +13,7 @@ class TestShowInfo:
     def test_user_output(
         self,
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """User output is provided.
 
         For now, keep this test simple.

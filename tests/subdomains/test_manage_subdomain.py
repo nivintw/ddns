@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for the manage_subdomain functionality."""
 
 import datetime as dt
 from sqlite3 import Connection
@@ -27,13 +28,13 @@ pytestmark = pytest.mark.usefixtures("mocked_responses")
 def test_top_domain_not_managed(
     mocker: MockerFixture,
     capsys: pytest.CaptureFixture[str],
-    expected_domain,
-    expected_subdomain,
-):
+    expected_domain: str,
+    expected_subdomain: str,
+) -> None:
     """managed_subdomain raises TopDomainNotManagedError if the top domain is not managed.
+
     managed_subdomain() assumes the top domain is already being managed.
     """
-
     # Arrange: Mock the IP address lookup
     mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
 
@@ -75,21 +76,21 @@ def test_side_effects(
     capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
-):
-    """
-    Expected side effects:
-        1. subdomain added correctly to database.
-        2. create_a_record is called.
-        3. User-facing output is provided.
+) -> None:
+    """Test expected side effects of manage_subdomain.
+
+    1. subdomain added correctly to database.
+    2. create_a_record is called.
+    3. User-facing output is provided.
     """
     # Arrange the create_a_record mock.
-    EXPECTED_DOMAIN_RECORD_ID = 1001
-    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
-    EXPECTED_IP4_ADDRESS = "127.0.0.1"
+    expected_domain_record_id = 1001
+    expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
+    expected_ip4_address = "127.0.0.1"
 
     # Arrange: Mock the IP address lookup
     mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
-    mocked_get_ip.return_value = EXPECTED_IP4_ADDRESS
+    mocked_get_ip.return_value = expected_ip4_address
 
     # Arrange: Mock the creation of the A record.
     mocked_create_a_record = mocker.patch.object(
@@ -97,7 +98,7 @@ def test_side_effects(
         "create_a_record",
         autospec=True,
     )
-    mocked_create_a_record.return_value = EXPECTED_DOMAIN_RECORD_ID
+    mocked_create_a_record.return_value = expected_domain_record_id
 
     mocked_get_a_record = mocker.patch.object(
         do_api,
@@ -127,10 +128,10 @@ def test_side_effects(
 
     # Validate: A record was created.
     mocked_create_a_record.assert_called_once_with(
-        EXPECTED_A_RECORD_NAME, expected_domain, EXPECTED_IP4_ADDRESS
+        expected_a_record_name, expected_domain, expected_ip4_address
     )
 
-    mocked_get_a_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+    mocked_get_a_record.assert_called_once_with(expected_a_record_name, expected_domain)
 
     # Validate the subdomain was added to the database.
     row = mock_db_for_test.execute(
@@ -145,13 +146,13 @@ def test_side_effects(
         "from subdomains "
         "WHERE "
         "name = :name",
-        {"name": EXPECTED_A_RECORD_NAME},
+        {"name": expected_a_record_name},
     ).fetchone()
     assert row is not None  # triggered when no match / no insert.
 
     # Validate: inserted values.
-    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
-    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert row["current_ip4"] == expected_ip4_address
+    assert row["domain_record_id"] == expected_domain_record_id
     _now_str = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
     assert row["cataloged"] <= _now_str
     assert row["last_checked"] <= _now_str
@@ -160,7 +161,7 @@ def test_side_effects(
 
     # Validate user output
     captured_errout = capsys.readouterr()
-    assert f"{EXPECTED_A_RECORD_NAME} for domain {expected_domain}" in captured_errout.out
+    assert f"{expected_a_record_name} for domain {expected_domain}" in captured_errout.out
 
 
 @pytest.mark.parametrize(
@@ -174,26 +175,25 @@ def test_side_effects(
         ),
     ],
 )
-def test_claim_existing_A_record(
+def test_claim_existing_a_record(
     mocker: MockerFixture,
     mock_db_for_test: Connection,
     capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
-):
-    """
-    Expected side effects:
-        1. subdomain added correctly to database.
-        2. User-facing output is provided.
-        3. create_a_record is NOT called.
+) -> None:
+    """Test claiming an existing A record instead of creating a new one.
 
+    1. subdomain added correctly to database.
+    2. User-facing output is provided.
+    3. create_a_record is NOT called.
     """
     # Arrange the create_a_record mock.
-    EXPECTED_DOMAIN_RECORD_ID = 1001
-    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
-    EXPECTED_IP4_ADDRESS = "127.0.0.1"
-    EXPECTED_DOMAIN_RECORD = {
-        "id": EXPECTED_DOMAIN_RECORD_ID,
+    expected_domain_record_id = 1001
+    expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
+    expected_ip4_address = "127.0.0.1"
+    expected_domain_record = {
+        "id": expected_domain_record_id,
         "type": "A",
         "name": expected_domain,
         "data": "127.0.0.1",
@@ -202,7 +202,7 @@ def test_claim_existing_A_record(
 
     # Arrange: Mock the IP address lookup
     mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
-    mocked_get_ip.return_value = EXPECTED_IP4_ADDRESS
+    mocked_get_ip.return_value = expected_ip4_address
 
     # Arrange: Mock the creation of the A record.
     # We expect this mock to NOT be called.
@@ -221,7 +221,7 @@ def test_claim_existing_A_record(
         autospec=True,
     )
     mocked_get_a_record.return_value = [
-        EXPECTED_DOMAIN_RECORD,
+        expected_domain_record,
     ]
 
     # Arrange: Insert EXPECTED_DOMAIN into the db
@@ -247,11 +247,11 @@ def test_claim_existing_A_record(
     # expect to claim the existing A record that matched.
     mocked_create_a_record.assert_not_called()
 
-    mocked_get_a_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+    mocked_get_a_record.assert_called_once_with(expected_a_record_name, expected_domain)
     mocked_update_a_record.assert_called_once_with(
-        domain_record_id=EXPECTED_DOMAIN_RECORD_ID,
+        domain_record_id=expected_domain_record_id,
         domain=expected_domain,
-        new_ip_address=EXPECTED_IP4_ADDRESS,
+        new_ip_address=expected_ip4_address,
     )
 
     # Validate the subdomain was added to the database.
@@ -267,13 +267,13 @@ def test_claim_existing_A_record(
         "from subdomains "
         "WHERE "
         "name = :name",
-        {"name": EXPECTED_A_RECORD_NAME},
+        {"name": expected_a_record_name},
     ).fetchone()
     assert row is not None  # triggered when no match / no insert.
 
     # Validate: inserted values.
-    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
-    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert row["current_ip4"] == expected_ip4_address
+    assert row["domain_record_id"] == expected_domain_record_id
     _now_str = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
     assert row["cataloged"] <= _now_str
     assert row["last_checked"] <= _now_str
@@ -282,7 +282,7 @@ def test_claim_existing_A_record(
 
     # Validate user output
     captured_errout = capsys.readouterr()
-    assert f"{EXPECTED_A_RECORD_NAME} for domain {expected_domain}" in captured_errout.out
+    assert f"{expected_a_record_name} for domain {expected_domain}" in captured_errout.out
 
 
 @pytest.mark.parametrize(
@@ -302,13 +302,12 @@ def test_subdomain_already_managed(
     capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
-):
+) -> None:
     """Expected behavior when the subdomain is already managed."""
-
     # Arrange the create_a_record mock.
-    EXPECTED_DOMAIN_RECORD_ID = 1001
-    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
-    EXPECTED_IP4_ADDRESS = "127.0.0.1"
+    expected_domain_record_id = 1001
+    expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
+    expected_ip4_address = "127.0.0.1"
 
     # Arrange: Mock the creation of the A record.
     mocked_create_a_record = mocker.patch.object(
@@ -352,10 +351,10 @@ def test_subdomain_already_managed(
             "   :last_updated"
             ")",
             {
-                "domain_record_id": EXPECTED_DOMAIN_RECORD_ID,
+                "domain_record_id": expected_domain_record_id,
                 "main_id": 1,  # expected id from domains.id
-                "name": EXPECTED_A_RECORD_NAME,
-                "current_ip4": EXPECTED_IP4_ADDRESS,
+                "name": expected_a_record_name,
+                "current_ip4": expected_ip4_address,
                 "cataloged": now,
                 "last_checked": now,
                 "last_updated": now,
@@ -382,12 +381,12 @@ def test_subdomain_already_managed(
         "from subdomains "
         "WHERE "
         "name = :name",
-        {"name": EXPECTED_A_RECORD_NAME},
+        {"name": expected_a_record_name},
     ).fetchone()
 
     # Validate: values have not changed.
-    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
-    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert row["current_ip4"] == expected_ip4_address
+    assert row["domain_record_id"] == expected_domain_record_id
     assert row["cataloged"] == now
     assert row["last_checked"] == now
     assert row["last_updated"] == now
@@ -398,7 +397,7 @@ def test_subdomain_already_managed(
     assert "is already being managed by digital-ocean-dynamic-dns." in captured_errout.out
 
 
-def test_non_simple_chars_in_domain_name():
+def test_non_simple_chars_in_domain_name() -> None:
     """Raise NonSimpleDomainNameError if non-simple characters are used."""
     with pytest.raises(subdomains.NonSimpleDomainNameError):
         subdomains.manage_subdomain(

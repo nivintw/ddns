@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for updating A records for all managed subdomains."""
 
 from sqlite3 import Connection
 from unittest.mock import call
@@ -19,7 +20,7 @@ class TestUpdateAllManagedSubdomains:
 
     def test_no_configured_subdomains(
         self,
-    ):
+    ) -> None:
         """No subdomains at all configured."""
         parser = args.setup_argparse()
         test_args = parser.parse_args(args=["update-ips"])
@@ -29,26 +30,26 @@ class TestUpdateAllManagedSubdomains:
 
     def test_no_currently_managed_subdomains(
         self,
-        mock_db_for_test,
-        added_top_domain,
+        mock_db_for_test: Connection,
+        added_top_domain: str,
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """Subdomains exist, but are marked unmanaged."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
-        EXPECTED_SUBDOMAINS = [
+        expected_subdomains = [
             "@",
             "support",
         ]
-        EXPECTED_DOMAIN_RECORD_IDS = [
+        expected_domain_record_ids = [
             10_001,
             10_002,
         ]
-        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        expected_ip_address = "127.0.0.1"
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        mocked_create_a_record.side_effect = expected_domain_record_ids
         # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
         mocked_get_a_record = mocker.patch.object(
@@ -60,16 +61,16 @@ class TestUpdateAllManagedSubdomains:
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
-        mocked_get_ip.return_value = EXPECTED_IP_ADDRESS
+        mocked_get_ip.return_value = expected_ip_address
 
-        for subdomain in EXPECTED_SUBDOMAINS:
+        for subdomain in expected_subdomains:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (1.2): mark the subdomains as unmanaged.
         with mock_db_for_test:
             mock_db_for_test.execute(
                 "update subdomains set managed = 0 where domain_record_id in (?, ?)",
-                EXPECTED_DOMAIN_RECORD_IDS,
+                expected_domain_record_ids,
             )
 
         parser = args.setup_argparse()
@@ -79,26 +80,26 @@ class TestUpdateAllManagedSubdomains:
 
     def test_all_current(
         self,
-        added_top_domain,
+        added_top_domain: str,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """All managed subdomains have current IPs."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
-        EXPECTED_SUBDOMAINS = [
+        expected_subdomains = [
             "@",
             "support",
         ]
-        EXPECTED_DOMAIN_RECORD_IDS = [
+        expected_domain_record_ids = [
             10_001,
             10_002,
         ]
-        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        expected_ip_address = "127.0.0.1"
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        mocked_create_a_record.side_effect = expected_domain_record_ids
         # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
         mocked_get_a_record = mocker.patch.object(
@@ -110,12 +111,12 @@ class TestUpdateAllManagedSubdomains:
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
-        mocked_get_ip.return_value = EXPECTED_IP_ADDRESS
+        mocked_get_ip.return_value = expected_ip_address
 
         mocked_get_ip = mocker.patch.object(ip, "get_ip", autospec=True)
-        mocked_get_ip.return_value = EXPECTED_IP_ADDRESS
+        mocked_get_ip.return_value = expected_ip_address
 
-        for subdomain in EXPECTED_SUBDOMAINS:
+        for subdomain in expected_subdomains:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (2): Mock the update_a_record method
@@ -138,14 +139,14 @@ class TestUpdateAllManagedSubdomains:
         )
         mocked_get_a_record.side_effect = [
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[0],
+                "id": expected_domain_record_ids[0],
                 "type": "A",
-                "data": EXPECTED_IP_ADDRESS,
+                "data": expected_ip_address,
             },
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[1],
+                "id": expected_domain_record_ids[1],
                 "type": "A",
-                "data": EXPECTED_IP_ADDRESS,
+                "data": expected_ip_address,
             },
         ]
 
@@ -163,11 +164,11 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
                 ),
             ]
@@ -177,27 +178,27 @@ class TestUpdateAllManagedSubdomains:
 
     def test_partial_update(
         self,
-        added_top_domain,
+        added_top_domain: str,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
         mock_db_for_test: Connection,
-    ):
+    ) -> None:
         """Some configured subdomains need update."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
-        EXPECTED_SUBDOMAINS = [
+        expected_subdomains = [
             "@",
             "support",
         ]
-        EXPECTED_DOMAIN_RECORD_IDS = [
+        expected_domain_record_ids = [
             10_001,
             10_002,
         ]
-        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        expected_ip_address = "127.0.0.1"
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        mocked_create_a_record.side_effect = expected_domain_record_ids
         # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
         mocked_get_a_record = mocker.patch.object(
@@ -214,10 +215,10 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_ip.side_effect = [
             "127.0.0.2",  # initial IP values; manage subdomain 1.
             "127.0.0.2",  # initial IP values; manage subdomain 2.
-            EXPECTED_IP_ADDRESS,  # Update all managed subdomains get_ip() call.
+            expected_ip_address,  # Update all managed subdomains get_ip() call.
         ]
 
-        for subdomain in EXPECTED_SUBDOMAINS:
+        for subdomain in expected_subdomains:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (2): Mock the update_a_record method
@@ -240,14 +241,14 @@ class TestUpdateAllManagedSubdomains:
         )
         mocked_get_a_record.side_effect = [
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[0],
+                "id": expected_domain_record_ids[0],
                 "type": "A",
-                "data": EXPECTED_IP_ADDRESS,
+                "data": expected_ip_address,
             },
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[1],
+                "id": expected_domain_record_ids[1],
                 "type": "A",
-                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
+                # NOTE: data is intentionally stale (differs from expected_ip_address)
                 "data": "127.0.0.2",
             },
         ]
@@ -266,11 +267,11 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
                 ),
             ]
@@ -278,9 +279,9 @@ class TestUpdateAllManagedSubdomains:
         # Validate: update_a_record function was called once for
         # the second subdomain
         mocked_update_a_record.assert_called_once_with(
-            domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+            domain_record_id=expected_domain_record_ids[1],
             domain=added_top_domain,
-            new_ip_address=EXPECTED_IP_ADDRESS,
+            new_ip_address=expected_ip_address,
         )
 
         # Validate that the DB was updated.
@@ -299,31 +300,31 @@ class TestUpdateAllManagedSubdomains:
         row = mock_db_for_test.execute(
             "select current_ip4 from subdomains where domain_record_id = 10002"
         ).fetchone()
-        assert row["current_ip4"] == EXPECTED_IP_ADDRESS
+        assert row["current_ip4"] == expected_ip_address
 
     def test_all_need_update(
         self,
-        added_top_domain,
+        added_top_domain: str,
         mock_db_for_test: Connection,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """All configured subdomains need update."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
-        EXPECTED_SUBDOMAINS = [
+        expected_subdomains = [
             "@",
             "support",
         ]
-        EXPECTED_DOMAIN_RECORD_IDS = [
+        expected_domain_record_ids = [
             10_001,
             10_002,
         ]
-        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        expected_ip_address = "127.0.0.1"
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        mocked_create_a_record.side_effect = expected_domain_record_ids
         # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
         mocked_get_a_record = mocker.patch.object(
@@ -340,10 +341,10 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_ip.side_effect = [
             "127.0.0.2",  # initial IP values; manage subdomain 1.
             "127.0.0.2",  # initial IP values; manage subdomain 2.
-            EXPECTED_IP_ADDRESS,  # Update all managed subdomains get_ip() call.
+            expected_ip_address,  # Update all managed subdomains get_ip() call.
         ]
 
-        for subdomain in EXPECTED_SUBDOMAINS:
+        for subdomain in expected_subdomains:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (2): Mock the update_a_record method
@@ -366,15 +367,15 @@ class TestUpdateAllManagedSubdomains:
         )
         mocked_get_a_record.side_effect = [
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[0],
+                "id": expected_domain_record_ids[0],
                 "type": "A",
-                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
+                # NOTE: data is intentionally stale (differs from expected_ip_address)
                 "data": "127.0.0.2",
             },
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[1],
+                "id": expected_domain_record_ids[1],
                 "type": "A",
-                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
+                # NOTE: data is intentionally stale (differs from expected_ip_address)
                 "data": "127.0.0.2",
             },
         ]
@@ -393,11 +394,11 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
                 ),
             ]
@@ -407,14 +408,14 @@ class TestUpdateAllManagedSubdomains:
         mocked_update_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
-                    new_ip_address=EXPECTED_IP_ADDRESS,
+                    new_ip_address=expected_ip_address,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
-                    new_ip_address=EXPECTED_IP_ADDRESS,
+                    new_ip_address=expected_ip_address,
                 ),
             ]
         )
@@ -424,31 +425,31 @@ class TestUpdateAllManagedSubdomains:
 
         assert len(rows) != 0
         for subdomain in rows:
-            assert subdomain["current_ip4"] == EXPECTED_IP_ADDRESS
+            assert subdomain["current_ip4"] == expected_ip_address
 
     def test_force_update(
         self,
-        added_top_domain,
+        added_top_domain: str,
         mock_db_for_test: Connection,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """The --force flag can be used to force an update, even when all are current."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
-        EXPECTED_SUBDOMAINS = [
+        expected_subdomains = [
             "@",
             "support",
         ]
-        EXPECTED_DOMAIN_RECORD_IDS = [
+        expected_domain_record_ids = [
             10_001,
             10_002,
         ]
-        EXPECTED_IP_ADDRESS = "127.0.0.1"
+        expected_ip_address = "127.0.0.1"
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        mocked_create_a_record.side_effect = expected_domain_record_ids
         # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
         mocked_get_a_record = mocker.patch.object(
@@ -465,10 +466,10 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_ip.side_effect = [
             "127.0.0.2",  # initial IP values; manage subdomain 1.
             "127.0.0.2",  # initial IP values; manage subdomain 2.
-            EXPECTED_IP_ADDRESS,  # Update all managed subdomains get_ip() call.
+            expected_ip_address,  # Update all managed subdomains get_ip() call.
         ]
 
-        for subdomain in EXPECTED_SUBDOMAINS:
+        for subdomain in expected_subdomains:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
         # Arrange (2): Mock the update_a_record method
@@ -490,14 +491,14 @@ class TestUpdateAllManagedSubdomains:
         )
         mocked_get_a_record.side_effect = [
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[0],
+                "id": expected_domain_record_ids[0],
                 "type": "A",
-                "data": EXPECTED_IP_ADDRESS,
+                "data": expected_ip_address,
             },
             {
-                "id": EXPECTED_DOMAIN_RECORD_IDS[1],
+                "id": expected_domain_record_ids[1],
                 "type": "A",
-                "data": EXPECTED_IP_ADDRESS,
+                "data": expected_ip_address,
             },
         ]
 
@@ -517,11 +518,11 @@ class TestUpdateAllManagedSubdomains:
         mocked_get_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
                 ),
             ]
@@ -532,14 +533,14 @@ class TestUpdateAllManagedSubdomains:
         mocked_update_a_record.assert_has_calls(
             [
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
+                    domain_record_id=expected_domain_record_ids[0],
                     domain=added_top_domain,
-                    new_ip_address=EXPECTED_IP_ADDRESS,
+                    new_ip_address=expected_ip_address,
                 ),
                 call(
-                    domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
+                    domain_record_id=expected_domain_record_ids[1],
                     domain=added_top_domain,
-                    new_ip_address=EXPECTED_IP_ADDRESS,
+                    new_ip_address=expected_ip_address,
                 ),
             ]
         )
@@ -548,4 +549,4 @@ class TestUpdateAllManagedSubdomains:
         rows = mock_db_for_test.execute("select current_ip4 from subdomains").fetchall()
         assert len(rows) != 0
         for subdomain in rows:
-            assert subdomain["current_ip4"] == EXPECTED_IP_ADDRESS
+            assert subdomain["current_ip4"] == expected_ip_address

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for the un_manage_domain function."""
 
 import datetime as dt
 from sqlite3 import Connection
@@ -11,20 +12,22 @@ from digital_ocean_dynamic_dns import domains
 
 @pytest.mark.usefixtures("mock_db_for_test", "mocked_responses", "preload_api_key")
 class TestUnManageDomain:
+    """Tests for the un_manage_domain function."""
+
     def test_domain_not_in_db(
         self,
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """Call unmanage_domain with a domain not in database."""
-        EXPECTED_DOMAIN = "sentinel.new.test.domain.local"
+        expected_domain = "sentinel.new.test.domain.local"
 
-        domains.un_manage_domain(EXPECTED_DOMAIN)
+        domains.un_manage_domain(expected_domain)
 
         # Validate: Ensure user was informed.
         captured_output = capsys.readouterr().out
         captured_output = " ".join(captured_output.split())
         assert (
-            f"The domain {EXPECTED_DOMAIN} is not managed by digital-ocean-dynamic-dns."
+            f"The domain {expected_domain} is not managed by digital-ocean-dynamic-dns."
             in captured_output
         )
 
@@ -47,10 +50,10 @@ class TestUnManageDomain:
         mock_db_for_test: Connection,
         subdomains: list[dict],
         capsys: pytest.CaptureFixture[str],
-    ):
+    ) -> None:
         """All sub-domains and the top-level domain are marked un-managed."""
-        EXPECTED_DOMAIN = "sentinel.existing.test.domain.local"
-        EXPECTED_IP4_ADDRESS = "127.0.0.1"
+        expected_domain = "sentinel.existing.test.domain.local"
+        expected_ip4_address = "127.0.0.1"
 
         # Arrange: inject the domain directly into the table before
         # calling the function under test.
@@ -60,7 +63,7 @@ class TestUnManageDomain:
                 "INSERT INTO domains(name, cataloged, last_managed) "
                 " values(:name, :cataloged, :last_managed)",
                 {
-                    "name": EXPECTED_DOMAIN,
+                    "name": expected_domain,
                     "cataloged": update_datetime,
                     "last_managed": update_datetime,
                 },
@@ -92,7 +95,7 @@ class TestUnManageDomain:
                         "domain_record_id": i,
                         "main_id": 1,  # expected id from domains.id
                         "name": subdomain["name"],
-                        "current_ip4": EXPECTED_IP4_ADDRESS,
+                        "current_ip4": expected_ip4_address,
                         "cataloged": update_datetime,
                         "last_checked": update_datetime,
                         "last_updated": update_datetime,
@@ -100,12 +103,12 @@ class TestUnManageDomain:
                     },
                 )
 
-        domains.un_manage_domain(EXPECTED_DOMAIN)
+        domains.un_manage_domain(expected_domain)
 
         # Ensure values were unchanged.
         with mock_db_for_test:
             row = mock_db_for_test.execute(
-                "select * from domains where name = ?", (EXPECTED_DOMAIN,)
+                "select * from domains where name = ?", (expected_domain,)
             ).fetchone()
             assert row["managed"] == 0
 
@@ -121,7 +124,7 @@ class TestUnManageDomain:
         # Validate user feedback.
         capd_out = " ".join(capsys.readouterr().out.split())
         assert (
-            f"Domain {EXPECTED_DOMAIN} is no longer managed. "
+            f"Domain {expected_domain} is no longer managed. "
             f"{len([x for x in subdomains if x['managed'] == 1])} "
             "related subdomains also no longer managed."
         ) in capd_out

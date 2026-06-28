@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for the un_manage_subdomain function."""
 
 import datetime as dt
 from sqlite3 import Connection
@@ -24,13 +25,13 @@ pytestmark = pytest.mark.usefixtures("mocked_responses")
 )
 def test_top_domain_not_managed(
     capsys: pytest.CaptureFixture[str],
-    expected_domain,
-    expected_subdomain,
-):
+    expected_domain: str,
+    expected_subdomain: str,
+) -> None:
     """un_manage_subdomain raises TopDomainNotManagedError if the top domain is not managed.
+
     un_manage_subdomain() assumes the top domain is already being managed.
     """
-
     with pytest.raises(subdomains.TopDomainNotManagedError):
         subdomains.un_manage_subdomain(subdomain=expected_subdomain, domain=expected_domain)
 
@@ -55,16 +56,17 @@ def test_side_effects(
     capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
-):
-    """
+) -> None:
+    """Verify expected side effects of un_manage_subdomain.
+
     Expected side effects:
         1. subdomain marked as un-managed in database.
         2. User-facing output is provided.
     """
     # Arrange the create_a_record mock.
-    EXPECTED_DOMAIN_RECORD_ID = 1001
-    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
-    EXPECTED_IP4_ADDRESS = "127.0.0.1"
+    expected_domain_record_id = 1001
+    expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
+    expected_ip4_address = "127.0.0.1"
 
     # Arrange: Insert EXPECTED_DOMAIN into the db
     # as a managed domain.
@@ -102,10 +104,10 @@ def test_side_effects(
             "   1"
             ")",
             {
-                "domain_record_id": EXPECTED_DOMAIN_RECORD_ID,
+                "domain_record_id": expected_domain_record_id,
                 "main_id": 1,  # expected id from domains.id
-                "name": EXPECTED_A_RECORD_NAME,
-                "current_ip4": EXPECTED_IP4_ADDRESS,
+                "name": expected_a_record_name,
+                "current_ip4": expected_ip4_address,
                 "cataloged": update_datetime,
                 "last_checked": update_datetime,
                 "last_updated": update_datetime,
@@ -128,13 +130,13 @@ def test_side_effects(
         "from subdomains "
         "WHERE "
         "name = :name",
-        {"name": EXPECTED_A_RECORD_NAME},
+        {"name": expected_a_record_name},
     ).fetchone()
     assert row is not None  # triggered when no match / no insert.
 
     # Validate: inserted values.
-    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
-    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert row["current_ip4"] == expected_ip4_address
+    assert row["domain_record_id"] == expected_domain_record_id
     now = dt.datetime.now(tz=dt.UTC).astimezone()
     assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M").astimezone() <= now
     assert dt.datetime.strptime(row["last_checked"], "%Y-%m-%d %H:%M").astimezone() <= now
@@ -146,7 +148,7 @@ def test_side_effects(
     captured_out = capsys.readouterr().out
     captured_out = " ".join(captured_out.split())
     assert (
-        f"{EXPECTED_A_RECORD_NAME} for domain {expected_domain}"
+        f"{expected_a_record_name} for domain {expected_domain}"
         " is no longer being managed by digital-ocean-dynamic-dns!" in captured_out
     )
 
@@ -167,13 +169,12 @@ def test_subdomain_not_managed(
     capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
-):
+) -> None:
     """Expected behavior when the subdomain is not managed."""
-
     # Arrange the create_a_record mock.
-    EXPECTED_DOMAIN_RECORD_ID = 1001
-    EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
-    EXPECTED_IP4_ADDRESS = "127.0.0.1"
+    expected_domain_record_id = 1001
+    expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
+    expected_ip4_address = "127.0.0.1"
 
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
@@ -212,10 +213,10 @@ def test_subdomain_not_managed(
             "   0"
             ")",
             {
-                "domain_record_id": EXPECTED_DOMAIN_RECORD_ID,
+                "domain_record_id": expected_domain_record_id,
                 "main_id": 1,  # expected id from domains.id
-                "name": EXPECTED_A_RECORD_NAME,
-                "current_ip4": EXPECTED_IP4_ADDRESS,
+                "name": expected_a_record_name,
+                "current_ip4": expected_ip4_address,
                 "cataloged": now,
                 "last_checked": now,
                 "last_updated": now,
@@ -238,12 +239,12 @@ def test_subdomain_not_managed(
         "from subdomains "
         "WHERE "
         "name = :name",
-        {"name": EXPECTED_A_RECORD_NAME},
+        {"name": expected_a_record_name},
     ).fetchone()
 
     # Validate: values have not changed.
-    assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
-    assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
+    assert row["current_ip4"] == expected_ip4_address
+    assert row["domain_record_id"] == expected_domain_record_id
     assert row["cataloged"] == now
     assert row["last_checked"] == now
     assert row["last_updated"] == now
@@ -255,7 +256,7 @@ def test_subdomain_not_managed(
     assert "is not being managed by digital-ocean-dynamic-dns." in captured_errout.out
 
 
-def test_non_simple_chars_in_domain_name():
+def test_non_simple_chars_in_domain_name() -> None:
     """Raise NonSimpleDomainNameError if non-simple characters are used."""
     with pytest.raises(subdomains.NonSimpleDomainNameError):
         subdomains.un_manage_subdomain(

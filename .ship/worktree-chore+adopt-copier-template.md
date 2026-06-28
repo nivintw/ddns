@@ -57,3 +57,14 @@ Template: gh:nivintw/copier-everything @ v1.1.0.
 - release-please uv.lock jsonpath `@.name.value` VERIFIED correct via release-please source
   (generic-toml.ts -> TaggedTOMLParser tags scalars as {value,...}; tables untagged). Copilot wrong.
 - Worktree stays in place until post-merge (then ExitWorktree keep + /dev-kit:cleanup-locally).
+
+## ADDENDUM (test strictness, post-review with user) — branch continues, same PR #17
+Decision: tests held to same bar as src; ONLY S101 exempt (pytest mandates assert).
+- Removed speculative ignores (FBT/S311/PLR2004/SLF001 — 0 violations).
+- ARG resolved: mock_db_for_test -> autouse (per-test DB isolation default); 2 conftest
+  fixtures dropped the unused param; deleted 1 unused capsys arg. NO ARG ignore.
+- INP001 dropped (inert; test dirs have __init__.py).
+- Fixing in code (fan-out wf_7ed39f50-7ae, 21 files): N806 (EXPECTED_* -> snake_case),
+  ANN (-> None + param types), D (docstrings), N802 (test_A_record -> test_a_record), N803.
+- Final: tests/** = ["S101"]. Template implication noted: template tests default should be ["S101"].
+- After fan-out: verify ruff/ty/pytest(107) + format; /simplify; prek gate; push to PR #17; Copilot re-converge.
