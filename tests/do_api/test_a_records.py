@@ -47,7 +47,7 @@ class TestGetARecords:
             },
         )
 
-        domain_records = [x for x in do_api.get_a_records(EXPECTED_DOMAIN)]
+        domain_records = list(do_api.get_a_records(EXPECTED_DOMAIN))
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     def test_no_existing_a_records(
@@ -81,13 +81,12 @@ class TestGetARecords:
         """Pagination is supported."""
         EXPECTED_DOMAIN = "test.domain.example.com"
         EXPECTED_DOMAIN_RECORDS = [
-            *[
-                x
-                for x in repeat(
+            *list(
+                repeat(
                     {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
                     self.PAGE_RESULTS_LIMIT,
                 )
-            ],
+            ),
             {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
         ]
         headers = {
@@ -125,11 +124,11 @@ class TestGetARecords:
             },
         )
 
-        domain_records = [x for x in do_api.get_a_records(EXPECTED_DOMAIN)]
+        domain_records = list(do_api.get_a_records(EXPECTED_DOMAIN))
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 404,
@@ -231,9 +230,7 @@ class TestGetARecordsByName:
             },
         )
 
-        domain_records = [
-            x for x in do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
-        ]
+        domain_records = list(do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     def test_no_matching_a_records(
@@ -275,13 +272,12 @@ class TestGetARecordsByName:
         EXPECTED_DOMAIN = "test.domain.example.com"
         EXPECTED_SUBDOMAIN = "@"
         EXPECTED_DOMAIN_RECORDS = [
-            *[
-                x
-                for x in repeat(
+            *list(
+                repeat(
                     {"id": 1, "name": EXPECTED_SUBDOMAIN, "data": "127.0.0.1", "ttl": 1800},
                     self.PAGE_RESULTS_LIMIT,
                 )
-            ],
+            ),
             {"id": 2, "name": EXPECTED_SUBDOMAIN, "data": "127.0.0.1", "ttl": 1800},
         ]
         headers = {
@@ -330,13 +326,11 @@ class TestGetARecordsByName:
             },
         )
 
-        domain_records = [
-            x for x in do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
-        ]
+        domain_records = list(do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 404,
@@ -401,7 +395,7 @@ class TestCreateARecord:
     """We can create A records for given subdomain/domain pair."""
 
     @pytest.mark.parametrize(
-        "expected_subdomain, expected_domain",
+        ("expected_subdomain", "expected_domain"),
         [
             pytest.param("@", "example.com", id="short-subdomain"),
             pytest.param("support.example.com", "example.com", id="long-subdomain"),
@@ -452,7 +446,7 @@ class TestCreateARecord:
         )
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 404,
@@ -513,7 +507,7 @@ class TestCreateARecord:
             _ = do_api.create_a_record(EXPECTED_A_RECORD_NAME, EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS)
 
     @pytest.mark.parametrize(
-        "subdomain, domain",
+        ("subdomain", "domain"),
         [
             pytest.param("@", "\N{GREEK CAPITAL LETTER DELTA}-forge.example.com", id="bad-domain"),
             pytest.param(
@@ -579,7 +573,7 @@ class TestGetARecord:
         assert domain_record == EXPECTED_DOMAIN_RECORD
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 404,
@@ -673,7 +667,7 @@ class TestUpdateARecord:
         assert domain_record == EXPECTED_DOMAIN_RECORD
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 404,

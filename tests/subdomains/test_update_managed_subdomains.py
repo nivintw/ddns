@@ -5,7 +5,6 @@ from sqlite3 import Connection
 from unittest.mock import call
 
 import pytest
-from pytest import CaptureFixture
 from pytest_mock import MockerFixture
 
 from digital_ocean_dynamic_dns import args, ip, subdomains
@@ -17,8 +16,6 @@ pytestmark = pytest.mark.usefixtures("mock_db_for_test")
 @pytest.mark.usefixtures("mocked_responses")
 class TestUpdateAllManagedSubdomains:
     """Update A records for all managed subdomains."""
-
-    # TODO: Add checks for last_updated and last_checked values.
 
     def test_no_configured_subdomains(
         self,
@@ -84,7 +81,7 @@ class TestUpdateAllManagedSubdomains:
         self,
         added_top_domain,
         mocker: MockerFixture,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
     ):
         """All managed subdomains have current IPs."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
@@ -97,8 +94,6 @@ class TestUpdateAllManagedSubdomains:
             10_002,
         ]
         EXPECTED_IP_ADDRESS = "127.0.0.1"
-
-        from digital_ocean_dynamic_dns import subdomains
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
@@ -184,7 +179,7 @@ class TestUpdateAllManagedSubdomains:
         self,
         added_top_domain,
         mocker: MockerFixture,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
         mock_db_for_test: Connection,
     ):
         """Some configured subdomains need update."""
@@ -198,8 +193,6 @@ class TestUpdateAllManagedSubdomains:
             10_002,
         ]
         EXPECTED_IP_ADDRESS = "127.0.0.1"
-
-        from digital_ocean_dynamic_dns import subdomains
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
@@ -254,7 +247,7 @@ class TestUpdateAllManagedSubdomains:
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[1],
                 "type": "A",
-                # NOTE: data != EXPECTED_IP_ADDRESS
+                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
                 "data": "127.0.0.2",
             },
         ]
@@ -313,7 +306,7 @@ class TestUpdateAllManagedSubdomains:
         added_top_domain,
         mock_db_for_test: Connection,
         mocker: MockerFixture,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
     ):
         """All configured subdomains need update."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
@@ -326,8 +319,6 @@ class TestUpdateAllManagedSubdomains:
             10_002,
         ]
         EXPECTED_IP_ADDRESS = "127.0.0.1"
-
-        from digital_ocean_dynamic_dns import subdomains
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True
@@ -377,13 +368,13 @@ class TestUpdateAllManagedSubdomains:
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[0],
                 "type": "A",
-                # NOTE: data != EXPECTED_IP_ADDRESS
+                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
                 "data": "127.0.0.2",
             },
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[1],
                 "type": "A",
-                # NOTE: data != EXPECTED_IP_ADDRESS
+                # NOTE: data is intentionally stale (differs from EXPECTED_IP_ADDRESS)
                 "data": "127.0.0.2",
             },
         ]
@@ -440,7 +431,7 @@ class TestUpdateAllManagedSubdomains:
         added_top_domain,
         mock_db_for_test: Connection,
         mocker: MockerFixture,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
     ):
         """The --force flag can be used to force an update, even when all are current."""
         # Arrange (1): Configure two subdomains, but marked unmanaged.
@@ -453,8 +444,6 @@ class TestUpdateAllManagedSubdomains:
             10_002,
         ]
         EXPECTED_IP_ADDRESS = "127.0.0.1"
-
-        from digital_ocean_dynamic_dns import subdomains
 
         mocked_create_a_record = mocker.patch.object(
             subdomains.do_api, "create_a_record", autospec=True

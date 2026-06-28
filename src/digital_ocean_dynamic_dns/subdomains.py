@@ -1,16 +1,12 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
-#
-# list_sub_domains -> list_managed_sub_domains?
-# list_do_sub_domains -> list_unmanaged_sub_domains?
-# add_subdomain -> register_and_manage_subdomain
-# remove_subdomain -> unregister_subdomain
+"""Subdomain management for digital-ocean-dynamic-dns."""
 
 import logging
 import time
 from argparse import Namespace
-from datetime import datetime
+from datetime import UTC, datetime
 from string import ascii_letters, digits
 
 from more_itertools import peekable
@@ -22,6 +18,8 @@ from .database import connect_database
 from .exceptions import NonSimpleDomainNameError
 from .ip import get_ip
 
+log = logging.getLogger(__name__)
+
 
 class NoManagedSubdomainsError(Exception):
     """updated_all_managed_subdomains was called and there are no configured subdomains."""
@@ -29,6 +27,7 @@ class NoManagedSubdomainsError(Exception):
 
 class TopDomainNotManagedError(Exception):
     """Raised when the top domain specified is not managed.
+
     This error should never be raised by user-facing code paths.
     I.e. all user-facing code paths are required to manage the top domain
       before managing the sub-domains/A records.
@@ -38,11 +37,16 @@ class TopDomainNotManagedError(Exception):
 conn = connect_database(constants.database_path)
 
 
-def list_sub_domains(domain):
+def list_sub_domains(domain: str) -> None:
+    """List managed and unmanaged A records for a domain.
+
+    Args:
+        domain: The top-level domain name registered with Digital Ocean.
+    """
     cursor = conn.cursor()
     console = Console()
 
-    domain_A_records = {x["name"]: x for x in do_api.get_a_records(domain)}
+    domain_a_records = {x["name"]: x for x in do_api.get_a_records(domain)}
 
     row = cursor.execute("SELECT id FROM domains WHERE name = ?", (domain,)).fetchone()
     if row is None:
@@ -66,8 +70,8 @@ def list_sub_domains(domain):
         ).fetchall()
         managed_subdomains = {x["name"]: x for x in subdomains if x["managed"] == 1}
 
-    unmanaged_domain_records = domain_A_records.keys() - managed_subdomains.keys()
-    managed_domain_records = domain_A_records.keys() & managed_subdomains.keys()
+    unmanaged_domain_records = domain_a_records.keys() - managed_subdomains.keys()
+    managed_domain_records = domain_a_records.keys() & managed_subdomains.keys()
 
     if managed_domain_records:
         table = Table(title=f"Managed A records for [b]{domain}[/b]", highlight=True)
@@ -102,8 +106,8 @@ def list_sub_domains(domain):
         for domain_record_name in unmanaged_domain_records:
             table.add_row(
                 domain_record_name,
-                str(domain_A_records[domain_record_name]["id"]),
-                str(domain_A_records[domain_record_name]["data"]),
+                str(domain_a_records[domain_record_name]["id"]),
+                str(domain_a_records[domain_record_name]["data"]),
             )
 
         console.print(table)
@@ -111,7 +115,7 @@ def list_sub_domains(domain):
         console.print(f"No unmanaged A records for [b]{domain}[/b]")
 
 
-def manage_subdomain(subdomain: str, domain: str):
+def manage_subdomain(subdomain: str, domain: str) -> None:
     """Configure subdomain for management by digital-ocean-dynamic-dns.
 
     subdomain:
@@ -127,7 +131,7 @@ def manage_subdomain(subdomain: str, domain: str):
         console.print(
             "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
         )
-        raise NonSimpleDomainNameError()
+        raise NonSimpleDomainNameError
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
     subdomain = subdomain.removesuffix("." + domain)
@@ -145,7 +149,8 @@ def manage_subdomain(subdomain: str, domain: str):
             "If you see this in the console while using digital-ocean-dynamic-dns please"
             " open an issue on the repository."
         )
-        raise TopDomainNotManagedError(f"domain {domain} not found in local database.")
+        msg = f"domain {domain} not found in local database."
+        raise TopDomainNotManagedError(msg)
     domain_id = row["id"]
 
     cursor.execute(
@@ -180,7 +185,7 @@ def manage_subdomain(subdomain: str, domain: str):
     else:
         domain_record_id = do_api.create_a_record(subdomain, domain, ip)
 
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    now = datetime.now(tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
     cursor.execute(
         "INSERT INTO subdomains("
         "   domain_record_id,"
@@ -219,7 +224,7 @@ def manage_subdomain(subdomain: str, domain: str):
     )
 
 
-def un_manage_subdomain(subdomain: str, domain: str):
+def un_manage_subdomain(subdomain: str, domain: str) -> None:
     """Stop managing `subdomain` via digital-ocean-dynamic-dns.
 
     subdomain:
@@ -237,7 +242,7 @@ def un_manage_subdomain(subdomain: str, domain: str):
         console.print(
             "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
         )
-        raise NonSimpleDomainNameError()
+        raise NonSimpleDomainNameError
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
     subdomain = subdomain.removesuffix("." + domain)
@@ -250,7 +255,8 @@ def un_manage_subdomain(subdomain: str, domain: str):
 
     if row is None:
         console.print(f"[red]Error:[/red] [bold]{domain}[/bold] is not a managed domain. ")
-        raise TopDomainNotManagedError(f"domain {domain} not found in local database.")
+        msg = f"domain {domain} not found in local database."
+        raise TopDomainNotManagedError(msg)
     domain_id = row["id"]
 
     row = cursor.execute(
@@ -270,10 +276,7 @@ def un_manage_subdomain(subdomain: str, domain: str):
 
     with conn:
         conn.execute(
-            "UPDATE subdomains SET "
-            "   managed = 0 "
-            "WHERE "
-            "   domain_record_id = :domain_record_id",
+            "UPDATE subdomains SET    managed = 0 WHERE    domain_record_id = :domain_record_id",
             {
                 "domain_record_id": domain_record_id,
             },
@@ -284,21 +287,27 @@ def un_manage_subdomain(subdomain: str, domain: str):
         )
 
 
-def update_all_managed_subdomains(args: Namespace):
+def update_all_managed_subdomains(args: Namespace) -> None:
+    """Update all managed subdomains to the current public IP address.
+
+    Args:
+        args: Parsed CLI arguments; expects a ``force`` boolean attribute.
+    """
     force: bool = args.force
+    console = Console()
 
     cursor = conn.cursor()
 
     rows = cursor.execute("SELECT domain_record_id FROM subdomains where managed = 1").fetchall()
     if not rows:
-        print(
+        console.print(
             "[red]Error: [/red]There are no dynamic domains active."
             " Start by adding a new domain with [i]do_ddns manage[/i]."
             " E.g. [i]do_ddns manage example.com --sub-domain test[/i]."
         )
         raise NoManagedSubdomainsError
 
-    now = datetime.now().strftime("%d-%m-%Y %H:%M")
+    now = datetime.now(tz=UTC).astimezone().strftime("%d-%m-%Y %H:%M")
     current_ip = get_ip()
     updated = None
 
@@ -317,9 +326,9 @@ def update_all_managed_subdomains(args: Namespace):
             domain_record_id=domain_record_id,
             domain=domain_name,
         )
-        remoteIP4 = domain_record["data"]
+        remote_ip4 = domain_record["data"]
 
-        if remoteIP4 != current_ip or force is True:
+        if remote_ip4 != current_ip or force is True:
             updated = True
             domain_record = do_api.update_a_record(
                 domain_record_id=domain_record_id,
@@ -356,88 +365,12 @@ def update_all_managed_subdomains(args: Namespace):
 
     if updated is None:
         msg = time.strftime("%Y-%m-%d %H:%M") + " - Info : No updates necessary"
-        print(msg)
-        logging.info(msg)
+        console.print(msg)
+        log.info(msg)
     else:
         msg = (
             time.strftime("%Y-%m-%d %H:%M")
             + " - Info : Updates done. Use do_ddns manage <domain> --list to check <domain>"
         )
-        print(msg)
-        logging.info(msg)
-
-
-# def records_delete(subdomain: str, domain: str):
-#     if set(domain).difference(ascii_letters + "." + digits + "-" + "@"):
-#         print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
-#         return
-#     cursor = conn.cursor()
-
-#     cursor.execute(
-#         "SELECT id FROM domains WHERE name like ?",
-#         (domain,),
-#     )
-#     cursor.execute(
-#         "SELECT COUNT(*) FROM domains WHERE name like ? or name like ?",
-#         (
-#             top,
-#             longtop,
-#         ),
-#     )
-#     count = cursor.fetchone()[0]
-#     if count == 0:
-#         print(
-#             f"[red]Error:[/red] Top domain [bold]{top}[/bold] does not exist in the DB. "
-#             "So I'm giving up!"
-#         )
-#         return
-
-#     cursor.execute(
-#         "SELECT COUNT(*) "
-#         "FROM subdomains "
-#         "WHERE name like ? "
-#         "  and main_id=(SELECT id from domains WHERE name like ? or name like ?)",
-#         (
-#             sub,
-#             top,
-#             longtop,
-#         ),
-#     )
-#     count = cursor.fetchone()[0]
-#     if count == 0:
-#         print(
-#             f"[red]Error:[/red] Domain [bold]{domain}[/bold] does not exist in the DB. "
-#             "So I'm giving up!"
-#         )
-#         return
-
-#     apikey = get_api()
-#     cursor.execute(
-#         "SELECT id "
-#         "FROM subdomains "
-#         "WHERE name like ? "
-#         "  and main_id=("
-#         "    SELECT id from domains WHERE name like ? or name like ?"
-#         "  )",
-#         (
-#             sub,
-#             top,
-#             longtop,
-#         ),
-#     )
-#     subdomain_id = str(cursor.fetchone()[0])
-#     headers = {
-#         "Authorization": "Bearer " + apikey,
-#         "Content-Type": "application/json",
-#     }
-#     response = requests.delete(
-#         "https://api.digitalocean.com/v2/domains/" + top + "/records/" + subdomain_id,
-#         headers=headers,
-#         timeout=60 * 2,
-#     )
-#     if str(response) == "<Response [204]>":
-#         cursor.execute("DELETE from subdomains where id=?", (subdomain_id,))
-#         logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : Subdomain {domain} removed")
-#         conn.commit()
-#     else:
-#         print("[red]Error: [/red]An error occurred! Please try again later!")
+        console.print(msg)
+        log.info(msg)

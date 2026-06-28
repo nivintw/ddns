@@ -72,7 +72,7 @@ class TestGetAllDomains:
             },
         )
 
-        domains = [x for x in do_api.get_all_domains()]
+        domains = list(do_api.get_all_domains())
         assert domains == EXPECTED_DOMAINS
 
     def test_multiple_pages_of_domains(
@@ -82,13 +82,12 @@ class TestGetAllDomains:
     ):
         """Proper handling when there is more than one page of results."""
         EXPECTED_DOMAINS = [
-            *[
-                x
-                for x in repeat(
+            *list(
+                repeat(
                     {"name": "example.com", "ttl": 1800, "zone_file": "lorem ipsum"},
                     self.PAGE_RESULTS_LIMIT,
                 )
-            ],
+            ),
             {"name": "nivin.tech", "ttl": 1800, "zone_file": "lorem ipsum"},
         ]
         headers = {
@@ -123,11 +122,11 @@ class TestGetAllDomains:
                 "meta": {"total": len(EXPECTED_DOMAINS)},
             },
         )
-        domains = [x for x in do_api.get_all_domains()]
+        domains = list(do_api.get_all_domains())
         assert domains == EXPECTED_DOMAINS
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 401,
@@ -225,7 +224,7 @@ class TestVerifyDomainIsRegistered:
         )
 
     @pytest.mark.parametrize(
-        "status_code, json_response",
+        ("status_code", "json_response"),
         [
             pytest.param(
                 401,

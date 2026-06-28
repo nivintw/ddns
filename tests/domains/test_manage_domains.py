@@ -43,8 +43,16 @@ class TestManageDomain:
             row = cursor.fetchone()
             assert row["name"] == EXPECTED_NEW_DOMAIN
             assert row["id"] == 1
-            assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
-            assert dt.datetime.strptime(row["last_managed"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+            now = dt.datetime.now(tz=dt.UTC).astimezone()
+            local_tz = now.tzinfo
+            assert (
+                dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
+                <= now
+            )
+            assert (
+                dt.datetime.strptime(row["last_managed"], "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
+                <= now
+            )
 
         # Validate: Ensure user was informed.
         captured_output = capsys.readouterr()
@@ -71,7 +79,7 @@ class TestManageDomain:
         # Arrange: inject the domain directly into the table before
         # calling the function under test.
         with mock_db_for_test:
-            update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+            update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
             mock_db_for_test.execute(
                 "INSERT INTO domains(name, cataloged, last_managed) "
                 " values(:name, :cataloged, :last_managed)",

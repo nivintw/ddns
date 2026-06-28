@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
-from pytest import CaptureFixture
+import pytest
 
 from digital_ocean_dynamic_dns import args
 
@@ -11,7 +11,7 @@ class TestShowInfo:
 
     def test_user_output(
         self,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
     ):
         """User output is provided.
 

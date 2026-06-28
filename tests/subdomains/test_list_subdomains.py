@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
-from datetime import datetime
+from datetime import UTC, datetime
 from sqlite3 import Connection
 from typing import Literal
 
@@ -79,7 +79,7 @@ class TestDomainNotManaged:
         # Report: unmanaged and registered A records
         assert "Unmanaged A records for " in captured_errout
         for record in EXPECTED_DOMAIN_RECORDS:
-            assert record["name"] in captured_errout
+            assert str(record["name"]) in captured_errout
 
         # Validate lack of output string: Do not report no unmanaged A records.
         assert f"No unmanaged A records for {EXPECTED_DOMAIN}" not in captured_errout
@@ -184,7 +184,7 @@ class TestManagedDomain:
         # Report: unmanaged and registered A records
         assert "Unmanaged A records for " in captured_errout
         for record in EXPECTED_DOMAIN_RECORDS:
-            assert record["name"] in captured_errout
+            assert str(record["name"]) in captured_errout
 
         # Validate lack of output string: Do not report no unmanaged A records.
         assert f"No unmanaged A records for {added_top_domain}" not in captured_errout
@@ -216,7 +216,7 @@ class TestManagedDomain:
             top_domain_id = mock_db_for_test.execute(
                 "select id from domains where name = ?", (added_top_domain,)
             ).fetchone()["id"]
-            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            now = datetime.now(tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
             mock_db_for_test.execute(
                 "INSERT INTO subdomains("
                 "   domain_record_id,"
@@ -322,7 +322,7 @@ class TestManagedDomain:
             top_domain_id = mock_db_for_test.execute(
                 "select id from domains where name = ?", (added_top_domain,)
             ).fetchone()["id"]
-            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            now = datetime.now(tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
             for domain_record in EXPECTED_DOMAIN_RECORDS:
                 mock_db_for_test.execute(
                     "INSERT INTO subdomains("
@@ -365,7 +365,7 @@ class TestManagedDomain:
         # Validate lack of output string: Do not report any managed A records
         assert f"Managed A records for {added_top_domain}" in captured_errout
         for record in EXPECTED_DOMAIN_RECORDS:
-            assert record["name"] in captured_errout
+            assert str(record["name"]) in captured_errout
 
         # Report: unmanaged and registered A records
         assert "Unmanaged A records for " not in captured_errout

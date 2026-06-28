@@ -6,7 +6,6 @@
 from pathlib import Path
 
 import pytest
-from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 from digital_ocean_dynamic_dns import constants
@@ -34,7 +33,7 @@ class TestAppDataHome:
     )
     def test_XDG_DATA_HOME_set(
         self,
-        monkeypatch: MonkeyPatch,
+        monkeypatch: pytest.MonkeyPatch,
         mocker: MockerFixture,
         system_value,
     ):
@@ -56,7 +55,7 @@ class TestAppDataHome:
     )
     def test_default_data_home_dir(
         self,
-        monkeypatch: MonkeyPatch,
+        monkeypatch: pytest.MonkeyPatch,
         mocker: MockerFixture,
         system_value,
     ):
@@ -70,7 +69,7 @@ class TestAppDataHome:
         assert data_home == Path(EXPECTED_DATA_HOME)
 
     @pytest.mark.parametrize(
-        "system_value, err_msg",
+        ("system_value", "err_msg"),
         [
             pytest.param("Windows", "Windows not yet supported.", id="Windows"),
             pytest.param(

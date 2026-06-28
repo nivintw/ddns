@@ -55,7 +55,7 @@ class TestUnManageDomain:
         # Arrange: inject the domain directly into the table before
         # calling the function under test.
         with mock_db_for_test:
-            update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+            update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
             mock_db_for_test.execute(
                 "INSERT INTO domains(name, cataloged, last_managed) "
                 " values(:name, :cataloged, :last_managed)",
@@ -122,6 +122,6 @@ class TestUnManageDomain:
         capd_out = " ".join(capsys.readouterr().out.split())
         assert (
             f"Domain {EXPECTED_DOMAIN} is no longer managed. "
-            f"{len([ x for x in subdomains if x["managed"] == 1])} "
+            f"{len([x for x in subdomains if x['managed'] == 1])} "
             "related subdomains also no longer managed."
         ) in capd_out

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Display current configuration info for do_ddns."""
 
 from argparse import Namespace
 
@@ -13,7 +14,8 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
-def show_current_info(args: Namespace):
+def show_current_info(args: Namespace) -> None:
+    """Display a summary table of the current do_ddns configuration."""
     console = Console()
     grid = Table(
         title="[b]do_ddns[/b] - an open-source dynamic DNS solution for DigitalOcean.",
@@ -27,13 +29,13 @@ def show_current_info(args: Namespace):
     try:
         # NOTE: this is the rare (only?) time where
         # there not being an API key yet is not an error / is ok.
-        API = get_api()
+        api = get_api()
     except NoAPIKeyError:
-        API = "[red]Error:[/red] Unable to read the API Key. Set DIGITALOCEAN_TOKEN env variable."
+        api = "[red]Error:[/red] Unable to read the API Key. Set DIGITALOCEAN_TOKEN env variable."
     else:
         # API key was found.
         if args.show_api_key is not True:
-            API = "[green]Configured[/green]"
+            api = "[green]Configured[/green]"
 
     cursor = conn.cursor()
     row = cursor.execute("SELECT URL FROM ipservers where ip_version = '4'").fetchone()
@@ -44,7 +46,7 @@ def show_current_info(args: Namespace):
     cursor.execute("SELECT COUNT(*) FROM subdomains")
     subdomains = cursor.fetchone()[0]
 
-    grid.add_row("API key", API)
+    grid.add_row("API key", api)
     grid.add_row("IPv4 resolver", f"{ip4server}")
     grid.add_row("Log file", f"{constants.logfile}")
     grid.add_row("Domains", f"{topdomains}")

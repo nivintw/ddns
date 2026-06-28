@@ -25,7 +25,14 @@ Template: gh:nivintw/copier-everything @ v1.1.0.
 - [ ] Phase 3d: release-please manifest=1.3.7; remove semantic_release + old workflow + licenserc.toml(old)
 - [ ] Phase 3e: patch repo URLs digital-ocean-dynamic-dns -> ddns (SECURITY.md, link-check.yml)
 - [ ] Phase 3f: hawkeye format SPDX headers; reuse lint clean
-- [ ] Phase 3g: FIX ALL ruff ALL + ty findings across src(14)+tests(21); pytest green
+- [x] Phase 3 scaffold committed; A_record fn renames committed (N802 src=0)
+- [~] Phase 3g: ruff fan-out workflow running (wf_9d45afee-7d7, 26 files, Sonnet/file).
+      Test ignores set to idiomatic only (S101,INP001,ANN,D,ARG,FBT,S311,PLR2004,SLF001,N802,N803,N806).
+      DTZ convention: datetime.now(tz=timezone.utc).astimezone() (preserve local wall-clock).
+      ty: only 4 diagnostics, all in tests/subdomains/test_list_subdomains.py (mixed int|str dict) — fix after workflow.
+- [ ] After workflow: verify full ruff clean + pytest green + ty clean; handle stragglers
+- [ ] DISCOVERED: template release-please does NOT publish to PyPI -> added .github/workflows/publish.yml
+      (ddns-specific, reuses TWINE_PYPI_UPLOAD_TOKEN). Flag in PR + to user.
 - [ ] Phase 4: /simplify
 - [ ] Phase 5: docs (no docs site -> skip w/ note)
 - [ ] Phase 6: /dev-kit:review-pr

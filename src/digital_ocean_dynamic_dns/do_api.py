@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
+"""Digital Ocean API helpers for managing DNS A records."""
+
 import logging
 import time
 from collections.abc import Generator
@@ -9,13 +11,18 @@ from typing import Any
 
 import requests
 from more_itertools import countable
-from rich import print
+from rich import print as rprint
 
 from .api_key_helpers import get_api
 from .exceptions import NonSimpleDomainNameError
 
+logger = logging.getLogger(__name__)
 
-def get_a_records(domain) -> Generator[dict[str, Any]]:
+HTTP_OK = 200
+HTTP_NOT_FOUND = 404
+
+
+def get_a_records(domain: str) -> Generator[dict[str, Any]]:
     """Retrieve A records for `domain` from Digital Ocean."""
     apikey = get_api()
     page_results_limit = 20
@@ -50,7 +57,7 @@ def get_a_records(domain) -> Generator[dict[str, Any]]:
         yield from domain_records
 
 
-def get_a_record_by_name(subdomain: str, domain: str):
+def get_a_record_by_name(subdomain: str, domain: str) -> Generator[dict[str, Any], None, None]:
     """Retrieve a potentially existing A record by it's name."""
     apikey = get_api()
     page_results_limit = 20
@@ -90,7 +97,7 @@ def get_a_record_by_name(subdomain: str, domain: str):
         yield from domain_records
 
 
-def get_a_record(domain_record_id: str, domain: str):
+def get_a_record(domain_record_id: str, domain: str) -> dict[str, Any]:
     """Return the A record for `subdomain`."""
     apikey = get_api()
     headers = {
@@ -106,7 +113,7 @@ def get_a_record(domain_record_id: str, domain: str):
     return response.json()["domain_record"]
 
 
-def update_a_record(domain_record_id: str, domain: str, new_ip_address: str):
+def update_a_record(domain_record_id: str, domain: str, new_ip_address: str) -> dict[str, Any]:
     """Update an existing A record."""
     apikey = get_api()
     headers = {
@@ -135,10 +142,9 @@ def create_a_record(subdomain: str, domain: str, ip4_address: str) -> str:
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@") or set(
         subdomain
     ).difference(ascii_letters + "." + digits + "-" + "@"):
-        print("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
-        raise NonSimpleDomainNameError(
-            "Error: Give the domain name in simple form e.g. test.domain.com"
-        )
+        rprint("[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]")
+        msg = "Error: Give the domain name in simple form e.g. test.domain.com"
+        raise NonSimpleDomainNameError(msg)
 
     apikey = get_api()
 
@@ -158,14 +164,13 @@ def create_a_record(subdomain: str, domain: str, ip4_address: str) -> str:
     )
     response.raise_for_status()
 
-    print(f"An A record for {subdomain}.{domain} has been added.")
-    logging.info(time.strftime("%Y-%m-%d %H:%M") + f" - Info : subdomain {domain} added")
+    rprint(f"An A record for {subdomain}.{domain} has been added.")
+    logger.info("%s - Info : subdomain %s added", time.strftime("%Y-%m-%d %H:%M"), domain)
     response_data = response.json()
-    domain_record_id = response_data["domain_record"]["id"]
-    return domain_record_id
+    return response_data["domain_record"]["id"]
 
 
-def verify_domain_is_registered(domain: str):
+def verify_domain_is_registered(domain: str) -> None:
     """Verify that the user-supplied `domain` is registered for the authenticated account."""
     apikey = get_api()
     headers = {
@@ -177,11 +182,11 @@ def verify_domain_is_registered(domain: str):
         headers=headers,
         timeout=45,
     )
-    if response.status_code == requests.codes.ok:
+    if response.status_code == HTTP_OK:
         return
-    if response.status_code == 404:
+    if response.status_code == HTTP_NOT_FOUND:
         # Print an additional helpful message specifically for 404.
-        print(f"Domain {domain} was not found associated with this digital ocean account.")
+        rprint(f"Domain {domain} was not found associated with this digital ocean account.")
 
     response.raise_for_status()
 
