@@ -6,6 +6,7 @@
 import logging
 import time
 from collections.abc import Generator
+from http import HTTPStatus
 from string import ascii_letters, digits
 from typing import Any
 
@@ -17,9 +18,6 @@ from .api_key_helpers import get_api
 from .exceptions import NonSimpleDomainNameError
 
 logger = logging.getLogger(__name__)
-
-HTTP_OK = 200
-HTTP_NOT_FOUND = 404
 
 
 def get_a_records(domain: str) -> Generator[dict[str, Any]]:
@@ -182,9 +180,9 @@ def verify_domain_is_registered(domain: str) -> None:
         headers=headers,
         timeout=45,
     )
-    if response.status_code == HTTP_OK:
+    if response.status_code == HTTPStatus.OK:
         return
-    if response.status_code == HTTP_NOT_FOUND:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         # Print an additional helpful message specifically for 404.
         rprint(f"Domain {domain} was not found associated with this digital ocean account.")
 

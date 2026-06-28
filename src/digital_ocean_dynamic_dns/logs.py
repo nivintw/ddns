@@ -4,7 +4,7 @@
 
 from argparse import Namespace
 
-from rich import print as rich_print
+from rich import print as rprint
 
 from . import constants
 
@@ -16,8 +16,6 @@ def show_log(_args: Namespace) -> None:
         _args: Parsed command-line arguments. Unused; kept for API consistency
             with other subcommand handlers.
     """
-    # Args is intentionally unused; the API signature is kept consistent with
-    # other subcommand handlers that do receive and use args.
     with constants.logfile.open() as log_file:
         content = log_file.read()
-        rich_print(content)
+        rprint(content)
