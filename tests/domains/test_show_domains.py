@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for the show-info domains command."""
 
 import datetime as dt
 from sqlite3 import Connection
@@ -22,9 +23,8 @@ class TestListAllDomains:
         self,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """Ensure proper handling of response when no upstream domains are registered."""
-
         mocked_get_all_domains = mocker.patch.object(
             domains.do_api, "get_all_domains", autospec=True
         )
@@ -41,13 +41,12 @@ class TestListAllDomains:
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """Validate output for upstream domains.
 
         Properly marks both ddns-digital-ocean managed domains as well as
         domains that exist upstream that are not managed by ddns-digital-ocean.
         """
-
         # Arrange: insert records into the DB to show nivin.tech as managed by ddns-digital-ocean
         with mock_db_for_test:
             update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")

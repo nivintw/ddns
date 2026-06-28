@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Tests for domain management functions."""
 
 import datetime as dt
 from sqlite3 import Connection
@@ -13,14 +14,16 @@ from digital_ocean_dynamic_dns import domains
 
 @pytest.mark.usefixtures("mock_db_for_test", "mocked_responses", "preload_api_key")
 class TestManageDomain:
+    """Tests for the manage_domain function."""
+
     def test_manage_domain_empty_db(
         self,
         mock_db_for_test: Connection,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """Add a domain to an empty database as managed."""
-        EXPECTED_NEW_DOMAIN = "sentinel.new.test.domain.local"
+        expected_new_domain = "sentinel.new.test.domain.local"
 
         # Arrange: Mock verify_domain_is_registered.
         # No return necessary; lack of exception being raised means success.
@@ -30,18 +33,18 @@ class TestManageDomain:
             autospec=True,
         )
 
-        domains.manage_domain(EXPECTED_NEW_DOMAIN)
+        domains.manage_domain(expected_new_domain)
 
         # Validate that verify_domain_is_registered was called.
-        mocked_verify_domain.assert_called_once_with(EXPECTED_NEW_DOMAIN)
+        mocked_verify_domain.assert_called_once_with(expected_new_domain)
 
         # Validate: Ensure domain was added to the database.
         with mock_db_for_test:
             cursor = mock_db_for_test.execute(
-                "SELECT * FROM domains where name = ?", (EXPECTED_NEW_DOMAIN,)
+                "SELECT * FROM domains where name = ?", (expected_new_domain,)
             )
             row = cursor.fetchone()
-            assert row["name"] == EXPECTED_NEW_DOMAIN
+            assert row["name"] == expected_new_domain
             assert row["id"] == 1
             now = dt.datetime.now(tz=dt.UTC).astimezone()
             local_tz = now.tzinfo
@@ -56,13 +59,14 @@ class TestManageDomain:
 
         # Validate: Ensure user was informed.
         captured_output = capsys.readouterr()
-        assert f"The domain {EXPECTED_NEW_DOMAIN} has been added to the DB" in captured_output.out
+        assert f"The domain {expected_new_domain} has been added to the DB" in captured_output.out
 
     def test_manage_domain_already_in_db(
         self,
         mock_db_for_test: Connection,
-    ):
+    ) -> None:
         """If user tries to add a DB already in the database we change nothing.
+
         This is not an error state.
 
         Note: I don't configure any mocked requests because,
@@ -74,7 +78,7 @@ class TestManageDomain:
                 - If there were a request, it would mean we haven't early-exited
                     after checking the local db.
         """
-        EXPECTED_EXISTING_DOMAIN = "sentinel.existing.test.domain.local"
+        expected_existing_domain = "sentinel.existing.test.domain.local"
 
         # Arrange: inject the domain directly into the table before
         # calling the function under test.
@@ -84,18 +88,18 @@ class TestManageDomain:
                 "INSERT INTO domains(name, cataloged, last_managed) "
                 " values(:name, :cataloged, :last_managed)",
                 {
-                    "name": EXPECTED_EXISTING_DOMAIN,
+                    "name": expected_existing_domain,
                     "cataloged": update_datetime,
                     "last_managed": update_datetime,
                 },
             )
 
-        domains.manage_domain(EXPECTED_EXISTING_DOMAIN)
+        domains.manage_domain(expected_existing_domain)
 
         # Ensure values were unchanged.
         with mock_db_for_test:
             cursor = mock_db_for_test.execute(
-                "select * from domains where name = ?", (EXPECTED_EXISTING_DOMAIN,)
+                "select * from domains where name = ?", (expected_existing_domain,)
             )
             row = cursor.fetchone()
             assert row["cataloged"] == update_datetime
@@ -103,7 +107,7 @@ class TestManageDomain:
 
 
 @pytest.mark.parametrize(
-    "existing_A_records",
+    "existing_a_records",
     [
         pytest.param([], id="no-a-records"),
         pytest.param(
@@ -116,24 +120,24 @@ class TestManageDomain:
     ],
 )
 def test_manage_all_existing_a_records(
-    existing_A_records: list,
+    existing_a_records: list,
     mocker: MockerFixture,
-):
+) -> None:
     """We can manage all existing A records for a given domain."""
-    EXPECTED_DOMAIN = "example.com"
+    expected_domain = "example.com"
 
     mocked_get_a_records = mocker.patch.object(domains.do_api, "get_a_records", autospec=True)
-    mocked_get_a_records.return_value = existing_A_records
+    mocked_get_a_records.return_value = existing_a_records
 
     mocked_managed_subdomain = mocker.patch.object(domains, "manage_subdomain", autospec=True)
 
-    domains.manage_all_existing_a_records(EXPECTED_DOMAIN)
+    domains.manage_all_existing_a_records(expected_domain)
 
-    mocked_get_a_records.assert_called_once_with(EXPECTED_DOMAIN)
+    mocked_get_a_records.assert_called_once_with(expected_domain)
 
-    if not existing_A_records:
+    if not existing_a_records:
         mocked_managed_subdomain.assert_not_called()
     else:
         mocked_managed_subdomain.assert_has_calls(
-            [call(subdomain=x["name"], domain=EXPECTED_DOMAIN) for x in existing_A_records]
+            [call(subdomain=x["name"], domain=expected_domain) for x in existing_a_records]
         )

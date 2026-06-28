@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
+"""Tests for the manage module's argument-dispatch logic."""
+
 import pytest
 from pytest_mock import MockerFixture
 
@@ -12,11 +14,11 @@ pytestmark = pytest.mark.usefixtures("mocked_responses", "mock_db_for_test")
 class TestMartialManage:
     """Martial the behavior based on args."""
 
-    def test_list_subdomains(self, mocker: MockerFixture):
-        """Test listing subdomains via argparse"""
-        EXPECTED_DOMAIN = "example.com"
+    def test_list_subdomains(self, mocker: MockerFixture) -> None:
+        """Test listing subdomains via argparse."""
+        expected_domain = "example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["manage", EXPECTED_DOMAIN, "--list"])
+        test_args = parser.parse_args(args=["manage", expected_domain, "--list"])
 
         # Mock manage_domain; just ensure it was called.
         mocked_manage_domain = mocker.patch.object(manage.domains, "manage_domain", autospec=True)
@@ -30,19 +32,19 @@ class TestMartialManage:
         manage.martial_manage(test_args)
         # We always attempt to manage the top level domain
         # in order to prevent folks from _having_ to configure the top domain separately.
-        mocked_manage_domain.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_manage_domain.assert_called_once_with(expected_domain)
 
         # Validate
-        mocked_list_sub_domains.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_list_sub_domains.assert_called_once_with(expected_domain)
 
     def test_manage_entire_domain(
         self,
-        mocker,
-    ):
+        mocker: MockerFixture,
+    ) -> None:
         """If called without --subdomain, manage all existing A records for `domain`."""
-        EXPECTED_DOMAIN = "example.com"
+        expected_domain = "example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["manage", EXPECTED_DOMAIN])
+        test_args = parser.parse_args(args=["manage", expected_domain])
 
         # Mock manage_domain; just ensure it was called.
         mocked_manage_domain = mocker.patch.object(manage.domains, "manage_domain", autospec=True)
@@ -56,22 +58,22 @@ class TestMartialManage:
         manage.martial_manage(test_args)
         # We always attempt to manage the top level domain
         # in order to prevent folks from _having_ to configure the top domain separately.
-        mocked_manage_domain.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_manage_domain.assert_called_once_with(expected_domain)
 
         # Validate
-        mocked_manage_all_existing_a_records.assert_called_once_with(domain=EXPECTED_DOMAIN)
+        mocked_manage_all_existing_a_records.assert_called_once_with(domain=expected_domain)
 
     def test_manage_specific_subdomain(
         self,
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """--subdomain results in managing _just_ that subdomain."""
-        EXPECTED_DOMAIN = "example.com"
-        EXPECTED_SUBDOMAIN = "support"
+        expected_domain = "example.com"
+        expected_subdomain = "support"
 
         parser = args.setup_argparse()
         test_args = parser.parse_args(
-            args=["manage", EXPECTED_DOMAIN, "--subdomain", EXPECTED_SUBDOMAIN]
+            args=["manage", expected_domain, "--subdomain", expected_subdomain]
         )
 
         # Mock manage_domain; just ensure it was called.
@@ -86,22 +88,22 @@ class TestMartialManage:
         manage.martial_manage(test_args)
         # We always attempt to manage the top level domain
         # in order to prevent folks from _having_ to configure the top domain separately.
-        mocked_manage_domain.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_manage_domain.assert_called_once_with(expected_domain)
 
         # Validate
         mocked_manage_subdomain.assert_called_once_with(
-            subdomain=EXPECTED_SUBDOMAIN, domain=EXPECTED_DOMAIN
+            subdomain=expected_subdomain, domain=expected_domain
         )
 
 
 class TestMartialUnManage:
     """Martial the behavior based on args."""
 
-    def test_list_subdomains(self, mocker: MockerFixture):
-        """Test listing subdomains via argparse"""
-        EXPECTED_DOMAIN = "example.com"
+    def test_list_subdomains(self, mocker: MockerFixture) -> None:
+        """Test listing subdomains via argparse."""
+        expected_domain = "example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["un-manage", EXPECTED_DOMAIN, "--list"])
+        test_args = parser.parse_args(args=["un-manage", expected_domain, "--list"])
 
         # Mock the call to list_sub_domains; we just want to be sure that it _is_ called,
         # but don't need it to run here.
@@ -112,16 +114,16 @@ class TestMartialUnManage:
         manage.martial_un_manage(test_args)
 
         # Validate
-        mocked_list_sub_domains.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_list_sub_domains.assert_called_once_with(expected_domain)
 
     def test_un_manage_entire_domain(
         self,
-        mocker,
-    ):
+        mocker: MockerFixture,
+    ) -> None:
         """If called without --subdomain, stop managing all managed A records for `domain`."""
-        EXPECTED_DOMAIN = "example.com"
+        expected_domain = "example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["un-manage", EXPECTED_DOMAIN])
+        test_args = parser.parse_args(args=["un-manage", expected_domain])
 
         # Mock manage_domain; just ensure it was called.
         mocked_un_manage_domain = mocker.patch.object(
@@ -133,19 +135,19 @@ class TestMartialUnManage:
         # in order to prevent folks from _having_ to configure the top domain separately.
 
         # Validate
-        mocked_un_manage_domain.assert_called_once_with(domain=EXPECTED_DOMAIN)
+        mocked_un_manage_domain.assert_called_once_with(domain=expected_domain)
 
     def test_un_manage_specific_subdomain(
         self,
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """--subdomain results in managing _just_ that subdomain."""
-        EXPECTED_DOMAIN = "example.com"
-        EXPECTED_SUBDOMAIN = "support"
+        expected_domain = "example.com"
+        expected_subdomain = "support"
 
         parser = args.setup_argparse()
         test_args = parser.parse_args(
-            args=["un-manage", EXPECTED_DOMAIN, "--subdomain", EXPECTED_SUBDOMAIN]
+            args=["un-manage", expected_domain, "--subdomain", expected_subdomain]
         )
 
         # Mock the call to list_sub_domains; we just want to be sure that it _is_ called,
@@ -158,5 +160,5 @@ class TestMartialUnManage:
 
         # Validate
         mocked_un_manage_subdomain.assert_called_once_with(
-            subdomain=EXPECTED_SUBDOMAIN, domain=EXPECTED_DOMAIN
+            subdomain=expected_subdomain, domain=expected_domain
         )

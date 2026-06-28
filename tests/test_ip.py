@@ -17,14 +17,16 @@ pytestmark = pytest.mark.usefixtures("mock_db_for_test")
 
 
 class TestConfigIPServer:
+    """Tests for config_ip_server function."""
+
     def test_no_upstream_configured(
         self,
         mock_db_for_test: Connection,
-    ):
+    ) -> None:
         """We can configure the IP server when no prior IP server has been set."""
-        EXPECTED_IP_SERVER = "https://iplookup.example.com"
+        expected_ip_server = "https://iplookup.example.com"
 
-        ip.config_ip_server(ipserver=EXPECTED_IP_SERVER, ip_type="4")
+        ip.config_ip_server(ipserver=expected_ip_server, ip_type="4")
 
         # Validate: the ipserver for ipv4 has been configured.
         rows = mock_db_for_test.execute("select * from ipservers").fetchall()
@@ -32,7 +34,7 @@ class TestConfigIPServer:
         row = rows[0]
 
         assert row is not None
-        assert row["URL"] == EXPECTED_IP_SERVER
+        assert row["URL"] == expected_ip_server
         assert row["ip_version"] == "4"
         # NOTE: time now, we only support one single row/ip server config.
         assert row["id"] == 1
@@ -40,13 +42,13 @@ class TestConfigIPServer:
     def test_update_ip_server(
         self,
         mock_db_for_test: Connection,
-    ):
+    ) -> None:
         """We can update the IP server configuration."""
-        EXPECTED_PRE_IP_SERVER = "https://iplookup.example.com"
-        EXPECTED_POST_IP_SERVER = "https://new.iplookup.example.com"
+        expected_pre_ip_server = "https://iplookup.example.com"
+        expected_post_ip_server = "https://new.iplookup.example.com"
 
-        ip.config_ip_server(ipserver=EXPECTED_PRE_IP_SERVER, ip_type="4")
-        ip.config_ip_server(ipserver=EXPECTED_POST_IP_SERVER, ip_type="4")
+        ip.config_ip_server(ipserver=expected_pre_ip_server, ip_type="4")
+        ip.config_ip_server(ipserver=expected_post_ip_server, ip_type="4")
 
         # Validate: the ipserver for ipv4 has been configured.
         rows = mock_db_for_test.execute("select * from ipservers").fetchall()
@@ -54,25 +56,27 @@ class TestConfigIPServer:
         row = rows[0]
 
         assert row is not None
-        assert row["URL"] == EXPECTED_POST_IP_SERVER
+        assert row["URL"] == expected_post_ip_server
         assert row["ip_version"] == "4"
         # NOTE: time now, we only support one single row/ip server config.
         assert row["id"] == 1
 
     def test_ip_6_not_supported(
         self,
-    ):
+    ) -> None:
         """ipv6 is not supported."""
-        EXPECTED_PRE_IP_SERVER = "https://iplookup.example.com"
+        expected_pre_ip_server = "https://iplookup.example.com"
 
         with pytest.raises(ip.IPv6NotSupportedError):
-            ip.config_ip_server(ipserver=EXPECTED_PRE_IP_SERVER, ip_type="6")
+            ip.config_ip_server(ipserver=expected_pre_ip_server, ip_type="6")
 
 
 class TestGetIP:
+    """Tests for get_ip function."""
+
     def test_no_upstream_ip_resolver(
         self,
-    ):
+    ) -> None:
         """Inform user and raise NoIPResolverServerError when no upstream IP server configured."""
         with pytest.raises(ip.NoIPResolverServerError):
             ip.get_ip()
@@ -80,14 +84,14 @@ class TestGetIP:
     def test_http_error_in_ip_lookup(
         self,
         mocked_responses: RequestsMock,
-    ):
+    ) -> None:
         """Raise any HTTP errors that occurred when calling ip resolver."""
         # Arrange
-        EXPECTED_IP_SERVER = "https://iplookup.example.com"
-        ip.config_ip_server(ipserver=EXPECTED_IP_SERVER, ip_type="4")
+        expected_ip_server = "https://iplookup.example.com"
+        ip.config_ip_server(ipserver=expected_ip_server, ip_type="4")
 
         mocked_responses.get(
-            url=EXPECTED_IP_SERVER,
+            url=expected_ip_server,
             body="",
             status=500,
         )
@@ -99,24 +103,25 @@ class TestGetIP:
     def test_return_public_ip(
         self,
         mocked_responses: RequestsMock,
-    ):
+    ) -> None:
         """If configured correctly, return the current public IP4 address.
+
         NOTE: IP6 is not currently supported.
         """
         # Arrange
-        EXPECTED_IP_SERVER = "https://iplookup.example.com"
-        EXPECTED_IP = "127.0.0.1"
-        ip.config_ip_server(ipserver=EXPECTED_IP_SERVER, ip_type="4")
+        expected_ip_server = "https://iplookup.example.com"
+        expected_ip = "127.0.0.1"
+        ip.config_ip_server(ipserver=expected_ip_server, ip_type="4")
         mocked_responses.get(
-            url=EXPECTED_IP_SERVER,
-            body=EXPECTED_IP,
+            url=expected_ip_server,
+            body=expected_ip,
         )
 
         # Test
         found_ip = ip.get_ip()
 
         # Validate
-        assert found_ip == EXPECTED_IP
+        assert found_ip == expected_ip
 
 
 class TestViewUpdateIPServer:
@@ -126,8 +131,8 @@ class TestViewUpdateIPServer:
         self,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
-        """Validate user output with no ip server configured"""
+    ) -> None:
+        """Validate user output with no ip server configured."""
         spy_config_ip_server = mocker.spy(ip, "config_ip_server")
 
         parser = args.setup_argparse()
@@ -150,11 +155,11 @@ class TestViewUpdateIPServer:
         self,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
-        """Test output with ipv4 server configured"""
+    ) -> None:
+        """Test output with ipv4 server configured."""
         # Arrange
-        EXPECTED_IP_SERVER = "https://iplookup.example.com"
-        ip.config_ip_server(ipserver=EXPECTED_IP_SERVER, ip_type="4")
+        expected_ip_server = "https://iplookup.example.com"
+        ip.config_ip_server(ipserver=expected_ip_server, ip_type="4")
 
         # Arrange: spy config_ip_server AFTER we call it
         #   so we can ensure it is not called again.
@@ -173,18 +178,18 @@ class TestViewUpdateIPServer:
         spy_config_ip_server.assert_not_called()
 
         capd_err_out = capsys.readouterr()
-        assert f"IP v4 resolver  : {EXPECTED_IP_SERVER}" in capd_err_out.out
+        assert f"IP v4 resolver  : {expected_ip_server}" in capd_err_out.out
 
     def test_config_and_output_ip_server(
         self,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
-    ):
+    ) -> None:
         """When called with args.url, configure the IP server before showing config."""
         # Arrange
-        EXPECTED_IP_SERVER = "https://config.iplookup.example.com"
+        expected_ip_server = "https://config.iplookup.example.com"
         parser = args.setup_argparse()
-        test_args = parser.parse_args(args=["ip-resolver-config", "--url", EXPECTED_IP_SERVER])
+        test_args = parser.parse_args(args=["ip-resolver-config", "--url", expected_ip_server])
         spy_config_ip_server = mocker.spy(ip, "config_ip_server")
 
         # This should be equivalent to ip.view_or_update_ip_server.
@@ -194,4 +199,4 @@ class TestViewUpdateIPServer:
         spy_config_ip_server.assert_called_once_with(test_args.url, test_args.ip_mode)
 
         capd_err_out = capsys.readouterr()
-        assert f"IP v4 resolver  : {EXPECTED_IP_SERVER}" in capd_err_out.out
+        assert f"IP v4 resolver  : {expected_ip_server}" in capd_err_out.out
