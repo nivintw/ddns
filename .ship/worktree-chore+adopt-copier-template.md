@@ -33,9 +33,10 @@ Template: gh:nivintw/copier-everything @ v1.1.0.
 - [ ] After workflow: verify full ruff clean + pytest green + ty clean; handle stragglers
 - [ ] DISCOVERED: template release-please does NOT publish to PyPI -> added .github/workflows/publish.yml
       (ddns-specific, reuses TWINE_PYPI_UPLOAD_TOKEN). Flag in PR + to user.
-- [ ] Phase 4: /simplify
-- [ ] Phase 5: docs (no docs site -> skip w/ note)
-- [ ] Phase 6: /dev-kit:review-pr
+- [x] Phase 3 complete: gate green (ruff/format/ty clean, 107 tests, 95.6% cov). 5 commits.
+- [x] Phase 4 /simplify: HTTPStatus, SQL spaces, logger/rprint naming, logs comment, publish guard. committed.
+- [x] Phase 5 docs: N/A (not a plugin/marketplace; README badges fixed). skipped.
+- [~] Phase 6: /dev-kit:review-pr running
 - [ ] Phase 7: install missing tools (ty/shfmt/zizmor/yamllint), uv lock, prek run --all-files
 - [ ] Phase 8: draft PR Closes #16, Copilot loop, ready
 

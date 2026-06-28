@@ -2,23 +2,29 @@
 # SPDX-License-Identifier: MIT
 
 # Publish to PyPI. release-please (main.yml) cuts the `vX.Y.Z` tag + GitHub Release; this
-# job fires on that Release and uploads the built distributions.
+# job fires on that Release (event `release: published`) and uploads the built dists.
 #
-# NOTE (ddns-specific, beyond the copier-everything template): the shared template's
-# release flow stops at the GitHub Release — it does not publish to any package index.
-# This package is published on PyPI (digital-ocean-dynamic-dns), so this workflow preserves
-# that. If/when the template grows a publish step, fold this into it.
+# NOTE (ddns-specific, beyond the copier-everything template): the shared template's release
+# flow stops at the GitHub Release — it does not publish to any package index. This package
+# is published on PyPI (digital-ocean-dynamic-dns), so this workflow preserves that. If/when
+# the template grows a publish step, fold this into it.
 #
-# Auth uses the existing repo secret TWINE_PYPI_UPLOAD_TOKEN (a PyPI API token). The job
-# SKIPS cleanly (no failure) when the secret is absent, so a Release on a fork/clone without
-# the token doesn't redden.
+# LOAD-BEARING: this only fires because release-please in main.yml creates the Release using
+# a GitHub App token, NOT the default GITHUB_TOKEN. Releases created with GITHUB_TOKEN do not
+# trigger downstream workflows, so switching release-please back to GITHUB_TOKEN would
+# silently stop PyPI publishing. Triggering on `release: published` means checkout (no `ref:`)
+# resolves to the release's tag, so `uv build` builds exactly the released version.
+#
+# Auth uses the existing repo secret TWINE_PYPI_UPLOAD_TOKEN (a PyPI API token, surfaced to
+# uv as UV_PUBLISH_TOKEN). On forks/clones without the secret the job skips cleanly; on the
+# canonical repo a missing token is a hard error (otherwise a rotated/expired token would let
+# releases keep cutting while PyPI silently falls behind, with no red signal).
 
 name: publish
 
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -39,9 +45,14 @@ jobs:
       - name: Build and publish to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
+          IS_CANONICAL: ${{ github.repository == 'nivintw/ddns' }}
         run: |
           if [ -z "$UV_PUBLISH_TOKEN" ]; then
-            echo "::notice::TWINE_PYPI_UPLOAD_TOKEN not set — skipping PyPI publish."
+            if [ "$IS_CANONICAL" = "true" ]; then
+              echo "::error::TWINE_PYPI_UPLOAD_TOKEN is missing on the canonical repo — cannot publish."
+              exit 1
+            fi
+            echo "::notice::TWINE_PYPI_UPLOAD_TOKEN not set — skipping PyPI publish (non-canonical repo)."
             exit 0
           fi
           uv build
