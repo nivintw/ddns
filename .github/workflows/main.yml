@@ -1,0 +1,124 @@
+# SPDX-FileCopyrightText: © 2023 Tyler Nivin
+# SPDX-License-Identifier: MIT
+
+# Main pipeline: on every push to main, run the SAME quality gate as PRs, then — only
+# here — release-please (gated by `needs: ci`).
+#
+# RELEASE FLOW (release-please, manifest mode — single package):
+#   1. On push to main, release-please scans Conventional Commits since the last release
+#      and maintains a "Release PR" that bumps the version (.config/.release-please-manifest.json,
+#      mirrored into the version-of-record via .config/release-please-config.json's extra-files)
+#      + CHANGELOG.md.
+#   2. That Release PR is auto-merged (`--auto --rebase`) once its required checks pass, so
+#      releases are continuous; release-please then cuts the `vX.Y.Z` tag + GitHub Release.
+#   3. The action authenticates as the release GitHub App (see below). An App token is a
+#      distinct actor, so — unlike the default GITHUB_TOKEN — the Release PR runs CI and
+#      merging it triggers downstream workflows.
+#
+# REPO SETUP TO ENABLE RELEASES (the release job SKIPS cleanly until these exist, so
+# merging to main is always safe — see the `preflight` job below):
+#   - A release GitHub App with Contents: Read+write AND Pull requests: Read+write,
+#     installed on this repo, and in the bypass list of any ruleset that protects main.
+#   - A repository variable CI_CLIENT_ID (the App's Client ID — non-secret) and a
+#     repository secret CI_APP_PRIVATE_KEY (the App's private key).
+#   - "Allow auto-merge" + "Allow rebase merging" enabled, and the ruleset gating main on
+#     REQUIRED STATUS CHECKS (not a human review — the App can't approve its own Release PR;
+#     `--auto` also needs >=1 required check). The auto-merge step uses `--rebase`.
+#   - If you don't want app releases, pass a PAT as `token` instead, or delete this job.
+
+name: main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Serialize release runs so overlapping merges can't race release-please.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    # release-please's bump commit was already validated as the Release PR, so skip the heavy
+    # gate when it lands on main — the ci job still succeeds, so `needs: ci` and the release
+    # job are unaffected. Scope to `push` (head_commit is absent on workflow_dispatch, which
+    # then runs the full gate) and match the release-commit format precisely (`chore` type +
+    # `: release ` — note the colon-space, so the value must be quoted) so nothing else skips.
+    with:
+      skip-quality-gate: "${{ github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore') && contains(github.event.head_commit.message, ': release ') }}"
+
+  # Guard: the release job needs the App's Client ID + private key. A secret can't be read
+  # in a job-level `if:`, so a step (which CAN see them) reports whether BOTH are present,
+  # and the release job gates on that output. Until both are set, release SKIPS cleanly
+  # (green run, no failure); set them and auto-release activates itself.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      release_enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          CI_CLIENT_ID: ${{ vars.CI_CLIENT_ID }}
+          CI_APP_PRIVATE_KEY: ${{ secrets.CI_APP_PRIVATE_KEY }}
+        run: |
+          missing=""
+          [ -z "$CI_CLIENT_ID" ] && missing="$missing CI_CLIENT_ID(variable)"
+          [ -z "$CI_APP_PRIVATE_KEY" ] && missing="$missing CI_APP_PRIVATE_KEY(secret)"
+          if [ -z "$missing" ]; then
+            echo "enabled=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >>"$GITHUB_OUTPUT"
+            echo "::notice::Release skipped — missing:$missing. Set them to enable auto-release."
+          fi
+
+  release:
+    needs: [ci, preflight]
+    if: needs.preflight.outputs.release_enabled == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint a token for the release App (the ruleset bypass actor)
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        with:
+          # `app-id` accepts the App's Client ID as well as the numeric App ID
+          # (create-github-app-token supports both); the Client ID is non-secret, hence a var.
+          app-id: ${{ vars.CI_CLIENT_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+          # Scope the token to exactly what release-please needs: the bump commit + tag +
+          # release (contents) and the Release PR (pull-requests).
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Run release-please (Release PR, tag, release)
+        id: release
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: .config/release-please-config.json
+          manifest-file: .config/.release-please-manifest.json
+
+      # Continuous release: enable auto-merge on the Release PR so it lands (rebase) once
+      # required checks pass. On the next run (release cut, no PR) `pr` is empty and this
+      # skips. PR JSON travels via env, never inline `${{ }}`, to dodge script injection.
+      # GH_REPO tells gh which repo to act on: this job has no checkout, so without it
+      # `gh pr merge` probes the working dir for a git remote and dies ("not a git
+      # repository"). gh reads GH_REPO natively, so no `actions/checkout` is needed.
+      # Tolerate a repo that hasn't enabled auto-merge yet: `gh pr merge --auto` errors when
+      # "Allow auto-merge" is off or main has no required check, which would redden every
+      # push that opens a Release PR. Warn and leave the PR open instead of failing the job.
+      - name: Auto-merge the Release PR
+        if: ${{ steps.release.outputs.pr }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        run: |
+          num="$(printf '%s' "$RELEASE_PR" | jq -r '.number')"
+          if ! gh pr merge "$num" --auto --rebase; then
+            echo "::warning::Could not enable auto-merge on Release PR #${num}. Enable 'Allow auto-merge' + 'Allow rebase merging' and require a status check on main, then merge the PR (manually for now)."
+          fi
