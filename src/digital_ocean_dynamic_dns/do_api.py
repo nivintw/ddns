@@ -163,7 +163,9 @@ def create_a_record(subdomain: str, domain: str, ip4_address: str) -> str:
     response.raise_for_status()
 
     rprint(f"An A record for {subdomain}.{domain} has been added.")
-    logger.info("%s - Info : subdomain %s added", time.strftime("%Y-%m-%d %H:%M"), domain)
+    logger.info(
+        "%s - Info : subdomain %s.%s added", time.strftime("%Y-%m-%d %H:%M"), subdomain, domain
+    )
     response_data = response.json()
     return response_data["domain_record"]["id"]
 
