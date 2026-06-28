@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Tests for updating A records for all managed subdomains."""
 
 from sqlite3 import Connection

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Shared fixtures for subdomain tests."""
 
 from collections.abc import Generator

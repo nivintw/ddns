@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Tests for listing subdomains / A records via the subdomains module."""
 
 from datetime import UTC, datetime
