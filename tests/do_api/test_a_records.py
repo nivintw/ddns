@@ -524,7 +524,6 @@ class TestCreateARecord:
     )
     def test_non_simple_chars_in_domain_name(
         self,
-        capsys: pytest.CaptureFixture[str],
         subdomain: str,
         domain: str,
     ):

@@ -23,7 +23,7 @@ def temp_database_path(tmp_path: Path) -> Path:
     return db_root / "ddns.db"
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_db_for_test(temp_database_path: Path, mocker):
     """Mock connection object to have a per-test connection / database.
     Ensures isolation of the database state between tests.
@@ -43,7 +43,6 @@ def mock_db_for_test(temp_database_path: Path, mocker):
 
 @pytest.fixture
 def preload_api_key(
-    mock_db_for_test: Connection,
     monkeypatch: pytest.MonkeyPatch,
 ):
     """Load a sentinel API key.
