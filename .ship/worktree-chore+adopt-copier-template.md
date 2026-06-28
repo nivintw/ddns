@@ -47,3 +47,7 @@ Template: gh:nivintw/copier-everything @ v1.1.0.
 
 - Removed stale classic pre-commit git hooks from primary .git/hooks (broken, replaced by prek).
 - Build artifacts tracked in repo? check: dist/, htmlcov/, .coverage, *.egg-info, scratch.md -> likely remove/gitignore.
+
+## STATUS: Phase 8 — PR #17 (draft) open. Closes #16. Issue flipped to in-review.
+- Gate fully green: ruff/format/ty/pytest(107, 95.6%)/prek all pass.
+- Copilot review requested; iterating to convergence before `gh pr ready`.

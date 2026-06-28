@@ -68,7 +68,7 @@ This has the additional effect of removing the subdomain from the local digital-
 ## Planned Updates
 
 - [ ] Add support for multiple IP address resolvers.
-  - examples: <https://ip-api.com>, <https://api.whatismyip.com/ip.php?key=><API_KEY>, etc
+  - examples: `https://ip-api.com`, `https://api.whatismyip.com/ip.php?key=<API_KEY>`, etc
 - [ ] Finish updating the command line user interface.
   - Substantial changes have already been made, and further re-writes are planned.
   - [/] changes to using subparsers instead of overloaded command line flags.
