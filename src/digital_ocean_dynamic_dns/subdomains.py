@@ -131,7 +131,8 @@ def manage_subdomain(subdomain: str, domain: str) -> None:
         console.print(
             "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
         )
-        raise NonSimpleDomainNameError
+        msg = "Domain must be given in simple form, e.g. test.domain.com"
+        raise NonSimpleDomainNameError(msg)
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
     subdomain = subdomain.removesuffix("." + domain)
@@ -242,7 +243,8 @@ def un_manage_subdomain(subdomain: str, domain: str) -> None:
         console.print(
             "[red]Error:[/red] Give the domain name in simple form e.g. [b]test.domain.com[/b]"
         )
-        raise NonSimpleDomainNameError
+        msg = "Domain must be given in simple form, e.g. test.domain.com"
+        raise NonSimpleDomainNameError(msg)
 
     # Handle e.g. subdomain = "@.example.com", domain="example.com"
     subdomain = subdomain.removesuffix("." + domain)
@@ -305,7 +307,11 @@ def update_all_managed_subdomains(args: Namespace) -> None:
             " Start by adding a new domain with [i]do_ddns manage[/i]."
             " E.g. [i]do_ddns manage example.com --sub-domain test[/i]."
         )
-        raise NoManagedSubdomainsError
+        msg = (
+            "There are no active dynamic domains. "
+            "Add one with: do_ddns manage example.com --sub-domain test"
+        )
+        raise NoManagedSubdomainsError(msg)
 
     now = datetime.now(tz=UTC).astimezone().strftime("%d-%m-%Y %H:%M")
     current_ip = get_ip()

@@ -72,3 +72,11 @@ Decision: tests held to same bar as src; ONLY S101 exempt (pytest mandates asser
   ANN (-> None + param types), D (docstrings), N802 (test_A_record -> test_a_record), N803.
 - Final: tests/** = ["S101"]. Template implication noted: template tests default should be ["S101"].
 - After fan-out: verify ruff/ty/pytest(107) + format; /simplify; prek gate; push to PR #17; Copilot re-converge.
+
+## STRICTNESS ROUND HANDED OFF (PR #17, ready, mergeable)
+- 5 commits (1c5a140..1b951c4). Gate green: ruff/ty/107 tests/95.6%/prek.
+- Copilot converged: 4 fixed (Generator arity, 3 doc typos), 5 declined-with-reason
+  (jsonpath verified; ci.yml checksums -> copier-everything#58; 3 subdomains bare-class
+  raises -> out-of-scope/pre-existing). 0 unresolved threads.
+- OPEN RESIDUE for human: the 3 subdomains exception-message suggestions (add msg to
+  NonSimpleDomainNameError x2 + NoManagedSubdomainsError). Scoped out; offered to user.
