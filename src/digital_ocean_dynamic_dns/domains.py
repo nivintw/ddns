@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Domain management functions for digital-ocean-dynamic-dns."""
 
 import datetime as dt

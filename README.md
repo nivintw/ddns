@@ -29,10 +29,10 @@ Another alternative option to `pipx` is the (relatively) new tool [uv](https://g
 
 This is an appendix of the various terms used in the library.
 
-domain: A domain as described by Digital Ocean (see [here](https://docs.digitalocean.com/products/networking/dns/getting-started/quickstart/)).
+domain: A domain as described by Digital Ocean (see [Digital Ocean's DNS quickstart](https://docs.digitalocean.com/products/networking/dns/getting-started/quickstart/)).
 This is specifically a "two part" domain such as "example.com" without any sub-domains specified.
 
-subdomain: A subdomain as described by Digital Ocean (see [here](https://docs.digitalocean.com/products/networking/dns/how-to/add-subdomain/)).
+subdomain: A subdomain as described by Digital Ocean (see [Digital Ocean's add-a-subdomain guide](https://docs.digitalocean.com/products/networking/dns/how-to/add-subdomain/)).
 This can be any subdomain that Digital Ocean supports.
 Subdomains must be associated with a registered and managed domain.
 
@@ -68,7 +68,7 @@ This has the additional effect of removing the subdomain from the local digital-
 ## Planned Updates
 
 - [ ] Add support for multiple IP address resolvers.
-  - examples: https://ip-api.com, https://api.whatismyip.com/ip.php?key=<API_KEY>, etc
+  - examples: <https://ip-api.com>, <https://api.whatismyip.com/ip.php?key=><API_KEY>, etc
 - [ ] Finish updating the command line user interface.
   - Substantial changes have already been made, and further re-writes are planned.
   - [/] changes to using subparsers instead of overloaded command line flags.

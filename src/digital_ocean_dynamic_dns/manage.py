@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Marshaling functions for manage and un-manage subparser commands."""
 
 from argparse import Namespace

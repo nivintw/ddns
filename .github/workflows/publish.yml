@@ -38,10 +38,16 @@ jobs:
           persist-credentials: false
 
       - name: Set up uv (+ managed Python)
+        # No dependency cache here: this job builds the artifact that gets published, so a
+        # poisoned cache would taint the release (zizmor cache-poisoning). The minor speedup
+        # isn't worth that on a release path. setup-uv caches by default, so disable explicitly.
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
-          enable-cache: true
+          enable-cache: false
 
+      # Auth is a PyPI API token (secret already provisioned for this repo), not OIDC Trusted
+      # Publishing. Migrating to Trusted Publishing requires PyPI-side publisher config and is
+      # tracked separately; until then the token path is the working, reviewed mechanism.
       - name: Build and publish to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
