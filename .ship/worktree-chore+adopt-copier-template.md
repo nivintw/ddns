@@ -51,3 +51,9 @@ Template: gh:nivintw/copier-everything @ v1.1.0.
 ## STATUS: Phase 8 — PR #17 (draft) open. Closes #16. Issue flipped to in-review.
 - Gate fully green: ruff/format/ty/pytest(107, 95.6%)/prek all pass.
 - Copilot review requested; iterating to convergence before `gh pr ready`.
+
+## HANDED OFF — PR #17 ready for review (not merged; human's call).
+- Copilot converged after 3 rounds: r1 (2 fixed), r2 (1 fixed, 2 declined w/ reason), r3 (no new).
+- release-please uv.lock jsonpath `@.name.value` VERIFIED correct via release-please source
+  (generic-toml.ts -> TaggedTOMLParser tags scalars as {value,...}; tables untagged). Copilot wrong.
+- Worktree stays in place until post-merge (then ExitWorktree keep + /dev-kit:cleanup-locally).

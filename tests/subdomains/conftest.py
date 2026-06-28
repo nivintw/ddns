@@ -11,7 +11,6 @@ from digital_ocean_dynamic_dns import domains
 
 @pytest.fixture
 def added_top_domain(
-    mock_db_for_test: Connection,
     mocker: MockerFixture,
 ):
     """Inject a top-level domain into the test DB."""
