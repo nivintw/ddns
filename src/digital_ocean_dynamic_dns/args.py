@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
+"""Argument parser configuration for the do_ddns CLI."""
+
 from __future__ import annotations
 
 import argparse
@@ -11,7 +13,10 @@ from digital_ocean_dynamic_dns import info, ip, logs, manage, subdomains
 from . import domains
 
 
-def configure_ip_lookup_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
+def configure_ip_lookup_subparser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Configure the ip-resolver-config subparser."""
     parser_ip_server = subparsers.add_parser(
         name="ip-resolver-config",
         help=("Update the service/server used to lookup your public IP address."),
@@ -33,8 +38,10 @@ def configure_ip_lookup_subparser(subparsers: argparse._SubParsersAction[argpars
     )
 
 
-def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
-    """Subparser `manage`"""
+def configure_manage_subparser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Configure the manage subparser."""
     parser_manage = subparsers.add_parser(
         name="manage",
         help="Configure domains and subdomains to be managed by digital-ocean-dynamic-dns",
@@ -62,8 +69,10 @@ def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.A
     )
 
 
-def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
-    """Subparser `un-manage`"""
+def configure_un_manage_subparser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Configure the un-manage subparser."""
     parser = subparsers.add_parser(
         name="un-manage",
         help="Stop digital-ocean-dynamic-dns from managing the specified domains and subdomains.",
@@ -91,7 +100,10 @@ def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argpars
     )
 
 
-def configure_show_info_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
+def configure_show_info_subparser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Configure the show-info subparser."""
     parser_show_info = subparsers.add_parser(
         name="show-info",
         help="Show information about do_ddns, including current configuration and version.",
@@ -112,7 +124,8 @@ def configure_show_info_subparser(subparsers: argparse._SubParsersAction[argpars
     parser_show_info_domains.set_defaults(func=domains.show_all_domains)
 
 
-def setup_argparse():
+def setup_argparse() -> argparse.ArgumentParser:
+    """Build and return the top-level argument parser."""
     parser = argparse.ArgumentParser(
         prog="do_ddns",
         description=textwrap.dedent(

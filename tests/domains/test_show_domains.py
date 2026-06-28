@@ -50,7 +50,7 @@ class TestListAllDomains:
 
         # Arrange: insert records into the DB to show nivin.tech as managed by ddns-digital-ocean
         with mock_db_for_test:
-            update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+            update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
             mock_db_for_test.execute(
                 "INSERT INTO domains(name, cataloged, last_managed) "
                 " values(:name, :cataloged, :last_managed)",

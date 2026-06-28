@@ -1,17 +1,19 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""IP resolver server configuration and public IP lookup utilities."""
 
 import logging
 import time
 from argparse import Namespace
 
 import requests
-from rich import print
+from rich import print as rprint
 
 from . import constants
 from .database import connect_database
 
 conn = connect_database(constants.database_path)
+logger = logging.getLogger(__name__)
 
 
 class NoIPResolverServerError(Exception):
@@ -22,7 +24,7 @@ class IPv6NotSupportedError(Exception):
     """Raised when the user attempts to configure IPv6."""
 
 
-def view_or_update_ip_server(args: Namespace):
+def view_or_update_ip_server(args: Namespace) -> None:
     """UX function: View or update IP server settings.
 
     Note: Currently, we only support one ip server, and only IPv4.
@@ -35,11 +37,11 @@ def view_or_update_ip_server(args: Namespace):
     cursor = conn.cursor()
     row = cursor.execute("SELECT * FROM ipservers").fetchone()
     ip4server = "[red]None Configured[/red]" if row is None else row["URL"]
-    print("==== Upstream IP Address Resolver Servers ====")
-    print(f"IP v4 resolver 	: [b]{ip4server}[/b]")
+    rprint("==== Upstream IP Address Resolver Servers ====")
+    rprint(f"IP v4 resolver 	: [b]{ip4server}[/b]")
 
 
-def config_ip_server(ipserver, ip_type):
+def config_ip_server(ipserver: str, ip_type: str) -> None:
     """Configure the server to use to retrieve our IP address.
 
     Right now, only one upstream IP resolver is supported.
@@ -59,15 +61,15 @@ def config_ip_server(ipserver, ip_type):
             {"url": ipserver},
         )
         conn.commit()
-        print(f"IP resolver set to ({ipserver}) for ipv{ip_type}.")
+        rprint(f"IP resolver set to ({ipserver}) for ipv{ip_type}.")
 
     else:
-        print("IPv6 is not currently supported.")
+        rprint("IPv6 is not currently supported.")
         raise IPv6NotSupportedError
 
 
-def get_ip():
-    """Retrieve the hosts public IP address.
+def get_ip() -> str:
+    """Retrieve the host's public IP address.
 
     Requires that an IP Resolver server has been configured.
 
@@ -76,16 +78,17 @@ def get_ip():
         Exception: Any exception raised while trying to resolve the public IP address of the host.
     """
     cursor = conn.cursor()
-    # TODO: add support for multiple ip resolvers?
     row = cursor.execute("SELECT URL from ipservers where ip_version = '4'").fetchone()
     if row is None:
-        raise NoIPResolverServerError("Please configure an IP resolver server.")
+        msg = "Please configure an IP resolver server."
+        raise NoIPResolverServerError(msg)
 
     server = row["URL"]
     try:
         response = requests.get(server, timeout=60)
         response.raise_for_status()
-        return response.text
-    except Exception as e:
-        logging.exception(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
+    except Exception:
+        logger.exception("%s - Error", time.strftime("%Y-%m-%d %H:%M"))
         raise
+    else:
+        return response.text

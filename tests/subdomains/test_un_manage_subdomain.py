@@ -5,7 +5,6 @@ import datetime as dt
 from sqlite3 import Connection
 
 import pytest
-from pytest import CaptureFixture
 
 from digital_ocean_dynamic_dns import subdomains
 
@@ -13,7 +12,7 @@ pytestmark = pytest.mark.usefixtures("mocked_responses")
 
 
 @pytest.mark.parametrize(
-    "expected_subdomain, expected_domain",
+    ("expected_subdomain", "expected_domain"),
     [
         pytest.param("support.example.com", "example.com", id="full-sub-domain"),
         pytest.param(
@@ -24,7 +23,7 @@ pytestmark = pytest.mark.usefixtures("mocked_responses")
     ],
 )
 def test_top_domain_not_managed(
-    capsys: CaptureFixture[str],
+    capsys: pytest.CaptureFixture[str],
     expected_domain,
     expected_subdomain,
 ):
@@ -41,7 +40,7 @@ def test_top_domain_not_managed(
 
 
 @pytest.mark.parametrize(
-    "expected_subdomain, expected_domain",
+    ("expected_subdomain", "expected_domain"),
     [
         pytest.param("support.example.com", "example.com", id="full-sub-domain"),
         pytest.param(
@@ -53,7 +52,7 @@ def test_top_domain_not_managed(
 )
 def test_side_effects(
     mock_db_for_test: Connection,
-    capsys: CaptureFixture[str],
+    capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
 ):
@@ -70,7 +69,7 @@ def test_side_effects(
     # Arrange: Insert EXPECTED_DOMAIN into the db
     # as a managed domain.
     with mock_db_for_test:
-        update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+        update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
         mock_db_for_test.execute(
             "INSERT INTO domains(name, cataloged, last_managed) "
             " values(:name, :cataloged, :last_managed)",
@@ -136,9 +135,10 @@ def test_side_effects(
     # Validate: inserted values.
     assert row["current_ip4"] == EXPECTED_IP4_ADDRESS
     assert row["domain_record_id"] == EXPECTED_DOMAIN_RECORD_ID
-    assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
-    assert dt.datetime.strptime(row["last_checked"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
-    assert dt.datetime.strptime(row["last_updated"], "%Y-%m-%d %H:%M") <= dt.datetime.now()
+    now = dt.datetime.now(tz=dt.UTC).astimezone()
+    assert dt.datetime.strptime(row["cataloged"], "%Y-%m-%d %H:%M").astimezone() <= now
+    assert dt.datetime.strptime(row["last_checked"], "%Y-%m-%d %H:%M").astimezone() <= now
+    assert dt.datetime.strptime(row["last_updated"], "%Y-%m-%d %H:%M").astimezone() <= now
     assert row["main_id"] == 1  # expected id from domains.id
     assert row["managed"] == 0
 
@@ -152,7 +152,7 @@ def test_side_effects(
 
 
 @pytest.mark.parametrize(
-    "expected_subdomain, expected_domain",
+    ("expected_subdomain", "expected_domain"),
     [
         pytest.param("support.example.com", "example.com", id="full-sub-domain"),
         pytest.param(
@@ -164,7 +164,7 @@ def test_side_effects(
 )
 def test_subdomain_not_managed(
     mock_db_for_test: Connection,
-    capsys: CaptureFixture[str],
+    capsys: pytest.CaptureFixture[str],
     expected_subdomain: str,
     expected_domain: str,
 ):
@@ -176,7 +176,7 @@ def test_subdomain_not_managed(
     EXPECTED_IP4_ADDRESS = "127.0.0.1"
 
     with mock_db_for_test:
-        update_datetime = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+        update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
         # Arrange: Insert EXPECTED_DOMAIN into the db
         # as a managed domain.
         mock_db_for_test.execute(
@@ -188,7 +188,7 @@ def test_subdomain_not_managed(
                 "last_managed": update_datetime,
             },
         )
-        now = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+        now = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
         # Arrange: Insert EXPECTED_SUBDOMAIN into the db
         # as an un-managed subdomain.
         mock_db_for_test.execute(

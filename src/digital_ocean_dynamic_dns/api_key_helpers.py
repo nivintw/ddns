@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Helpers for retrieving and validating the Digital Ocean API key."""
 
 import os
 
-from rich import print
+from rich import print as rich_print
 
 
 class NoAPIKeyError(Exception):
@@ -24,12 +25,11 @@ def get_api() -> str:
     """
     api_token = os.environ.get("DIGITALOCEAN_TOKEN")
     if api_token is None:
-        print(
+        rich_print(
             "[red]Error:[/red] Missing APIkey. "
             "Please set the DIGITALOCEAN_TOKEN environment variable!"
         )
-        raise NoAPIKeyError(
-            "Missing API key. Please set the DIGITALOCEAN_TOKEN environment variable!"
-        )
+        msg = "Missing API key. Please set the DIGITALOCEAN_TOKEN environment variable!"
+        raise NoAPIKeyError(msg)
 
     return api_token

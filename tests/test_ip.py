@@ -7,7 +7,6 @@ from sqlite3 import Connection
 
 import pytest
 import requests
-from pytest import CaptureFixture
 from pytest_mock import MockerFixture
 from responses import RequestsMock
 
@@ -125,7 +124,7 @@ class TestViewUpdateIPServer:
 
     def test_output_no_config(
         self,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
     ):
         """Validate user output with no ip server configured"""
@@ -149,7 +148,7 @@ class TestViewUpdateIPServer:
 
     def test_output_ip_server_configured(
         self,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
     ):
         """Test output with ipv4 server configured"""
@@ -178,7 +177,7 @@ class TestViewUpdateIPServer:
 
     def test_config_and_output_ip_server(
         self,
-        capsys: CaptureFixture[str],
+        capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
     ):
         """When called with args.url, configure the IP server before showing config."""

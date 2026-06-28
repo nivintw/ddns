@@ -1,24 +1,39 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
+"""Database connection and schema initialization for Digital Ocean Dynamic DNS."""
+
 import logging
 import sqlite3
 import time
 from pathlib import Path
 from sqlite3 import Error
 
-from rich import print
+from rich import print as rprint
+
+logger = logging.getLogger(__name__)
 
 
-def connect_database(database_path: Path):
+def connect_database(database_path: Path) -> sqlite3.Connection:
+    """Connect to the SQLite database and initialize the schema.
+
+    Args:
+        database_path: Path to the SQLite database file.
+
+    Returns:
+        An open SQLite connection with the schema initialized.
+
+    Raises:
+        Error: If the database connection fails.
+    """
     conn = None
 
     try:
         conn = sqlite3.connect(database_path)
         conn.row_factory = sqlite3.Row
     except Error as e:
-        logging.exception(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
-        print(e)
+        logger.exception("Error at %s", time.strftime("%Y-%m-%d %H:%M"))
+        rprint(e)
         raise
     else:
         c = conn.cursor()
@@ -53,19 +68,3 @@ def connect_database(database_path: Path):
         )
 
         return conn
-
-
-# TODO: Decide if I want to implement this.
-# def purge_database(database_path: Path):
-#     """Delete all local database files.
-
-#     This rarely-used utility should only be used if you need to cleanup a prior database.
-#     """
-
-#     for root, dirs, files in database_path.walk(top_down=False):
-#         for name in files:
-#             (root / name).unlink()
-#         for name in dirs:
-#             (root / name).rmdir()
-
-#     database_path.rmdir()

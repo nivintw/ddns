@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+"""Marshaling functions for manage and un-manage subparser commands."""
 
 from argparse import Namespace
 
@@ -9,7 +10,7 @@ from .database import connect_database
 conn = connect_database(constants.database_path)
 
 
-def martial_manage(args: Namespace):
+def martial_manage(args: Namespace) -> None:
     """Martialing function for manage subparser."""
     # No matter what other options, always ensure the domain is managed.
     domains.manage_domain(args.domain)
@@ -26,7 +27,7 @@ def martial_manage(args: Namespace):
         subdomains.manage_subdomain(subdomain=args.subdomain, domain=args.domain)
 
 
-def martial_un_manage(args: Namespace):
+def martial_un_manage(args: Namespace) -> None:
     """Martialing function un-manage subparser."""
     if args.list:
         subdomains.list_sub_domains(args.domain)

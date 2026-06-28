@@ -6,6 +6,8 @@ from sqlite3 import Connection
 import pytest
 from pytest_mock import MockerFixture
 
+from digital_ocean_dynamic_dns import domains
+
 
 @pytest.fixture
 def added_top_domain(
@@ -13,7 +15,6 @@ def added_top_domain(
     mocker: MockerFixture,
 ):
     """Inject a top-level domain into the test DB."""
-    from digital_ocean_dynamic_dns import domains
 
     EXPECTED_TOP_DOMAIN = "example.com"
     mocked_verify_domain_registered = mocker.patch.object(
