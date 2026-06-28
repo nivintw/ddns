@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: © 2023 Tyler Nivin
+# SPDX-License-Identifier: MIT
+
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY.
+_commit: v1.1.0
+_src_path: gh:nivintw/copier-everything
+author_email: tyler@nivin.tech
+author_name: Tyler Nivin
+contains_python: true
+include_devcontainer: false
+include_docker: false
+include_helm: false
+include_sql: false
+include_terraform: false
+is_package: true
+license: MIT
+markdown_has_frontmatter: false
+project_description: Python-based CLI tool for managing dynamic dns with Digital Ocean.
+project_name: Digital Ocean Dynamic DNS
+project_slug: digital-ocean-dynamic-dns
+python_package: digital_ocean_dynamic_dns
+python_source: true
+python_version: '3.12'
+repo_owner: nivintw
+test_frameworks:
+- pytest
+year: 2023

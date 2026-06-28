@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: © 2023 Tyler Nivin
+# SPDX-License-Identifier: MIT
+
+# Publish to PyPI. release-please (main.yml) cuts the `vX.Y.Z` tag + GitHub Release; this
+# job fires on that Release and uploads the built distributions.
+#
+# NOTE (ddns-specific, beyond the copier-everything template): the shared template's
+# release flow stops at the GitHub Release — it does not publish to any package index.
+# This package is published on PyPI (digital-ocean-dynamic-dns), so this workflow preserves
+# that. If/when the template grows a publish step, fold this into it.
+#
+# Auth uses the existing repo secret TWINE_PYPI_UPLOAD_TOKEN (a PyPI API token). The job
+# SKIPS cleanly (no failure) when the secret is absent, so a Release on a fork/clone without
+# the token doesn't redden.
+
+name: publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up uv (+ managed Python)
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
+        run: |
+          if [ -z "$UV_PUBLISH_TOKEN" ]; then
+            echo "::notice::TWINE_PYPI_UPLOAD_TOKEN not set — skipping PyPI publish."
+            exit 0
+          fi
+          uv publish

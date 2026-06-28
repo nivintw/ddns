@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: © 2023 Tyler Nivin
+SPDX-License-Identifier: MIT
+-->
+
 # CHANGELOG
 
 ## v1.3.7 (2024-09-16)

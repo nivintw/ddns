@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: © 2023 Tyler Nivin
+SPDX-License-Identifier: MIT
+-->
+
 # digital-ocean-dynamic-dns
 
 [![pre-commit enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
