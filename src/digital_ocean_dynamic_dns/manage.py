@@ -12,7 +12,7 @@ conn = connect_database(constants.database_path)
 
 
 def martial_manage(args: Namespace) -> None:
-    """Martialing function for manage subparser."""
+    """Marshaling function for manage subparser."""
     # No matter what other options, always ensure the domain is managed.
     domains.manage_domain(args.domain)
 
@@ -29,7 +29,7 @@ def martial_manage(args: Namespace) -> None:
 
 
 def martial_un_manage(args: Namespace) -> None:
-    """Martialing function un-manage subparser."""
+    """Marshaling function un-manage subparser."""
     if args.list:
         subdomains.list_sub_domains(args.domain)
     elif args.subdomain is None:
