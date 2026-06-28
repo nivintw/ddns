@@ -4,7 +4,7 @@
 
 import os
 
-from rich import print as rich_print
+from rich import print as rprint
 
 
 class NoAPIKeyError(Exception):
@@ -25,7 +25,7 @@ def get_api() -> str:
     """
     api_token = os.environ.get("DIGITALOCEAN_TOKEN")
     if api_token is None:
-        rich_print(
+        rprint(
             "[red]Error:[/red] Missing APIkey. "
             "Please set the DIGITALOCEAN_TOKEN environment variable!"
         )

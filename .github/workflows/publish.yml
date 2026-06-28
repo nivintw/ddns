@@ -36,10 +36,7 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Build distributions
-        run: uv build
-
-      - name: Publish to PyPI
+      - name: Build and publish to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
         run: |
@@ -47,4 +44,5 @@ jobs:
             echo "::notice::TWINE_PYPI_UPLOAD_TOKEN not set — skipping PyPI publish."
             exit 0
           fi
+          uv build
           uv publish

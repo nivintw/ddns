@@ -18,7 +18,7 @@ from .database import connect_database
 from .exceptions import NonSimpleDomainNameError
 from .ip import get_ip
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class NoManagedSubdomainsError(Exception):
@@ -276,7 +276,7 @@ def un_manage_subdomain(subdomain: str, domain: str) -> None:
 
     with conn:
         conn.execute(
-            "UPDATE subdomains SET    managed = 0 WHERE    domain_record_id = :domain_record_id",
+            "UPDATE subdomains SET managed = 0 WHERE domain_record_id = :domain_record_id",
             {
                 "domain_record_id": domain_record_id,
             },
@@ -366,11 +366,11 @@ def update_all_managed_subdomains(args: Namespace) -> None:
     if updated is None:
         msg = time.strftime("%Y-%m-%d %H:%M") + " - Info : No updates necessary"
         console.print(msg)
-        log.info(msg)
+        logger.info(msg)
     else:
         msg = (
             time.strftime("%Y-%m-%d %H:%M")
             + " - Info : Updates done. Use do_ddns manage <domain> --list to check <domain>"
         )
         console.print(msg)
-        log.info(msg)
+        logger.info(msg)

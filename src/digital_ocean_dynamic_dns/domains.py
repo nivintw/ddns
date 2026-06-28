@@ -13,7 +13,7 @@ from . import constants, do_api
 from .database import connect_database
 from .subdomains import manage_subdomain
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 conn = connect_database(constants.database_path)
 
@@ -42,7 +42,7 @@ def manage_domain(domain: str) -> None:
             },
         )
         rprint(f"The domain [b]{domain}[/b] has been added to the DB")
-        log.info("%s - Info : Domain %s added", update_datetime, domain)
+        logger.info("%s - Info : Domain %s added", update_datetime, domain)
 
 
 def manage_all_existing_a_records(domain: str) -> None:
