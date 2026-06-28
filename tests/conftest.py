@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Shared pytest fixtures for the digital_ocean_dynamic_dns test suite."""
 
 import sqlite3

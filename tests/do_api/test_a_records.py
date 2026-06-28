@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Tests for DigitalOcean API A-record CRUD operations."""
 
 from itertools import repeat

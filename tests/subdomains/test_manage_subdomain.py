@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Tests for the manage_subdomain functionality."""
 
 import datetime as dt
