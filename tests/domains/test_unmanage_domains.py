@@ -69,7 +69,7 @@ class TestUnManageDomain:
                 },
             )
             for i, subdomain in enumerate(subdomains):
-                # Arrange: Insert EXPECTED_SUBDOMAIN into the db
+                # Arrange: Insert expected_subdomain into the db
                 # as a managed subdomain.
                 mock_db_for_test.execute(
                     "INSERT INTO subdomains("

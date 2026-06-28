@@ -107,7 +107,7 @@ def test_side_effects(
     )
     mocked_get_a_record.return_value = []
 
-    # Arrange: Insert EXPECTED_DOMAIN into the db
+    # Arrange: Insert expected_domain into the db
     # as a managed domain.
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
@@ -224,7 +224,7 @@ def test_claim_existing_a_record(
         expected_domain_record,
     ]
 
-    # Arrange: Insert EXPECTED_DOMAIN into the db
+    # Arrange: Insert expected_domain into the db
     # as a managed domain.
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
@@ -318,7 +318,7 @@ def test_subdomain_already_managed(
 
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
-        # Arrange: Insert EXPECTED_DOMAIN into the db
+        # Arrange: Insert expected_domain into the db
         # as a managed domain.
         mock_db_for_test.execute(
             "INSERT INTO domains(name, cataloged, last_managed) "
@@ -330,7 +330,7 @@ def test_subdomain_already_managed(
             },
         )
         now = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
-        # Arrange: Insert EXPECTED_SUBDOMAIN into the db
+        # Arrange: Insert expected_subdomain into the db
         # as a managed subdomain.
         mock_db_for_test.execute(
             "INSERT INTO subdomains("
