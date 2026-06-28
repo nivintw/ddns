@@ -20,7 +20,7 @@ from .exceptions import NonSimpleDomainNameError
 logger = logging.getLogger(__name__)
 
 
-def get_a_records(domain: str) -> Generator[dict[str, Any]]:
+def get_a_records(domain: str) -> Generator[dict[str, Any], None, None]:
     """Retrieve A records for `domain` from Digital Ocean."""
     apikey = get_api()
     page_results_limit = 20
@@ -56,7 +56,7 @@ def get_a_records(domain: str) -> Generator[dict[str, Any]]:
 
 
 def get_a_record_by_name(subdomain: str, domain: str) -> Generator[dict[str, Any], None, None]:
-    """Retrieve a potentially existing A record by it's name."""
+    """Retrieve a potentially existing A record by its name."""
     apikey = get_api()
     page_results_limit = 20
 
