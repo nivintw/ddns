@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Helpers for retrieving and validating the Digital Ocean API key."""
 
 import os

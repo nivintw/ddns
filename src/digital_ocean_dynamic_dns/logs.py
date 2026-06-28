@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
+
 """Utilities for displaying the DDNS update log file."""
 
 from argparse import Namespace

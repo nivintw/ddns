@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: © 2023 Tyler Nivin
+# SPDX-License-Identifier: MIT
+
+# zizmor configuration. See https://docs.zizmor.sh/configuration/
+
+rules:
+  use-trusted-publishing:
+    ignore:
+      # publish.yml authenticates to PyPI with an API token (the secret
+      # TWINE_PYPI_UPLOAD_TOKEN, already provisioned for this repo) rather than OIDC Trusted
+      # Publishing. Trusted Publishing is the better long-term posture, but it needs PyPI-side
+      # publisher config and is tracked as a follow-up; until then the token path is the
+      # working, reviewed mechanism. (The step is documented inline in publish.yml.)
+      - publish.yml
