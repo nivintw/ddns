@@ -68,7 +68,7 @@ def test_side_effects(
     expected_a_record_name = expected_subdomain.removesuffix("." + expected_domain)
     expected_ip4_address = "127.0.0.1"
 
-    # Arrange: Insert EXPECTED_DOMAIN into the db
+    # Arrange: Insert expected_domain into the db
     # as a managed domain.
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
@@ -81,7 +81,7 @@ def test_side_effects(
                 "last_managed": update_datetime,
             },
         )
-        # Arrange: Insert EXPECTED_SUBDOMAIN into the db
+        # Arrange: Insert expected_subdomain into the db
         # as a managed subdomain.
         mock_db_for_test.execute(
             "INSERT INTO subdomains("
@@ -178,7 +178,7 @@ def test_subdomain_not_managed(
 
     with mock_db_for_test:
         update_datetime = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
-        # Arrange: Insert EXPECTED_DOMAIN into the db
+        # Arrange: Insert expected_domain into the db
         # as a managed domain.
         mock_db_for_test.execute(
             "INSERT INTO domains(name, cataloged, last_managed) "
@@ -190,7 +190,7 @@ def test_subdomain_not_managed(
             },
         )
         now = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y-%m-%d %H:%M")
-        # Arrange: Insert EXPECTED_SUBDOMAIN into the db
+        # Arrange: Insert expected_subdomain into the db
         # as an un-managed subdomain.
         mock_db_for_test.execute(
             "INSERT INTO subdomains("
