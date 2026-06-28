@@ -38,10 +38,10 @@ def test_top_domain_not_managed(
     # Arrange: Mock the IP address lookup
     mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
 
-    # Arrange: Mock the create_A_record call.
-    mocked_create_A_record = mocker.patch.object(
+    # Arrange: Mock the create_a_record call.
+    mocked_create_a_record = mocker.patch.object(
         do_api,
-        "create_A_record",
+        "create_a_record",
         autospec=True,
     )
 
@@ -56,7 +56,7 @@ def test_top_domain_not_managed(
     mocked_get_ip.assert_not_called()
 
     # Validate: We do not create a domain record.
-    mocked_create_A_record.assert_not_called()
+    mocked_create_a_record.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -80,10 +80,10 @@ def test_side_effects(
     """
     Expected side effects:
         1. subdomain added correctly to database.
-        2. create_A_record is called.
+        2. create_a_record is called.
         3. User-facing output is provided.
     """
-    # Arrange the create_A_record mock.
+    # Arrange the create_a_record mock.
     EXPECTED_DOMAIN_RECORD_ID = 1001
     EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
     EXPECTED_IP4_ADDRESS = "127.0.0.1"
@@ -93,19 +93,19 @@ def test_side_effects(
     mocked_get_ip.return_value = EXPECTED_IP4_ADDRESS
 
     # Arrange: Mock the creation of the A record.
-    mocked_create_A_record = mocker.patch.object(
+    mocked_create_a_record = mocker.patch.object(
         do_api,
-        "create_A_record",
+        "create_a_record",
         autospec=True,
     )
-    mocked_create_A_record.return_value = EXPECTED_DOMAIN_RECORD_ID
+    mocked_create_a_record.return_value = EXPECTED_DOMAIN_RECORD_ID
 
-    mocked_get_A_record = mocker.patch.object(
+    mocked_get_a_record = mocker.patch.object(
         do_api,
-        "get_A_record_by_name",
+        "get_a_record_by_name",
         autospec=True,
     )
-    mocked_get_A_record.return_value = []
+    mocked_get_a_record.return_value = []
 
     # Arrange: Insert EXPECTED_DOMAIN into the db
     # as a managed domain.
@@ -127,11 +127,11 @@ def test_side_effects(
     mocked_get_ip.assert_called_once()
 
     # Validate: A record was created.
-    mocked_create_A_record.assert_called_once_with(
+    mocked_create_a_record.assert_called_once_with(
         EXPECTED_A_RECORD_NAME, expected_domain, EXPECTED_IP4_ADDRESS
     )
 
-    mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+    mocked_get_a_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
 
     # Validate the subdomain was added to the database.
     row = mock_db_for_test.execute(
@@ -185,10 +185,10 @@ def test_claim_existing_A_record(
     Expected side effects:
         1. subdomain added correctly to database.
         2. User-facing output is provided.
-        3. create_A_record is NOT called.
+        3. create_a_record is NOT called.
 
     """
-    # Arrange the create_A_record mock.
+    # Arrange the create_a_record mock.
     EXPECTED_DOMAIN_RECORD_ID = 1001
     EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
     EXPECTED_IP4_ADDRESS = "127.0.0.1"
@@ -206,21 +206,21 @@ def test_claim_existing_A_record(
 
     # Arrange: Mock the creation of the A record.
     # We expect this mock to NOT be called.
-    mocked_create_A_record = mocker.patch.object(
+    mocked_create_a_record = mocker.patch.object(
         subdomains.do_api,
-        "create_A_record",
+        "create_a_record",
         autospec=True,
     )
-    mocked_update_A_record = mocker.patch.object(
-        subdomains.do_api, "update_A_record", autospec=True
+    mocked_update_a_record = mocker.patch.object(
+        subdomains.do_api, "update_a_record", autospec=True
     )
 
-    mocked_get_A_record = mocker.patch.object(
+    mocked_get_a_record = mocker.patch.object(
         do_api,
-        "get_A_record_by_name",
+        "get_a_record_by_name",
         autospec=True,
     )
-    mocked_get_A_record.return_value = [
+    mocked_get_a_record.return_value = [
         EXPECTED_DOMAIN_RECORD,
     ]
 
@@ -245,10 +245,10 @@ def test_claim_existing_A_record(
 
     # Validate: No attempt to create an A record;
     # expect to claim the existing A record that matched.
-    mocked_create_A_record.assert_not_called()
+    mocked_create_a_record.assert_not_called()
 
-    mocked_get_A_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
-    mocked_update_A_record.assert_called_once_with(
+    mocked_get_a_record.assert_called_once_with(EXPECTED_A_RECORD_NAME, expected_domain)
+    mocked_update_a_record.assert_called_once_with(
         domain_record_id=EXPECTED_DOMAIN_RECORD_ID,
         domain=expected_domain,
         new_ip_address=EXPECTED_IP4_ADDRESS,
@@ -304,15 +304,15 @@ def test_subdomain_already_managed(
 ):
     """Expected behavior when the subdomain is already managed."""
 
-    # Arrange the create_A_record mock.
+    # Arrange the create_a_record mock.
     EXPECTED_DOMAIN_RECORD_ID = 1001
     EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
     EXPECTED_IP4_ADDRESS = "127.0.0.1"
 
     # Arrange: Mock the creation of the A record.
-    mocked_create_A_record = mocker.patch.object(
+    mocked_create_a_record = mocker.patch.object(
         do_api,
-        "create_A_record",
+        "create_a_record",
         autospec=True,
     )
 
@@ -363,10 +363,10 @@ def test_subdomain_already_managed(
 
     subdomains.manage_subdomain(subdomain=expected_subdomain, domain=expected_domain)
 
-    # Validate: create_A_record was not called.
+    # Validate: create_a_record was not called.
     # Since the subdomain is already being managed, we don't want to
     # create a new A record for it.
-    mocked_create_A_record.assert_not_called()
+    mocked_create_a_record.assert_not_called()
 
     # Validate the pre-existing subdomain was not updated in the database.
     row = mock_db_for_test.execute(

@@ -107,21 +107,21 @@ class TestManageDomain:
         ),
     ],
 )
-def test_manage_all_existing_A_records(
+def test_manage_all_existing_a_records(
     existing_A_records: list,
     mocker: MockerFixture,
 ):
     """We can manage all existing A records for a given domain."""
     EXPECTED_DOMAIN = "example.com"
 
-    mocked_get_A_records = mocker.patch.object(domains.do_api, "get_A_records", autospec=True)
-    mocked_get_A_records.return_value = existing_A_records
+    mocked_get_a_records = mocker.patch.object(domains.do_api, "get_a_records", autospec=True)
+    mocked_get_a_records.return_value = existing_A_records
 
     mocked_managed_subdomain = mocker.patch.object(domains, "manage_subdomain", autospec=True)
 
-    domains.manage_all_existing_A_records(EXPECTED_DOMAIN)
+    domains.manage_all_existing_a_records(EXPECTED_DOMAIN)
 
-    mocked_get_A_records.assert_called_once_with(EXPECTED_DOMAIN)
+    mocked_get_a_records.assert_called_once_with(EXPECTED_DOMAIN)
 
     if not existing_A_records:
         mocked_managed_subdomain.assert_not_called()

@@ -48,18 +48,18 @@ class TestUpdateAllManagedSubdomains:
         ]
         EXPECTED_IP_ADDRESS = "127.0.0.1"
 
-        mocked_create_A_record = mocker.patch.object(
-            subdomains.do_api, "create_A_record", autospec=True
+        mocked_create_a_record = mocker.patch.object(
+            subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
-        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record_by_name",
+            "get_a_record_by_name",
             autospec=True,
         )
-        mocked_get_A_record.return_value = []
+        mocked_get_a_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -100,18 +100,18 @@ class TestUpdateAllManagedSubdomains:
 
         from digital_ocean_dynamic_dns import subdomains
 
-        mocked_create_A_record = mocker.patch.object(
-            subdomains.do_api, "create_A_record", autospec=True
+        mocked_create_a_record = mocker.patch.object(
+            subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
-        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record_by_name",
+            "get_a_record_by_name",
             autospec=True,
         )
-        mocked_get_A_record.return_value = []
+        mocked_get_a_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -123,25 +123,25 @@ class TestUpdateAllManagedSubdomains:
         for subdomain in EXPECTED_SUBDOMAINS:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
-        # Arrange (2): Mock the update_A_record method
+        # Arrange (2): Mock the update_a_record method
         # so we assert that it was not called.
-        mocked_update_A_record = mocker.patch.object(
+        mocked_update_a_record = mocker.patch.object(
             subdomains.do_api,
-            "update_A_record",
+            "update_a_record",
             autospec=True,
         )
-        # Arrange (3): Mock the get_A_record method
+        # Arrange (3): Mock the get_a_record method
         # so we can configure it's return values.
         # NOTE: This is how we create the situation under test.
         # i.e. this is what determines the IPs are current and don't need updating.
 
         # We expect this because all subdomains are marked as unmanaged.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record",
+            "get_a_record",
             autospec=True,
         )
-        mocked_get_A_record.side_effect = [
+        mocked_get_a_record.side_effect = [
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[0],
                 "type": "A",
@@ -165,7 +165,7 @@ class TestUpdateAllManagedSubdomains:
         assert "No updates necessary" in cap_errout.out
 
         # Validate that calls were made to check the current A record values.
-        mocked_get_A_record.assert_has_calls(
+        mocked_get_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
@@ -177,8 +177,8 @@ class TestUpdateAllManagedSubdomains:
                 ),
             ]
         )
-        # Validate: update_A_record function was not called.
-        mocked_update_A_record.assert_not_called()
+        # Validate: update_a_record function was not called.
+        mocked_update_a_record.assert_not_called()
 
     def test_partial_update(
         self,
@@ -201,18 +201,18 @@ class TestUpdateAllManagedSubdomains:
 
         from digital_ocean_dynamic_dns import subdomains
 
-        mocked_create_A_record = mocker.patch.object(
-            subdomains.do_api, "create_A_record", autospec=True
+        mocked_create_a_record = mocker.patch.object(
+            subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
-        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record_by_name",
+            "get_a_record_by_name",
             autospec=True,
         )
-        mocked_get_A_record.return_value = []
+        mocked_get_a_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -227,25 +227,25 @@ class TestUpdateAllManagedSubdomains:
         for subdomain in EXPECTED_SUBDOMAINS:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
-        # Arrange (2): Mock the update_A_record method
+        # Arrange (2): Mock the update_a_record method
         # so we assert that it was called.
-        mocked_update_A_record = mocker.patch.object(
+        mocked_update_a_record = mocker.patch.object(
             subdomains.do_api,
-            "update_A_record",
+            "update_a_record",
             autospec=True,
         )
-        # Arrange (3): Mock the get_A_record method
+        # Arrange (3): Mock the get_a_record method
         # so we can configure it's return values.
         # NOTE: This is how we create the situation under test.
         # i.e. this is what determines that one of the IP addresses needs
         #   to be updated.
 
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record",
+            "get_a_record",
             autospec=True,
         )
-        mocked_get_A_record.side_effect = [
+        mocked_get_a_record.side_effect = [
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[0],
                 "type": "A",
@@ -270,7 +270,7 @@ class TestUpdateAllManagedSubdomains:
         assert "Updates done." in cap_errout.out
 
         # Validate that calls were made to check the current A record values.
-        mocked_get_A_record.assert_has_calls(
+        mocked_get_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
@@ -282,9 +282,9 @@ class TestUpdateAllManagedSubdomains:
                 ),
             ]
         )
-        # Validate: update_A_record function was called once for
+        # Validate: update_a_record function was called once for
         # the second subdomain
-        mocked_update_A_record.assert_called_once_with(
+        mocked_update_a_record.assert_called_once_with(
             domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[1],
             domain=added_top_domain,
             new_ip_address=EXPECTED_IP_ADDRESS,
@@ -329,18 +329,18 @@ class TestUpdateAllManagedSubdomains:
 
         from digital_ocean_dynamic_dns import subdomains
 
-        mocked_create_A_record = mocker.patch.object(
-            subdomains.do_api, "create_A_record", autospec=True
+        mocked_create_a_record = mocker.patch.object(
+            subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
-        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record_by_name",
+            "get_a_record_by_name",
             autospec=True,
         )
-        mocked_get_A_record.return_value = []
+        mocked_get_a_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -355,25 +355,25 @@ class TestUpdateAllManagedSubdomains:
         for subdomain in EXPECTED_SUBDOMAINS:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
-        # Arrange (2): Mock the update_A_record method
+        # Arrange (2): Mock the update_a_record method
         # so we assert that it was called.
-        mocked_update_A_record = mocker.patch.object(
+        mocked_update_a_record = mocker.patch.object(
             subdomains.do_api,
-            "update_A_record",
+            "update_a_record",
             autospec=True,
         )
-        # Arrange (3): Mock the get_A_record method
+        # Arrange (3): Mock the get_a_record method
         # so we can configure it's return values.
         # NOTE: This is how we create the situation under test.
         # i.e. this is what determines that all of the IP addresses need
         #   to be updated.
 
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record",
+            "get_a_record",
             autospec=True,
         )
-        mocked_get_A_record.side_effect = [
+        mocked_get_a_record.side_effect = [
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[0],
                 "type": "A",
@@ -399,7 +399,7 @@ class TestUpdateAllManagedSubdomains:
         assert "Updates done." in cap_errout.out
 
         # Validate that calls were made to check the current A record values.
-        mocked_get_A_record.assert_has_calls(
+        mocked_get_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
@@ -411,9 +411,9 @@ class TestUpdateAllManagedSubdomains:
                 ),
             ]
         )
-        # Validate: update_A_record function was called for
+        # Validate: update_a_record function was called for
         # both subdomains
-        mocked_update_A_record.assert_has_calls(
+        mocked_update_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
@@ -456,18 +456,18 @@ class TestUpdateAllManagedSubdomains:
 
         from digital_ocean_dynamic_dns import subdomains
 
-        mocked_create_A_record = mocker.patch.object(
-            subdomains.do_api, "create_A_record", autospec=True
+        mocked_create_a_record = mocker.patch.object(
+            subdomains.do_api, "create_a_record", autospec=True
         )
-        mocked_create_A_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
-        # Arrange: Mock get_A_record_by_name so our dependent arrange steps
+        mocked_create_a_record.side_effect = EXPECTED_DOMAIN_RECORD_IDS
+        # Arrange: Mock get_a_record_by_name so our dependent arrange steps
         # can manage the subdomains without needing to call out.
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record_by_name",
+            "get_a_record_by_name",
             autospec=True,
         )
-        mocked_get_A_record.return_value = []
+        mocked_get_a_record.return_value = []
 
         # Arrange (1.1): Mock out calls to get_ip.
         mocked_get_ip = mocker.patch.object(subdomains, "get_ip", autospec=True)
@@ -482,24 +482,24 @@ class TestUpdateAllManagedSubdomains:
         for subdomain in EXPECTED_SUBDOMAINS:
             subdomains.manage_subdomain(subdomain, added_top_domain)
 
-        # Arrange (2): Mock the update_A_record method
+        # Arrange (2): Mock the update_a_record method
         # so we assert that it was not called.
-        mocked_update_A_record = mocker.patch.object(
+        mocked_update_a_record = mocker.patch.object(
             subdomains.do_api,
-            "update_A_record",
+            "update_a_record",
             autospec=True,
         )
-        # Arrange (3): Mock the get_A_record method
+        # Arrange (3): Mock the get_a_record method
         # so we can configure it's return values.
         # NOTE: This is how we create the situation under test.
         # i.e. this is what determines the IPs are current and don't need updating.
 
-        mocked_get_A_record = mocker.patch.object(
+        mocked_get_a_record = mocker.patch.object(
             subdomains.do_api,
-            "get_A_record",
+            "get_a_record",
             autospec=True,
         )
-        mocked_get_A_record.side_effect = [
+        mocked_get_a_record.side_effect = [
             {
                 "id": EXPECTED_DOMAIN_RECORD_IDS[0],
                 "type": "A",
@@ -525,7 +525,7 @@ class TestUpdateAllManagedSubdomains:
         assert "Updates done." in cap_errout.out
 
         # Validate that calls were made to check the current A record values.
-        mocked_get_A_record.assert_has_calls(
+        mocked_get_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],
@@ -538,9 +538,9 @@ class TestUpdateAllManagedSubdomains:
             ]
         )
 
-        # Validate: update_A_record function was called for
+        # Validate: update_a_record function was called for
         # both subdomains
-        mocked_update_A_record.assert_has_calls(
+        mocked_update_a_record.assert_has_calls(
             [
                 call(
                     domain_record_id=EXPECTED_DOMAIN_RECORD_IDS[0],

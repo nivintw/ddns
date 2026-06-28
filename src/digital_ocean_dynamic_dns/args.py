@@ -63,7 +63,7 @@ def configure_manage_subparser(subparsers: argparse._SubParsersAction[argparse.A
 
 
 def configure_un_manage_subparser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]):
-    """subparser `un-manage`"""
+    """Subparser `un-manage`"""
     parser = subparsers.add_parser(
         name="un-manage",
         help="Stop digital-ocean-dynamic-dns from managing the specified domains and subdomains.",

@@ -11,19 +11,19 @@ from digital_ocean_dynamic_dns import domains, ip, manage, subdomains
 from digital_ocean_dynamic_dns.database import connect_database
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_responses():
     with responses.RequestsMock() as rsps:
         yield rsps
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_database_path(tmp_path: Path) -> Path:
     db_root = tmp_path
     return db_root / "ddns.db"
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_db_for_test(temp_database_path: Path, mocker):
     """Mock connection object to have a per-test connection / database.
     Ensures isolation of the database state between tests.
@@ -41,7 +41,7 @@ def mock_db_for_test(temp_database_path: Path, mocker):
     return test_specific_conn
 
 
-@pytest.fixture()
+@pytest.fixture
 def preload_api_key(
     mock_db_for_test: Connection,
     monkeypatch: pytest.MonkeyPatch,

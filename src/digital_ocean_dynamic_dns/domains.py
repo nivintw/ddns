@@ -42,13 +42,13 @@ def manage_domain(domain):
         logging.info(update_datetime + f" - Info : Domain {domain} added")
 
 
-def manage_all_existing_A_records(domain: str):
+def manage_all_existing_a_records(domain: str):
     """Begin managing all existing A records for `domain`.
 
     Used to import existing externally created A records into digital-ocean-dynamic-dns.
     Upon subsequent runs of `do_ddns update` these A records will be automatically handled.
     """
-    existing_A_records = do_api.get_A_records(domain)
+    existing_A_records = do_api.get_a_records(domain)
 
     for record in existing_A_records:
         manage_subdomain(subdomain=record["name"], domain=domain)
