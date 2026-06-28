@@ -59,15 +59,15 @@ class TestDomainNotManaged:
             {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
             {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
         ]
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
         subdomains.list_sub_domains(EXPECTED_DOMAIN)
 
-        mocked_get_A_records.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_get_a_records.assert_called_once_with(EXPECTED_DOMAIN)
         captured_errout = capsys.readouterr().out
 
         # Report: no managed A records
@@ -95,15 +95,15 @@ class TestDomainNotManaged:
         """
         EXPECTED_DOMAIN = "test.domain.example.com"
         EXPECTED_DOMAIN_RECORDS = []
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
         subdomains.list_sub_domains(EXPECTED_DOMAIN)
 
-        mocked_get_A_records.assert_called_once_with(EXPECTED_DOMAIN)
+        mocked_get_a_records.assert_called_once_with(EXPECTED_DOMAIN)
         captured_errout = capsys.readouterr().out
 
         # Report: no managed A records
@@ -130,15 +130,15 @@ class TestManagedDomain:
     ):
         """Domain managed, no A records registered."""
         EXPECTED_DOMAIN_RECORDS = []
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
         subdomains.list_sub_domains(added_top_domain)
 
-        mocked_get_A_records.assert_called_once_with(added_top_domain)
+        mocked_get_a_records.assert_called_once_with(added_top_domain)
         captured_errout = capsys.readouterr().out
 
         # Report: no managed A records
@@ -164,15 +164,15 @@ class TestManagedDomain:
             {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
             {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
         ]
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
         subdomains.list_sub_domains(added_top_domain)
 
-        mocked_get_A_records.assert_called_once_with(added_top_domain)
+        mocked_get_a_records.assert_called_once_with(added_top_domain)
         captured_errout = capsys.readouterr().out
 
         # Report: no managed A records
@@ -204,12 +204,12 @@ class TestManagedDomain:
             # test is not in the DB at all
             {"id": 3, "name": "test", "data": "127.0.0.1", "ttl": 1800},
         ]
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
 
         # Arrange: Insert one of the domain records into the database.
         with mock_db_for_test:
@@ -279,7 +279,7 @@ class TestManagedDomain:
         # Test
         subdomains.list_sub_domains(added_top_domain)
 
-        mocked_get_A_records.assert_called_once_with(added_top_domain)
+        mocked_get_a_records.assert_called_once_with(added_top_domain)
         captured_errout = " ".join(capsys.readouterr().out.split())
 
         # Validate lack of output string: Do not report no managed A records
@@ -310,12 +310,12 @@ class TestManagedDomain:
             {"id": 1, "name": "@", "data": "127.0.0.1", "ttl": 1800},
             {"id": 2, "name": "support", "data": "127.0.0.1", "ttl": 1800},
         ]
-        mocked_get_A_records = mocker.patch.object(
+        mocked_get_a_records = mocker.patch.object(
             subdomains.do_api,
-            "get_A_records",
+            "get_a_records",
             autospec=True,
         )
-        mocked_get_A_records.return_value = EXPECTED_DOMAIN_RECORDS
+        mocked_get_a_records.return_value = EXPECTED_DOMAIN_RECORDS
 
         # Arrange: Insert all expected domain records into the database.
         with mock_db_for_test:
@@ -356,7 +356,7 @@ class TestManagedDomain:
         # Test
         subdomains.list_sub_domains(added_top_domain)
 
-        mocked_get_A_records.assert_called_once_with(added_top_domain)
+        mocked_get_a_records.assert_called_once_with(added_top_domain)
         captured_errout = capsys.readouterr().out
 
         # Report: no managed A records

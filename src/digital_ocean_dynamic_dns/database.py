@@ -17,7 +17,7 @@ def connect_database(database_path: Path):
         conn = sqlite3.connect(database_path)
         conn.row_factory = sqlite3.Row
     except Error as e:
-        logging.error(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
+        logging.exception(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
         print(e)
         raise
     else:

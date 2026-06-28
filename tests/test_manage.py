@@ -49,8 +49,8 @@ class TestMartialManage:
 
         # Mock the call to list_sub_domains; we just want to be sure that it _is_ called,
         # but don't need it to run here.
-        mocked_manage_all_existing_A_records = mocker.patch.object(
-            manage.domains, "manage_all_existing_A_records", autospec=True
+        mocked_manage_all_existing_a_records = mocker.patch.object(
+            manage.domains, "manage_all_existing_a_records", autospec=True
         )
 
         manage.martial_manage(test_args)
@@ -59,7 +59,7 @@ class TestMartialManage:
         mocked_manage_domain.assert_called_once_with(EXPECTED_DOMAIN)
 
         # Validate
-        mocked_manage_all_existing_A_records.assert_called_once_with(domain=EXPECTED_DOMAIN)
+        mocked_manage_all_existing_a_records.assert_called_once_with(domain=EXPECTED_DOMAIN)
 
     def test_manage_specific_subdomain(
         self,

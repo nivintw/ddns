@@ -14,7 +14,7 @@ from digital_ocean_dynamic_dns import do_api
 class TestGetARecords:
     """We can retrieve all A records for the provided domain."""
 
-    # Constants common to get_A_records()
+    # Constants common to get_a_records()
     PAGE_RESULTS_LIMIT = 20
 
     def test_single_page(
@@ -47,7 +47,7 @@ class TestGetARecords:
             },
         )
 
-        domain_records = [x for x in do_api.get_A_records(EXPECTED_DOMAIN)]
+        domain_records = [x for x in do_api.get_a_records(EXPECTED_DOMAIN)]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     def test_no_existing_a_records(
@@ -71,7 +71,7 @@ class TestGetARecords:
         )
 
         with pytest.raises(StopIteration):
-            next(do_api.get_A_records(EXPECTED_DOMAIN))
+            next(do_api.get_a_records(EXPECTED_DOMAIN))
 
     def test_multiple_pages(
         self,
@@ -125,7 +125,7 @@ class TestGetARecords:
             },
         )
 
-        domain_records = [x for x in do_api.get_A_records(EXPECTED_DOMAIN)]
+        domain_records = [x for x in do_api.get_a_records(EXPECTED_DOMAIN)]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
     @pytest.mark.parametrize(
@@ -180,7 +180,7 @@ class TestGetARecords:
         )
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
-            next(do_api.get_A_records(EXPECTED_DOMAIN))
+            next(do_api.get_a_records(EXPECTED_DOMAIN))
 
 
 class TestGetARecordsByName:
@@ -191,7 +191,7 @@ class TestGetARecordsByName:
     creating multiple records with the same name.
     """
 
-    # Constants common to get_A_record_by_name()
+    # Constants common to get_a_record_by_name()
     PAGE_RESULTS_LIMIT = 20
 
     def test_single_page(
@@ -232,7 +232,7 @@ class TestGetARecordsByName:
         )
 
         domain_records = [
-            x for x in do_api.get_A_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
+            x for x in do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
         ]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
@@ -264,7 +264,7 @@ class TestGetARecordsByName:
         )
 
         with pytest.raises(StopIteration):
-            next(do_api.get_A_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
+            next(do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
 
     def test_multiple_pages(
         self,
@@ -331,7 +331,7 @@ class TestGetARecordsByName:
         )
 
         domain_records = [
-            x for x in do_api.get_A_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
+            x for x in do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN)
         ]
         assert domain_records == EXPECTED_DOMAIN_RECORDS
 
@@ -394,7 +394,7 @@ class TestGetARecordsByName:
         )
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
-            next(do_api.get_A_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
+            next(do_api.get_a_record_by_name(EXPECTED_SUBDOMAIN, EXPECTED_DOMAIN))
 
 
 class TestCreateARecord:
@@ -441,7 +441,7 @@ class TestCreateARecord:
             json={"domain_record": {"id": EXPECTED_DOMAIN_RECORD_ID}},
         )
 
-        domain_record_id = do_api.create_A_record(
+        domain_record_id = do_api.create_a_record(
             expected_subdomain, expected_domain, EXPECTED_IP_ADDRESS
         )
 
@@ -510,7 +510,7 @@ class TestCreateARecord:
         )
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
-            _ = do_api.create_A_record(EXPECTED_A_RECORD_NAME, EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS)
+            _ = do_api.create_a_record(EXPECTED_A_RECORD_NAME, EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS)
 
     @pytest.mark.parametrize(
         "subdomain, domain",
@@ -537,7 +537,7 @@ class TestCreateARecord:
         """Raise NonSimpleDomainNameError if non-simple characters are used."""
         EXPECTED_IP_ADDRESS = "127.0.0.1"
         with pytest.raises(do_api.NonSimpleDomainNameError):
-            do_api.create_A_record(
+            do_api.create_a_record(
                 subdomain,
                 domain,
                 EXPECTED_IP_ADDRESS,
@@ -575,7 +575,7 @@ class TestGetARecord:
             json={"domain_record": EXPECTED_DOMAIN_RECORD},
         )
 
-        domain_record = do_api.get_A_record(str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN)
+        domain_record = do_api.get_a_record(str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN)
         assert domain_record == EXPECTED_DOMAIN_RECORD
 
     @pytest.mark.parametrize(
@@ -628,13 +628,13 @@ class TestGetARecord:
         )
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
-            _ = do_api.get_A_record(str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN)
+            _ = do_api.get_a_record(str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN)
 
 
 class TestUpdateARecord:
     """Update an existing A record."""
 
-    def test_update_A_record(
+    def test_update_a_record(
         self,
         mocked_responses: RequestsMock,
         preload_api_key: Literal["sentinel-api-key"],
@@ -667,7 +667,7 @@ class TestUpdateARecord:
             json={"domain_record": EXPECTED_DOMAIN_RECORD},
         )
 
-        domain_record = do_api.update_A_record(
+        domain_record = do_api.update_a_record(
             str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS
         )
         assert domain_record == EXPECTED_DOMAIN_RECORD
@@ -729,6 +729,6 @@ class TestUpdateARecord:
         )
 
         with pytest.raises(requests.exceptions.HTTPError, match=rf"{status_code}"):
-            _ = do_api.update_A_record(
+            _ = do_api.update_a_record(
                 str(EXPECTED_DOMAIN_RECORD_ID), EXPECTED_DOMAIN, EXPECTED_IP_ADDRESS
             )

@@ -89,4 +89,7 @@ convention = "google"
   "S311",    # pseudo-random is fine in tests
   "PLR2004", # magic values in assertions are expected
   "SLF001",  # tests may touch private members
+  "N802",    # descriptive test names keep DNS proper nouns, e.g. test_A_record_lookup
+  "N803",    # mock/fixture argument names mirror the patched symbols
+  "N806",    # UPPER_CASE expected-value constants + mocked_* fixture locals are idiomatic
 ]

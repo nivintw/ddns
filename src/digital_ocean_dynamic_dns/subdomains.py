@@ -42,7 +42,7 @@ def list_sub_domains(domain):
     cursor = conn.cursor()
     console = Console()
 
-    domain_A_records = {x["name"]: x for x in do_api.get_A_records(domain)}
+    domain_A_records = {x["name"]: x for x in do_api.get_a_records(domain)}
 
     row = cursor.execute("SELECT id FROM domains WHERE name = ?", (domain,)).fetchone()
     if row is None:
@@ -165,20 +165,20 @@ def manage_subdomain(subdomain: str, domain: str):
 
     ip = get_ip()
     # check to see if there's an existing A record.
-    found_domain_records = peekable(do_api.get_A_record_by_name(subdomain, domain))
+    found_domain_records = peekable(do_api.get_a_record_by_name(subdomain, domain))
     if domain_record := found_domain_records.peek(None):
         # NOTE: strictly speaking, there could be multiple...
         # we only care if there's at least 1 already existing.
         # we will assume management of the first (unordered) A record we find that
         # has a matching name.
         domain_record_id = domain_record["id"]
-        do_api.update_A_record(
+        do_api.update_a_record(
             domain_record_id=domain_record_id,
             domain=domain,
             new_ip_address=ip,
         )
     else:
-        domain_record_id = do_api.create_A_record(subdomain, domain, ip)
+        domain_record_id = do_api.create_a_record(subdomain, domain, ip)
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     cursor.execute(
@@ -296,7 +296,7 @@ def update_all_managed_subdomains(args: Namespace):
             " Start by adding a new domain with [i]do_ddns manage[/i]."
             " E.g. [i]do_ddns manage example.com --sub-domain test[/i]."
         )
-        raise NoManagedSubdomainsError()
+        raise NoManagedSubdomainsError
 
     now = datetime.now().strftime("%d-%m-%Y %H:%M")
     current_ip = get_ip()
@@ -313,7 +313,7 @@ def update_all_managed_subdomains(args: Namespace):
         domain_name = str(domain_info["name"])
 
         # Check DO API to see if an update is required
-        domain_record = do_api.get_A_record(
+        domain_record = do_api.get_a_record(
             domain_record_id=domain_record_id,
             domain=domain_name,
         )
@@ -321,7 +321,7 @@ def update_all_managed_subdomains(args: Namespace):
 
         if remoteIP4 != current_ip or force is True:
             updated = True
-            domain_record = do_api.update_A_record(
+            domain_record = do_api.update_a_record(
                 domain_record_id=domain_record_id,
                 domain=domain_name,
                 new_ip_address=current_ip,

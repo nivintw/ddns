@@ -63,7 +63,7 @@ def config_ip_server(ipserver, ip_type):
 
     else:
         print("IPv6 is not currently supported.")
-        raise IPv6NotSupportedError()
+        raise IPv6NotSupportedError
 
 
 def get_ip():
@@ -87,5 +87,5 @@ def get_ip():
         response.raise_for_status()
         return response.text
     except Exception as e:
-        logging.error(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
+        logging.exception(time.strftime("%Y-%m-%d %H:%M") + " - Error : " + str(e))
         raise

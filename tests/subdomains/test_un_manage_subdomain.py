@@ -62,7 +62,7 @@ def test_side_effects(
         1. subdomain marked as un-managed in database.
         2. User-facing output is provided.
     """
-    # Arrange the create_A_record mock.
+    # Arrange the create_a_record mock.
     EXPECTED_DOMAIN_RECORD_ID = 1001
     EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
     EXPECTED_IP4_ADDRESS = "127.0.0.1"
@@ -170,7 +170,7 @@ def test_subdomain_not_managed(
 ):
     """Expected behavior when the subdomain is not managed."""
 
-    # Arrange the create_A_record mock.
+    # Arrange the create_a_record mock.
     EXPECTED_DOMAIN_RECORD_ID = 1001
     EXPECTED_A_RECORD_NAME = expected_subdomain.removesuffix("." + expected_domain)
     EXPECTED_IP4_ADDRESS = "127.0.0.1"

@@ -7,7 +7,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 
-@pytest.fixture()
+@pytest.fixture
 def added_top_domain(
     mock_db_for_test: Connection,
     mocker: MockerFixture,

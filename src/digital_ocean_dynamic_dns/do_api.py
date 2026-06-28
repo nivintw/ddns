@@ -15,7 +15,7 @@ from .api_key_helpers import get_api
 from .exceptions import NonSimpleDomainNameError
 
 
-def get_A_records(domain) -> Generator[dict[str, Any]]:
+def get_a_records(domain) -> Generator[dict[str, Any]]:
     """Retrieve A records for `domain` from Digital Ocean."""
     apikey = get_api()
     page_results_limit = 20
@@ -50,9 +50,8 @@ def get_A_records(domain) -> Generator[dict[str, Any]]:
         yield from domain_records
 
 
-def get_A_record_by_name(subdomain: str, domain: str):
+def get_a_record_by_name(subdomain: str, domain: str):
     """Retrieve a potentially existing A record by it's name."""
-
     apikey = get_api()
     page_results_limit = 20
 
@@ -91,7 +90,7 @@ def get_A_record_by_name(subdomain: str, domain: str):
         yield from domain_records
 
 
-def get_A_record(domain_record_id: str, domain: str):
+def get_a_record(domain_record_id: str, domain: str):
     """Return the A record for `subdomain`."""
     apikey = get_api()
     headers = {
@@ -107,7 +106,7 @@ def get_A_record(domain_record_id: str, domain: str):
     return response.json()["domain_record"]
 
 
-def update_A_record(domain_record_id: str, domain: str, new_ip_address: str):
+def update_a_record(domain_record_id: str, domain: str, new_ip_address: str):
     """Update an existing A record."""
     apikey = get_api()
     headers = {
@@ -125,12 +124,12 @@ def update_A_record(domain_record_id: str, domain: str, new_ip_address: str):
     return response.json()["domain_record"]
 
 
-def create_A_record(subdomain: str, domain: str, ip4_address: str) -> str:
+def create_a_record(subdomain: str, domain: str, ip4_address: str) -> str:
     """Create an A record for subdomain.
 
     This function will _not_ manage the state of the local database.
 
-    returns:
+    Returns:
         (str): The domain record id returned from the Digital Ocean API.
     """
     if set(domain).difference(ascii_letters + "." + digits + "-" + "@") or set(
@@ -180,7 +179,7 @@ def verify_domain_is_registered(domain: str):
     )
     if response.status_code == requests.codes.ok:
         return
-    elif response.status_code == 404:
+    if response.status_code == 404:
         # Print an additional helpful message specifically for 404.
         print(f"Domain {domain} was not found associated with this digital ocean account.")
 
