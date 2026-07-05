@@ -50,6 +50,9 @@ repos:
       - id: check-json
         name: "🗂️ config · Validate JSON"
         files: '\.json$'
+        # VS Code's .vscode/*.json are JSONC (comments + trailing commas) — valid for VS Code
+        # but not strict JSON, so check-json can't parse them. Match .vscode/ at any depth.
+        exclude: '(^|/)\.vscode/'
       - id: check-toml
         name: "🗂️ config · Validate TOML"
 
@@ -106,12 +109,15 @@ repos:
   # ruff `ALL` lints the *code*, not the dependency tree. `uv audit` checks the resolved
   # deps against PyPA advisories; osv-scanner cross-checks uv.lock against the OSV database
   # (and also handles non-Python lockfiles). Both are system tools — uv ships `audit`, and
-  # osv-scanner is a release binary (Brewfile/CI install), like hawkeye/taplo — so CI and
-  # local match.
+  # osv-scanner is a release binary, like hawkeye/taplo — so CI and local match (see the
+  # SYSTEM TOOLS note under Licensing for where these binaries come from).
   - repo: local
     hooks:
       - id: uv-audit
         name: "🔒 deps · Audit dependencies for CVEs (uv audit)"
+        # `uv audit` is still a preview command (Renovate auto-bumps uv, and an experimental
+        # CLI surface is the most likely thing to rename/remove this flag) — watch uv release
+        # notes for `audit`'s stabilization and drop --preview-features once it graduates.
         entry: uv audit --preview-features audit-command
         language: system
         files: '^(pyproject\.toml|uv\.lock)$'
@@ -125,7 +131,11 @@ repos:
 
   # --------------------------- ⚖️ Licensing & Compliance ---------------------------- #
   # hawkeye maintains the SPDX headers (config: .config/licenserc.toml); reuse verifies overall
-  # REUSE compliance. hawkeye is system (the Brewfile/release binary) so CI/local match.
+  # REUSE compliance. hawkeye is a system release binary (like taplo/osv-scanner/trivy).
+  # SYSTEM TOOLS: this template emits NO Brewfile — CI installs these binaries per run, but
+  # install them locally too so `prek run --all-files` matches CI (the README "Quality gate"
+  # section lists them). The canonical nivintw setup provides them via the Brewfile in the
+  # https://github.com/nivintw/dotfiles repo; a generic adopter supplies their own equivalent.
   - repo: local
     hooks:
       - id: hawkeye-format
@@ -148,12 +158,15 @@ repos:
       - id: typos
         name: "✨ language · Check spelling with typos"
         # CHECK-ONLY: drop the hook default --write-changes; keep --force-exclude.
-        args: ["--force-exclude", "--config", ".config/typos.toml"]
+        # Scan `.` plus `.config` explicitly: typos skips hidden dirs by default, so the
+        # configs relocated under .config/ go unchecked unless named (an explicit path
+        # overrides the hidden-skip). .git/.venv stay unscanned — they aren't listed.
+        args: ["--force-exclude", "--config", ".config/typos.toml", ".", ".config"]
         pass_filenames: false
 
   # -------------------------------- 🐍 Python --------------------------------------- #
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.17
+    rev: v0.15.20
     hooks:
       - id: ruff-check
         name: "🐍 python · Lint with Ruff"
@@ -188,7 +201,7 @@ repos:
 
   # ----------------------------- ⚙️ Environment ------------------------------------- #
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.21
+    rev: 0.11.25
     hooks:
       - id: uv-lock
         name: "⚙️ uv · Keep uv.lock in sync with pyproject.toml"
