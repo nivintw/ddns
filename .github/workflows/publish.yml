@@ -1,24 +1,40 @@
 # SPDX-FileCopyrightText: © 2023 Tyler Nivin
 # SPDX-License-Identifier: MIT
 
-# Publish to PyPI. release-please (main.yml) cuts the `vX.Y.Z` tag + GitHub Release; this
-# job fires on that Release (event `release: published`) and uploads the built dists.
-#
-# NOTE (ddns-specific, beyond the copier-everything template): the shared template's release
-# flow stops at the GitHub Release — it does not publish to any package index. This package
-# is published on PyPI (digital-ocean-dynamic-dns), so this workflow preserves that. If/when
-# the template grows a publish step, fold this into it.
+# Publish releases to PyPI, dress-rehearsed through TestPyPI first. release-please
+# (main.yml) cuts the `vX.Y.Z` tag + GitHub Release; this fires on that Release (event
+# `release: published`) and drives: build once → publish to TestPyPI → smoke (assert the
+# release is visible on TestPyPI, then install and import the built wheel) → publish to
+# PyPI. The artifact set is built exactly once and passed between jobs, so what lands on
+# PyPI is byte-for-byte the set the smoke test installed from. PyPI uploads are immutable —
+# a broken artifact burns the version number — which is what the rehearsal stage is for.
 #
 # LOAD-BEARING: this only fires because release-please in main.yml creates the Release using
 # a GitHub App token, NOT the default GITHUB_TOKEN. Releases created with GITHUB_TOKEN do not
 # trigger downstream workflows, so switching release-please back to GITHUB_TOKEN would
-# silently stop PyPI publishing. Triggering on `release: published` means checkout (no `ref:`)
-# resolves to the release's tag, so `uv build` builds exactly the released version.
+# silently stop PyPI publishing. Triggering on `release: published` (no `ref:` on checkout)
+# means the build resolves to the release's tag, so `uv build` builds exactly the released
+# version.
 #
-# Auth uses the existing repo secret TWINE_PYPI_UPLOAD_TOKEN (a PyPI API token, surfaced to
-# uv as UV_PUBLISH_TOKEN). On forks/clones without the secret the job skips cleanly; on the
-# canonical repo a missing token is a hard error (otherwise a rotated/expired token would let
-# releases keep cutting while PyPI silently falls behind, with no red signal).
+# AUTH — OIDC Trusted Publishing (no long-lived secret), bound to deployment environments.
+# Each publish job runs in its own environment (`testpypi` / `pypi`); restrict both
+# environments' deployments to `v*` tags, so only a run on a real release tag can mint an
+# upload token. GitHub auto-creates an environment referenced by a workflow with NO
+# protection rules if that restriction is never configured, so the one-time repo setup
+# below is load-bearing, not optional: create the `testpypi`/`pypi` GitHub environments
+# (Settings → Environments) with that tag policy, then add a pending Trusted Publisher on
+# test.pypi.org / pypi.org pointing at owner `nivintw`, repo `digital-ocean-dynamic-dns`,
+# workflow `publish.yml`, environment `testpypi` / `pypi` respectively. `--trusted-publishing
+# always` makes a missing or misconfigured publisher fail loudly (never a silent no-op), and
+# `--check-url` makes re-runs idempotent (files already on the index are skipped instead of
+# erroring). The residual trust boundary is `v*` tag creation itself: anyone with write
+# access can still push a `v*` tag and cut a release outside release-please, bypassing this
+# workflow's normal path — the environment restriction narrows *which runs* can mint a
+# token, it doesn't restrict *who* can create the tag that triggers one.
+#
+# The smoke job deliberately has NO permissions and no checkout: it needs neither — it only
+# reads the run's artifact and public indexes — and least privilege keeps the third-party
+# code that runs during dependency install away from anything mintable.
 
 name: publish
 
@@ -29,37 +45,155 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    # An explicit `shell: bash` runs with -e -o pipefail; the implicit default omits
+    # pipefail, which would let a future `cmd | filter` step swallow cmd's failure.
+    shell: bash
+
 jobs:
-  pypi:
+  build:
+    # Skip on forks only. A fork's release shouldn't try (and fail) to publish — it has no
+    # Trusted Publisher configured — and this keeps forks green; the guard lives here alone
+    # because every other job `needs` this one and skips with it. We gate on the event
+    # payload's `fork` flag rather than a baked-in `owner/repo` literal on purpose: a
+    # literal silently stops matching if the canonical repo is renamed or transferred (or
+    # its answer was typo'd), turning every release into a green no-op that never publishes.
+    # `fork == false` survives a rename, so the canonical repo keeps publishing; a real
+    # misconfig instead fails loudly at `uv publish` (no Trusted Publisher → non-zero exit),
+    # never a silent skip. (Written as a bare expression: a job `if:` is already evaluated
+    # as one, and GitHub's dollar-brace expression wrapper would collide with Jinja's
+    # delimiters when this file is rendered as part of the copier template.)
+    if: github.event.repository.fork == false
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
       - name: Set up uv (+ managed Python)
-        # No dependency cache here: this job builds the artifact that gets published, so a
-        # poisoned cache would taint the release (zizmor cache-poisoning). The minor speedup
-        # isn't worth that on a release path. setup-uv caches by default, so disable explicitly.
+        # No dependency cache anywhere in this workflow: it builds and ships the release
+        # artifact, so a poisoned cache would taint the release (zizmor cache-poisoning).
+        # The minor speedup isn't worth that on a release path. setup-uv caches by default,
+        # so disable explicitly.
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           enable-cache: false
 
-      # Auth is a PyPI API token (secret already provisioned for this repo), not OIDC Trusted
-      # Publishing. Migrating to Trusted Publishing requires PyPI-side publisher config and is
-      # tracked separately; until then the token path is the working, reviewed mechanism.
-      - name: Build and publish to PyPI
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.TWINE_PYPI_UPLOAD_TOKEN }}
-          IS_CANONICAL: ${{ github.repository == 'nivintw/ddns' }}
+      - name: Build and check the distributions
+        # The version output comes from the project itself (not re-derived from the tag),
+        # so downstream jobs test exactly what was built even if the tag scheme changes.
+        # Assigned before the echo so a `uv version` failure stops the step instead of
+        # exporting an empty output.
+        id: build
         run: |
-          if [ -z "$UV_PUBLISH_TOKEN" ]; then
-            if [ "$IS_CANONICAL" = "true" ]; then
-              echo "::error::TWINE_PYPI_UPLOAD_TOKEN is missing on the canonical repo — cannot publish."
-              exit 1
-            fi
-            echo "::notice::TWINE_PYPI_UPLOAD_TOKEN not set — skipping PyPI publish (non-canonical repo)."
-            exit 0
-          fi
           uv build
+          uvx twine==6.2.0 check --strict dist/*
+          version="$(uv version --short)"
+          test -n "$version"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          # Artifacts persist across run attempts; without this, "Re-run all jobs"
+          # fails the re-upload instead of replacing the previous attempt's artifact.
+          overwrite: true
+
+  testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/digital-ocean-dynamic-dns/
+    permissions:
+      id-token: write # OIDC token for TestPyPI Trusted Publishing; no checkout, so no contents
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: false
+
+      - name: Publish to TestPyPI (Trusted Publishing)
+        run: >-
           uv publish
+          --trusted-publishing always
+          --publish-url https://test.pypi.org/legacy/
+          --check-url https://test.pypi.org/simple/
+
+  smoke:
+    # Prove the release before it touches PyPI: assert the version is actually visible on
+    # TestPyPI, then install the built wheel (dependencies from real PyPI) and import the
+    # package. The wheel comes from the run's artifact, NOT from the TestPyPI index: uv's
+    # default first-index strategy pins any dependency whose *name* exists on TestPyPI to
+    # that index (a real risk once your dependency list grows), which can make resolution
+    # unsatisfiable, and `--index-strategy unsafe-best-match` would "fix" it only by
+    # re-opening the dependency-confusion surface. Installing the artifact sidesteps both
+    # and still exercises the exact bytes PyPI will receive.
+    needs: [build, testpypi]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: false
+
+      - name: Confirm TestPyPI visibility, then import the built wheel
+        # The index can lag a fresh upload by a few seconds; `-f` turns TestPyPI's
+        # pre-visibility 404 into a curl error, so --retry-all-errors polls until it's
+        # live — the same retry idiom ci.yml.jinja uses for flaky/eventually-consistent
+        # fetches. --max-time bounds each attempt so a stalled connection can't hang the
+        # job past the retry budget. The install happens exactly once, so a genuinely
+        # broken artifact fails immediately and unambiguously.
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          curl -fsSL --max-time 10 --retry 5 --retry-all-errors --retry-delay 15 \
+              --output /dev/null \
+              "https://test.pypi.org/pypi/digital-ocean-dynamic-dns/${VERSION}/json" \
+            || { echo "::error::digital-ocean-dynamic-dns==${VERSION} never appeared on TestPyPI"; exit 1; }
+          # --python matches requires-python in pyproject.toml (the runner's system Python
+          # may be older; uv fetches its managed interpreter).
+          uv run --isolated --no-project --python 3.12 \
+            --with dist/*.whl \
+            -- python -c "import digital_ocean_dynamic_dns"
+
+  pypi:
+    needs: smoke
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/digital-ocean-dynamic-dns/
+    permissions:
+      id-token: write # OIDC token for PyPI Trusted Publishing; no checkout, so no contents
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: false
+
+      - name: Publish to PyPI (Trusted Publishing)
+        run: >-
+          uv publish
+          --trusted-publishing always
+          --check-url https://pypi.org/simple/
