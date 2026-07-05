@@ -5,7 +5,8 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-# version in pyproject.toml, which is what the built/installed package metadata reflects, so
+# Single source of truth: the installed distribution's version (release-please bumps the
+# version in pyproject.toml, which is what the built/installed package metadata reflects), so
 # this never drifts the way a hand-edited constant would. The lookup name must stay equal to
 # the distribution's `name` in pyproject.toml (both are project_slug at generation time). Fall
 # back gracefully when the distribution isn't installed (a bare source checkout) so importing

@@ -23,7 +23,7 @@
 # protection rules if that restriction is never configured, so the one-time repo setup
 # below is load-bearing, not optional: create the `testpypi`/`pypi` GitHub environments
 # (Settings → Environments) with that tag policy, then add a pending Trusted Publisher on
-# test.pypi.org / pypi.org pointing at owner `nivintw`, repo `digital-ocean-dynamic-dns`,
+# test.pypi.org / pypi.org pointing at owner `nivintw`, repo `ddns`,
 # workflow `publish.yml`, environment `testpypi` / `pypi` respectively. `--trusted-publishing
 # always` makes a missing or misconfigured publisher fail loudly (never a silent no-op), and
 # `--check-url` makes re-runs idempotent (files already on the index are skipped instead of
