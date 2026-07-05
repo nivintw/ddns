@@ -46,12 +46,14 @@ One-time setup before the first release:
    a deployment branch/tag policy restricted to `v*` tags.
 2. Add a pending Trusted Publisher on [test.pypi.org](https://test.pypi.org/manage/account/publishing/)
    and [pypi.org](https://pypi.org/manage/account/publishing/), each pointing at owner
-   `nivintw`, repo `digital-ocean-dynamic-dns`, workflow `publish.yml`, and the matching
+   `nivintw`, repo `ddns`, workflow `publish.yml`, and the matching
    environment (`testpypi` / `pypi`).
 
 Until both publishers exist, `uv publish` fails loudly rather than silently skipping.
 
 ## License
+
+[MIT](LICENSE) — and [REUSE](https://reuse.software)-compliant.
 
 ## Appendix
 
