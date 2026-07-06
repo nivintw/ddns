@@ -5,8 +5,13 @@ SPDX-License-Identifier: MIT
 
 # Troubleshooting
 
-If `do_ddns` exited with a traceback or a red `Error:` message, find it below. Each entry leads
-with the fix.
+If `do_ddns` exited with a red `Error:` message, find it below. Each entry leads with the fix.
+
+!!! note
+    Except for `show-info`, none of these errors are caught internally — the friendly message
+    below is followed by a full Python traceback. That traceback is expected; the line
+    starting with `Error:` (or the API key message for `NoAPIKeyError`) is the part that
+    matters.
 
 #### `NoAPIKeyError`
 
@@ -46,7 +51,20 @@ an IP resolver configured first, and none has been set yet. See the
 
 #### `TopDomainNotManagedError`
 
-**Looks like:**
+This has two different causes depending on which command raised it — check which one you ran.
+
+**From [`un-manage`](commands/un-manage.md) `--subdomain`:**
+
+```text
+Error: example.com is not a managed domain.
+```
+
+**Fix:** this is a normal usage error, not a bug — you ran `un-manage --subdomain` against a
+domain `do_ddns` has never cataloged (a typo in the domain name, or a domain you never
+[`manage`](commands/manage.md)d in the first place). Double-check the domain name, or run
+`do_ddns manage <domain>` first if you meant to catalog it.
+
+**From [`manage`](commands/manage.md) `--subdomain` (or `--list`):**
 
 ```text
 Error: example.com is not a managed domain. We do not expect users to ever be exposed to this
@@ -54,13 +72,13 @@ error. If you see this in the console while using digital-ocean-dynamic-dns plea
 on the repository.
 ```
 
-**Fix:** this shouldn't happen through normal CLI use — `manage` and `un-manage` always ensure the
-top-level domain is managed before touching a subdomain. If you hit this, please
-[file an issue](https://github.com/nivintw/ddns/issues) with the command you ran; it points at a
-bug rather than something you did wrong.
+**Fix:** this genuinely shouldn't happen — `manage` always manages the top-level domain itself
+before touching a subdomain (see [manage](commands/manage.md)), so a normal `manage` invocation
+can't hit this. If you see it, please
+[file an issue](https://github.com/nivintw/ddns/issues) with the exact command you ran.
 
 **Cause:** internal code tried to manage or un-manage a subdomain whose top-level domain isn't
-marked as managed in the local database.
+marked as managed (`un-manage`) or managed at all (`manage`) in the local database.
 
 #### `NoManagedSubdomainsError`
 
