@@ -127,3 +127,16 @@ validation:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - Commands:
+      - Overview: commands/index.md
+      - update-ips: commands/update-ips.md
+      - manage: commands/manage.md
+      - un-manage: commands/un-manage.md
+      - ip-resolver-config: commands/ip-resolver-config.md
+      - show-info: commands/show-info.md
+      - logs: commands/logs.md
+  - Concepts: concepts.md
+  - Configuration: configuration.md
+  - Troubleshooting: troubleshooting.md
+  - Roadmap: roadmap.md
