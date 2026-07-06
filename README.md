@@ -22,7 +22,11 @@ Example:
 ## Documentation
 
 Full docs — installation, first-run setup, the complete command reference, and
-troubleshooting — live under [`docs/`](docs/index.md):
+troubleshooting — live under [`docs/`](docs/index.md). These are repo-relative links: they
+render correctly on GitHub, but not from PyPI's rendered long description (this README) —
+see [nivintw/ddns#38](https://github.com/nivintw/ddns/issues/38) to switch to absolute links
+once this content actually exists on `main` (converting now would 404 until this very PR
+merges):
 
 - [Getting Started](docs/getting-started.md) — install, configure, onboard your first domain
 - [Commands](docs/commands/index.md) — every `do_ddns` subcommand and flag

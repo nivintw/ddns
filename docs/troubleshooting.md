@@ -31,7 +31,7 @@ export DIGITALOCEAN_TOKEN=<your-do-token>
 environment — cron and systemd don't inherit your interactive shell) that `do_ddns` is running in.
 See [Configuration](configuration.md#api-token) for details.
 
-### `NoIPResolverServerError`
+## `NoIPResolverServerError`
 
 **Looks like:**
 
@@ -49,7 +49,7 @@ do_ddns ip-resolver-config --url https://api.ipify.org
 an IP resolver configured first, and none has been set yet. See the
 [`ip-resolver-config` command reference](commands/ip-resolver-config.md).
 
-#### `TopDomainNotManagedError`
+## `TopDomainNotManagedError`
 
 This has two different causes depending on which command raised it — check which one you ran.
 
@@ -80,7 +80,7 @@ can't hit this. If you see it, please
 **Cause:** internal code tried to manage or un-manage a subdomain whose top-level domain isn't
 marked as managed (`un-manage`) or managed at all (`manage`) in the local database.
 
-#### `NoManagedSubdomainsError`
+## `NoManagedSubdomainsError`
 
 **Looks like:**
 
@@ -98,7 +98,7 @@ do_ddns manage example.com --subdomain home
 **Cause:** `update-ips` was run but zero subdomains are currently managed, so there's nothing to
 update. See the [`manage` command reference](commands/manage.md).
 
-#### `IPv6NotSupportedError`
+## `IPv6NotSupportedError`
 
 **Looks like:**
 
@@ -115,7 +115,7 @@ do_ddns ip-resolver-config --url https://api.ipify.org --ip-mode 4
 **Cause:** `ip-resolver-config --ip-mode 6` was used. IPv6 isn't supported yet — see the
 [roadmap](roadmap.md) for the current state of IPv6 support.
 
-#### `NonSimpleDomainNameError`
+## `NonSimpleDomainNameError`
 
 **Looks like:**
 

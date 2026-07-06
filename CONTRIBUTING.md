@@ -25,12 +25,13 @@ uvx prek@0.4.8 run --all-files
 
 ## Releasing
 
-Published to **[PyPI](https://pypi.org/project/digital-ocean-dynamic-dns/)** on each GitHub Release
-(`.github/workflows/publish.yml`), dress-rehearsed through **TestPyPI** first — build once,
-publish to TestPyPI, install and import the built wheel, then (gated on that) publish to
-PyPI. Auth is OIDC **Trusted Publishing** (no long-lived secret), bound to two GitHub
+Every GitHub Release triggers a publish workflow (`.github/workflows/publish.yml`) that
+builds once, publishes to **TestPyPI** first (install + import the built wheel as a smoke
+test), then — gated on that — publishes to **[PyPI](https://pypi.org/project/digital-ocean-dynamic-dns/)**.
+Auth is OIDC **Trusted Publishing** (no long-lived secret), bound to two GitHub
 **deployment environments** — `testpypi` and `pypi` — each restricted to `v*` tag
-deployments.
+deployments. **This only actually publishes once the one-time setup below is complete** —
+until then, the workflow runs and fails at the TestPyPI step.
 
 One-time setup before the first release:
 
