@@ -305,11 +305,11 @@ def update_all_managed_subdomains(args: Namespace) -> None:
         console.print(
             "[red]Error: [/red]There are no dynamic domains active."
             " Start by adding a new domain with [i]do_ddns manage[/i]."
-            " E.g. [i]do_ddns manage example.com --sub-domain test[/i]."
+            " E.g. [i]do_ddns manage example.com --subdomain test[/i]."
         )
         msg = (
             "There are no active dynamic domains. "
-            "Add one with: do_ddns manage example.com --sub-domain test"
+            "Add one with: do_ddns manage example.com --subdomain test"
         )
         raise NoManagedSubdomainsError(msg)
 
