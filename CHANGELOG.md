@@ -5,6 +5,13 @@ SPDX-License-Identifier: MIT
 
 # CHANGELOG
 
+## [1.3.10](https://github.com/nivintw/ddns/compare/v1.3.9...v1.3.10) (2026-07-06)
+
+
+### Bug Fixes
+
+* satisfy REUSE compliance for committed Serena config ([e415853](https://github.com/nivintw/ddns/commit/e415853cd50fbea10c72e07cd1dd01d75ed71b07))
+
 ## [1.3.9](https://github.com/nivintw/ddns/compare/v1.3.8...v1.3.9) (2026-07-06)
 
 
