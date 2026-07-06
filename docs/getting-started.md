@@ -10,22 +10,7 @@ management.
 
 ## 1. Install
 
-`do_ddns` is published on PyPI as `digital-ocean-dynamic-dns` and requires Python >= 3.12. Install
-it as an isolated CLI tool rather than into a project environment:
-
-=== "pipx"
-
-    ```bash
-    pipx install digital-ocean-dynamic-dns
-    ```
-
-=== "uv"
-
-    ```bash
-    uv tool install digital-ocean-dynamic-dns
-    ```
-
-Either gives you a `do_ddns` command on your `PATH`.
+--8<-- "install.md"
 
 ## 2. Configure your API token
 
