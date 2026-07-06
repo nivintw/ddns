@@ -65,7 +65,7 @@ domain `do_ddns` has never cataloged (a typo in the domain name, or a domain you
 [`manage`](commands/manage.md)d in the first place). Double-check the domain name, or run
 `do_ddns manage <domain>` first if you meant to catalog it.
 
-**From [`manage`](commands/manage.md) `--subdomain` (or `--list`):**
+**From [`manage`](commands/manage.md) (bare, or `--subdomain`):**
 
 ```text
 Error: example.com is not a managed domain. We do not expect users to ever be exposed to this
