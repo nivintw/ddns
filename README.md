@@ -39,29 +39,7 @@ identically locally and in CI. Conventional Commits are enforced at commit-msg t
 
 ## Installation
 
-Recommended installation path is to install this repository using [pipx](https://github.com/pypa/pipx). `pipx` provides the ability to install command line tools like this one into isolated environments, keeping your system-level packages clean and removing the possibility of dependency conflicts across tools.
-
-Another alternative option to `pipx` is the (relatively) new tool [uv](https://github.com/astral-sh/uv). See [this blog post](https://astral.sh/blog/uv-unified-python-packaging) for more information and information on the recent features added to `uv`. If going the uv route, you want `uv tool install`.
-
-## Publishing to PyPI
-
-Published to **[PyPI](https://pypi.org/project/digital-ocean-dynamic-dns/)** on each GitHub Release
-(`.github/workflows/publish.yml`), dress-rehearsed through **TestPyPI** first — build once,
-publish to TestPyPI, install and import the built wheel, then (gated on that) publish to
-PyPI. Auth is OIDC **Trusted Publishing** (no long-lived secret), bound to two GitHub
-**deployment environments** — `testpypi` and `pypi` — each restricted to `v*` tag
-deployments.
-
-One-time setup before the first release:
-
-1. Create the `testpypi` and `pypi` environments (repo Settings → Environments), each with
-   a deployment branch/tag policy restricted to `v*` tags.
-2. Add a pending Trusted Publisher on [test.pypi.org](https://test.pypi.org/manage/account/publishing/)
-   and [pypi.org](https://pypi.org/manage/account/publishing/), each pointing at owner
-   `nivintw`, repo `ddns`, workflow `publish.yml`, and the matching
-   environment (`testpypi` / `pypi`).
-
-Until both publishers exist, `uv publish` fails loudly rather than silently skipping.
+See [Getting Started](docs/getting-started.md#1-install) for install instructions (pipx or uv).
 
 ## License
 

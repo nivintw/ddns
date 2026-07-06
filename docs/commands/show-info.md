@@ -31,7 +31,8 @@ the default is `--no-show-api-key`.
 
 The `[*]` marker on `show-info domains` reflects whether the domain has a row in the local
 database at all — cataloging alone is enough to earn the marker, whether or not the domain is
-currently `managed`.
+currently `managed`. A domain you previously `un-manage`d still shows `[*]` here, since
+un-managing never removes its database row.
 
 ## When to reach for it
 
@@ -40,11 +41,6 @@ configured, and see how many domains/subdomains are tracked, without digging int
 detail. Reach for `show-info domains` specifically when you need to see the full list of
 domains available on the account — including ones `do_ddns` has never touched — before
 deciding what to [`manage`](manage.md).
-
-!!! note
-    `show-info domains` marks a domain cataloged, not necessarily managed. A domain you
-    previously `un-manage`d still shows `[*]` here, since un-managing never removes its
-    database row.
 
 ## Related
 

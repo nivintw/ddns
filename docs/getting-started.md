@@ -36,21 +36,19 @@ with DNS read/write scope. Export it as an environment variable:
 export DIGITALOCEAN_TOKEN=<your-do-token>
 ```
 
-`DIGITALOCEAN_TOKEN` is the same environment variable name DigitalOcean's own [`pydo`](https://pydo.readthedocs.io/en/latest/)
-library uses, by design — if you already have DigitalOcean tooling configured this way, `do_ddns`
-picks it up for free.
+See [Configuration: API token](configuration.md#api-token) for why this specific variable
+name was chosen and what happens if it's unset.
 
 ## 3. Set up an IP resolver (one-time)
 
-`do_ddns` figures out your current public IP by making a GET request to a URL you configure and
-reading the plain-text response body. Point it at any service that returns your IP as plain text:
+Point `do_ddns` at a service that reports your public IP:
 
 ```bash
 do_ddns ip-resolver-config --url https://api.ipify.org
 ```
 
-Any URL that responds to a GET with your IP address as plain text works. Only IPv4 is supported
-today.
+See the [`ip-resolver-config` command reference](commands/ip-resolver-config.md) for how the
+resolver works and its full set of options. Only IPv4 is supported today.
 
 ## 4. Onboard a domain
 

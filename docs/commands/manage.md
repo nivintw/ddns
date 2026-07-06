@@ -29,8 +29,10 @@ do_ddns manage example.com --list
 
 In every mode, `manage` first ensures `<domain>` itself is registered as a managed top-level
 domain (verifying it's actually registered on your DigitalOcean account before inserting it,
-or doing nothing if it's already managed). Only after that does it act on `--subdomain` /
-`--list` / the bare-domain import.
+or doing nothing if it's already managed) — so `do_ddns manage example.com --subdomain home`
+manages **both** `example.com` and `home.example.com` in one call, with no separate step
+needed for the parent domain. Only after that does it act on `--subdomain` / `--list` / the
+bare-domain import.
 
 A subdomain name can be given bare (`home`) or fully-qualified (`home.example.com`) — `do_ddns`
 strips the `.example.com` suffix automatically either way, so both forms are equivalent.
@@ -42,12 +44,6 @@ Use the bare form (`manage example.com`) when you already have A-records for a d
 subdomain at a time, or when a domain has other A-records you don't want `do_ddns` touching.
 Use `--list` any time you just want to check current state without side effects — it's the
 per-domain counterpart to [`show-info`](show-info.md)'s account-wide summary.
-
-!!! note
-    The top-level domain is *always* attempted first, regardless of mode. Running
-    `do_ddns manage example.com --subdomain home` manages **both** `example.com` and
-    `home.example.com` in one call — you never need a separate step to manage the parent
-    domain first.
 
 ## Related
 
