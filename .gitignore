@@ -17,6 +17,9 @@
 .idea/
 *~
 
+### superpowers:brainstorming local artifacts (mockups/companions, never committed) ###
+.superpowers/
+
 ### Python / uv ###
 __pycache__/
 *.py[cod]
@@ -32,3 +35,6 @@ build/
 
 # dev-kit /ship run progress (ephemeral, per-run)
 .ship/
+
+### MkDocs ###
+site/

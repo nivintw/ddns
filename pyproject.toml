@@ -32,8 +32,11 @@ Repository = "https://github.com/nivintw/ddns"
 Issues = "https://github.com/nivintw/ddns/issues"
 
 [dependency-groups]
-# The ruff floor must support the rendered `target-version = "py312"`: py314 needs ruff>=0.12.
-# Bump this floor when raising python_version past what the current floor supports.
+# One line keeps it green-on-arrival under taplo, which collapses short arrays after render.
+# The ruff floor is fleet-wide, not this repo's target-version specifically: raised to
+# >=0.12 for py314 support (copier-everything#73/v1.3.2), and it works fine against every
+# earlier supported python_version too. Bump it again only if a future python_version needs
+# a newer floor than this one provides.
 # ty is pre-1.0 and evolves quickly, so ">=0.0.1" is a permissive floor, not a meaningful one —
 # Renovate keeps the resolved version current regardless.
 dev = [

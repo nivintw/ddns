@@ -5,9 +5,10 @@
 # typos is treated as CHECK-ONLY (the hook drops --write-changes).
 
 [files]
-# CHANGELOG.md is generated from commit history (release-please): it carries commit SHAs and
-# verbatim historical commit messages that aren't authored prose to spellcheck. rumdl already
-# excludes it; mirror that here.
+# release-please regenerates CHANGELOG.md from commit SHAs, PR/issue titles it doesn't
+# control — a commit SHA's hex prefix colliding with a dictionary word (e.g. "caf" in
+# "21caf01" reading as "calf") would otherwise block release-please's own auto-merge on an
+# unrelated, unfixable false positive.
 extend-exclude = ["CHANGELOG.md"]
 
 [default]
