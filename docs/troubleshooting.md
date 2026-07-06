@@ -13,7 +13,7 @@ If `do_ddns` exited with a red `Error:` message, find it below. Each entry leads
     starting with `Error:` (or the API key message for `NoAPIKeyError`) is the part that
     matters.
 
-#### `NoAPIKeyError`
+## `NoAPIKeyError`
 
 **Looks like:**
 
@@ -31,7 +31,7 @@ export DIGITALOCEAN_TOKEN=<your-do-token>
 environment — cron and systemd don't inherit your interactive shell) that `do_ddns` is running in.
 See [Configuration](configuration.md#api-token) for details.
 
-#### `NoIPResolverServerError`
+### `NoIPResolverServerError`
 
 **Looks like:**
 

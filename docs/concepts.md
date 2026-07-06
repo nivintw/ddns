@@ -36,7 +36,7 @@ In practice: `do_ddns manage example.com` catalogs and manages the domain in one
 it, but the distinction matters for [`show-info domains`](commands/show-info.md), which
 marks *cataloged* domains regardless of whether they're actively managed.
 
-## Register, deregister, and remove — not yet implemented as commands
+## Register, deregister, and remove: not yet implemented as commands
 
 Three more terms exist in this project's vocabulary but don't have a dedicated CLI command
 today:
