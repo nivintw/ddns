@@ -125,9 +125,9 @@ intervention.
     systemctl --user enable --now do-ddns-update.timer
     ```
 
-On macOS, either adapt the cron example above (macOS ships `cron`) or use `launchd` — see Apple's
-[`launchd.plist` documentation](https://ss64.com/mac/launchd.html) for details on writing a
-launch agent.
+On macOS, either adapt the cron example above (macOS ships `cron`) or use `launchd` — see
+[Apple's Creating Launch Daemons and Agents guide](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
+for details on writing a launch agent.
 
 ## 6. Inspect state
 
