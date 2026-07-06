@@ -22,3 +22,23 @@ Thanks for contributing!
 ```bash
 uvx prek@0.4.8 run --all-files
 ```
+
+## Releasing
+
+Published to **[PyPI](https://pypi.org/project/digital-ocean-dynamic-dns/)** on each GitHub Release
+(`.github/workflows/publish.yml`), dress-rehearsed through **TestPyPI** first — build once,
+publish to TestPyPI, install and import the built wheel, then (gated on that) publish to
+PyPI. Auth is OIDC **Trusted Publishing** (no long-lived secret), bound to two GitHub
+**deployment environments** — `testpypi` and `pypi` — each restricted to `v*` tag
+deployments.
+
+One-time setup before the first release:
+
+1. Create the `testpypi` and `pypi` environments (repo Settings → Environments), each with
+   a deployment branch/tag policy restricted to `v*` tags.
+2. Add a pending Trusted Publisher on [test.pypi.org](https://test.pypi.org/manage/account/publishing/)
+   and [pypi.org](https://pypi.org/manage/account/publishing/), each pointing at owner
+   `nivintw`, repo `ddns`, workflow `publish.yml`, and the matching
+   environment (`testpypi` / `pypi`).
+
+Until both publishers exist, `uv publish` fails loudly rather than silently skipping.
