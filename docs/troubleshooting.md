@@ -5,14 +5,15 @@ SPDX-License-Identifier: MIT
 
 # Troubleshooting
 
-If `do_ddns` exited with an error, find the message it printed below. Each entry leads with
-the fix.
+If `do_ddns` exited with an error, find the message below. Each entry leads with the fix.
 
 !!! note
-    Except for `show-info`, none of these errors are caught internally — the friendly message
-    shown in each entry below (the exact text varies per error; not all of them start with
-    `Error:`) is followed by a full Python traceback. That traceback is expected; the friendly
-    message above it is the part that matters.
+    Except for `show-info`, none of these errors are caught internally, so you'll also see a
+    full Python traceback — that's expected. Most entries print a friendly line (shown below)
+    *before* the traceback; a couple (`NoIPResolverServerError`) print nothing separately and
+    the message below only appears as the traceback's final line
+    (`ip.NoIPResolverServerError: <message>`). Either way, the text shown in **Looks like**
+    below is what to search on.
 
 ## `NoAPIKeyError`
 
