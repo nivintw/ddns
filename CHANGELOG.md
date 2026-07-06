@@ -5,6 +5,18 @@ SPDX-License-Identifier: MIT
 
 # CHANGELOG
 
+## [1.3.8](https://github.com/nivintw/ddns/compare/v1.3.7...v1.3.8) (2026-07-06)
+
+
+### Bug Fixes
+
+* add messages to control-flow exceptions in subdomains ([dde6a21](https://github.com/nivintw/ddns/commit/dde6a214ea0552ec1c7971c6bac9fd97b7f23cb9))
+* address Copilot review ([b3998ee](https://github.com/nivintw/ddns/commit/b3998ee2647746e491c473ef489b5dbfecfea82d))
+* address review findings on versioning and publish safety ([8f2b42a](https://github.com/nivintw/ddns/commit/8f2b42a5b40aef63166cc7dc485ea9eddc9c8814))
+* log the full record name when an A record is added ([e7b55ba](https://github.com/nivintw/ddns/commit/e7b55ba17fe5bdf51e32c997e44fadb13d34aa4e))
+* restore lost comment and correct remaining repo_name occurrences ([2a7c508](https://github.com/nivintw/ddns/commit/2a7c5087736ca9801d0cb7cbb0b0b15aac806e3c))
+* unify generator return type and fix docstring typos (Copilot) ([7799522](https://github.com/nivintw/ddns/commit/7799522afde918c53327a7b502d955ea84021a06))
+
 ## v1.3.7 (2024-09-16)
 
 ### Fix
