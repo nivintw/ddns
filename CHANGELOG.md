@@ -5,6 +5,13 @@ SPDX-License-Identifier: MIT
 
 # CHANGELOG
 
+## [1.3.11](https://github.com/nivintw/ddns/compare/v1.3.10...v1.3.11) (2026-07-06)
+
+
+### Bug Fixes
+
+* stranded-Release-PR closer's GraphQL node-budget failure + email fallback gap ([09ffbdf](https://github.com/nivintw/ddns/commit/09ffbdff7c16621fd1d6db08c522786486d06418))
+
 ## [1.3.10](https://github.com/nivintw/ddns/compare/v1.3.9...v1.3.10) (2026-07-06)
 
 
