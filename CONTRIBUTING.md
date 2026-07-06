@@ -22,24 +22,3 @@ Thanks for contributing!
 ```bash
 uvx prek@0.4.8 run --all-files
 ```
-
-## Releasing
-
-Every GitHub Release triggers a publish workflow (`.github/workflows/publish.yml`) that
-builds once, publishes to **TestPyPI** first (install + import the built wheel as a smoke
-test), then — gated on that — publishes to **[PyPI](https://pypi.org/project/digital-ocean-dynamic-dns/)**.
-Auth is OIDC **Trusted Publishing** (no long-lived secret), bound to two GitHub
-**deployment environments** — `testpypi` and `pypi` — each restricted to `v*` tag
-deployments. **This only actually publishes once the one-time setup below is complete** —
-until then, the workflow runs and fails at the TestPyPI step.
-
-One-time setup before the first release:
-
-1. Create the `testpypi` and `pypi` environments (repo Settings → Environments), each with
-   a deployment branch/tag policy restricted to `v*` tags.
-2. Add a pending Trusted Publisher on [test.pypi.org](https://test.pypi.org/manage/account/publishing/)
-   and [pypi.org](https://pypi.org/manage/account/publishing/), each pointing at owner
-   `nivintw`, repo `ddns`, workflow `publish.yml`, and the matching
-   environment (`testpypi` / `pypi`).
-
-Until both publishers exist, `uv publish` fails loudly rather than silently skipping.
