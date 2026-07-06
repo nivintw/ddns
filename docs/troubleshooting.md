@@ -5,13 +5,14 @@ SPDX-License-Identifier: MIT
 
 # Troubleshooting
 
-If `do_ddns` exited with a red `Error:` message, find it below. Each entry leads with the fix.
+If `do_ddns` exited with an error, find the message it printed below. Each entry leads with
+the fix.
 
 !!! note
     Except for `show-info`, none of these errors are caught internally — the friendly message
-    below is followed by a full Python traceback. That traceback is expected; the line
-    starting with `Error:` (or the API key message for `NoAPIKeyError`) is the part that
-    matters.
+    shown in each entry below (the exact text varies per error; not all of them start with
+    `Error:`) is followed by a full Python traceback. That traceback is expected; the friendly
+    message above it is the part that matters.
 
 ## `NoAPIKeyError`
 
