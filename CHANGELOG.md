@@ -5,6 +5,13 @@ SPDX-License-Identifier: MIT
 
 # CHANGELOG
 
+## [1.3.9](https://github.com/nivintw/ddns/compare/v1.3.8...v1.3.9) (2026-07-06)
+
+
+### Bug Fixes
+
+* correct --subdomain flag name in NoManagedSubdomainsError message ([720fe3b](https://github.com/nivintw/ddns/commit/720fe3beb0eaf1f2140cefabc77a05be4136e3ba))
+
 ## [1.3.8](https://github.com/nivintw/ddns/compare/v1.3.7...v1.3.8) (2026-07-06)
 
 
