@@ -4,9 +4,10 @@
 version = 1
 
 # .gitignore stays in hawkeye's default excludes (not re-included via a negation) and is
-# licensed here instead of via an inline header.
+# licensed here instead of via an inline header. Annotation paths are matched exactly, so
+# each nested .gitignore (e.g. .serena/) needs its own entry, not just the root one.
 [[annotations]]
-path = ".gitignore"
+path = [".gitignore", ".serena/.gitignore"]
 SPDX-FileCopyrightText = "© 2023 Tyler Nivin"
 SPDX-License-Identifier = "MIT"
 
