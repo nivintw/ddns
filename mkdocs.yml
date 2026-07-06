@@ -72,6 +72,14 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+# The asciinema-player extra_css/extra_javascript wiring the template unconditionally
+# re-added in v1.11.1 (restoring nivintw/copier-everything#196) is left out here: ddns has
+# no embedded `.cast` recordings, and those tags 404 on every page load until a repo
+# vendors docs/assets/asciinema-player.{css,min.js} — the exact regression of
+# nivintw/copier-everything#172 (already fixed once, filed again as #206). Per
+# generate-docs's SKILL.md convention, add both lines back only when this repo embeds its
+# first cast.
+
 # Adding this key at all switches MkDocs off its implicit default plugin set (just
 # `search`), so `search` is listed explicitly below or built-in search silently
 # disappears (nivintw/repo-management#85 fleet epic; #94/#95/#97 for the other three).
