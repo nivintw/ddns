@@ -69,16 +69,16 @@ theme:
 # Overrides Material's default `code { word-break: break-word }`, which otherwise breaks
 # long identifiers (e.g. `project_name`) mid-word inside narrow table columns — see
 # stylesheets/extra.css (scaffolded alongside this file) for the fix itself.
+#
+# The asciinema-player assets are deliberately NOT wired here. extra_css/extra_javascript load
+# site-wide on EVERY page, and no template task vendors docs/assets/asciinema-player.{css,min.js},
+# so wiring them unconditionally 404s both requests on every page of any docs site that hasn't
+# embedded a cast yet (nivintw/copier-everything#172). Embedding a cast is an opt-in step that
+# adds the two vendored asset files AND their extra_css/extra_javascript lines together (see
+# castify's embedding.md reference doc) — never one without the other. tests/test_docs_site.py
+# guards against a #196-style "restore the missing wiring" change reintroducing the 404.
 extra_css:
   - stylesheets/extra.css
-
-# The asciinema-player extra_css/extra_javascript wiring the template unconditionally
-# re-added in v1.11.1 (restoring nivintw/copier-everything#196) is left out here: ddns has
-# no embedded `.cast` recordings, and those tags 404 on every page load until a repo
-# vendors docs/assets/asciinema-player.{css,min.js} — the exact regression of
-# nivintw/copier-everything#172 (already fixed once, filed again as #206). Per
-# generate-docs's SKILL.md convention, add both lines back only when this repo embeds its
-# first cast.
 
 # Adding this key at all switches MkDocs off its implicit default plugin set (just
 # `search`), so `search` is listed explicitly below or built-in search silently
