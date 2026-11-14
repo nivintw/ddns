@@ -5,6 +5,13 @@ SPDX-License-Identifier: MIT
 
 # CHANGELOG
 
+## [1.3.12](https://github.com/nivintw/ddns/compare/v1.3.11...v1.3.12) (2026-11-14)
+
+
+### Bug Fixes
+
+* **deps:** Upgrade certifi and urllib3 past known vulnerabilities ([c2283b7](https://github.com/nivintw/ddns/commit/c2283b70f3c211e4bdc8f5e6948466f57dcd035f))
+
 ## [1.3.11](https://github.com/nivintw/ddns/compare/v1.3.10...v1.3.11) (2026-07-06)
 
 
